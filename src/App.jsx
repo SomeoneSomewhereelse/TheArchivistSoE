@@ -178,7 +178,8 @@ const TOOLTIPS_TEXT_MAP = {
     "affixMaxLevel": "If the item level is high enough, then some affixes will not be eligible to roll on it, making it more likely for better affixes to appear on the item.",
     "affixFrequency": "Frequency parameter determines how often will you roll this modifier on an item.",
     "affixRares": "If true, then this modifier can occur on rare items.",
-    "affixLevel": "Determines minimum item level of the item for this affix to show."
+    "affixLevel": "Determines minimum item level of the item for this affix to show.",
+    "affixGroup": "Affixes that share a group can't roll together on the same item."
 };
 
 const INFO_BY_TAB = {
@@ -2954,6 +2955,10 @@ function AffixesPanel({data, loading, error, sort, onChangeSort}) {
                     return (it?.displayExcludedItemTypeNames || []).join(", ");
                 case "class":
                     return n(it?.classDisplayName);
+                case "level":
+                    return Number(it?.level ?? 0);
+                case "group":
+                    return Number(it?.group ?? 0);
                 case "rare":
                     return Number(it?.rare || 0);
                 case "maxLevel":
@@ -3128,6 +3133,15 @@ function AffixesPanel({data, loading, error, sort, onChangeSort}) {
 
                         <th
                             className="sortable"
+                            onClick={() => handleSort("group")}
+                        >
+                  <span className="thLabel">
+                      <Tip text={String(TOOLTIPS_TEXT_MAP["affixGroup"])}>Group</Tip> {sortArrowFor("group")}
+                  </span>
+                        </th>
+
+                        <th
+                            className="sortable"
                             onClick={() => handleSort("rare")}
                         >
                   <span className="thLabel">
@@ -3197,6 +3211,7 @@ function AffixesPanel({data, loading, error, sort, onChangeSort}) {
                         <td>{n(it?.name)}</td>
                         <td>{affixDisplayString(it)}</td>
                         <td>{has(it?.level) ? it.level : ""}</td>
+                        <td>{has(it?.group) ? it.group : ""}</td>
                         <td>{it?.rare ? "Yes" : "No"}</td>
                         <td>{has(it?.frequency) ? it.frequency : ""}</td>
                         <td>{has(it?.maxLevel) ? it.maxLevel : ""}</td>
