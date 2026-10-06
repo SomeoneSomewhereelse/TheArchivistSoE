@@ -1083,7 +1083,7 @@ function FiltersBar({
                         onChange={setTypeValue}
                         options={typeOptions}
                         placeholder={typePlaceholder}
-                        style={{maxWidth: 260}}
+                        className="filterSelWide"
                     />)}
 
                 {showSockets && (<SearchableSelect
@@ -1091,7 +1091,7 @@ function FiltersBar({
                     onChange={setSocketsValue}
                     options={socketsOptions}
                     placeholder="All sockets"
-                    style={{maxWidth: 180}}
+                    className="filterSelNarrow"
                 />)}
 
                 {showRuneCount && (<SearchableSelect
@@ -1099,7 +1099,7 @@ function FiltersBar({
                     onChange={setRuneCountValue}
                     options={runeCountOptions}
                     placeholder="All counts"
-                    style={{maxWidth: 180}}
+                    className="filterSelNarrow"
                 />)}
 
                 {/* Tier (searchable) */}
@@ -1108,7 +1108,7 @@ function FiltersBar({
                     onChange={setTierValue}
                     options={tierOptions}
                     placeholder="All tiers"
-                    style={{maxWidth: 180}}
+                    className="filterSelNarrow"
                 />)}
 
                 {/* Affix type (Prefix / Suffix) – affixes tab only */}
@@ -1117,7 +1117,7 @@ function FiltersBar({
                     onChange={setAffixTypeValue}
                     options={affixTypeOptions}
                     placeholder="All affix types"
-                    style={{maxWidth: 200}}
+                    className="filterSelMid"
                 />)}
 
                 {/* Uber boss toggle (unchanged) */}

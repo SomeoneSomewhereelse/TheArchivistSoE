@@ -1108,6 +1108,19 @@ button.btn {
     max-width: 260px;
 }
 
+/* Per-filter widths (these were inline styles, which no media query could override). */
+.filtersPanel .selSearchWrap.filterSelWide {
+    max-width: 260px;
+}
+
+.filtersPanel .selSearchWrap.filterSelNarrow {
+    max-width: 180px;
+}
+
+.filtersPanel .selSearchWrap.filterSelMid {
+    max-width: 200px;
+}
+
 .selTrigger {
     position: relative;
     width: 100%;
@@ -2280,6 +2293,11 @@ a.mdLink {
         flex-direction: column;
         align-items: stretch;
         gap: 6px;
+    }
+
+    /* Full width like the toggles beside them. */
+    .filtersPanel .filtersFold .selSearchWrap {
+        max-width: none;
     }
 }
 
