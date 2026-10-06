@@ -1,5 +1,5 @@
 import {describe, expect, it} from "vitest";
-import {hashForTab, parseTabFromHash} from "./hashTab.js";
+import {hashForTab, hashWriteAction, parseTabFromHash} from "./hashTab.js";
 
 const KEYS = ["weapons", "affixes", "changelog"];
 
@@ -32,5 +32,25 @@ describe("hashForTab", () => {
     it("formats #/<key> and round-trips through parseTabFromHash", () => {
         expect(hashForTab("uniques")).toBe("#/uniques");
         for (const key of KEYS) expect(parseTabFromHash(hashForTab(key), KEYS)).toBe(key);
+    });
+});
+
+describe("hashWriteAction", () => {
+    it("does nothing when the hash already names the tab", () => {
+        expect(hashWriteAction("#/affixes", "affixes", KEYS)).toBeNull();
+    });
+
+    it("does nothing for a tab that is not a valid hash target", () => {
+        expect(hashWriteAction("#/weapons", "essences", KEYS)).toBeNull();
+    });
+
+    it("pushes a history entry when leaving one valid tab for another", () => {
+        expect(hashWriteAction("#/weapons", "affixes", KEYS)).toBe("push");
+    });
+
+    it("replaces an empty or unknown hash in place", () => {
+        expect(hashWriteAction("", "weapons", KEYS)).toBe("replace");
+        expect(hashWriteAction("#/bogus", "weapons", KEYS)).toBe("replace");
+        expect(hashWriteAction("#", "weapons", KEYS)).toBe("replace");
     });
 });
