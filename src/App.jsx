@@ -1,8 +1,9 @@
 import React, {useEffect, useEffectEvent, useMemo, useState} from "react";
-import {createPortal} from "react-dom";
 import {useIsMobile} from "./useIsMobile.js";
 import ErrorBoundary from "./ErrorBoundary.jsx";
 import PagerButtons from "./PagerButtons.jsx";
+import {MobileTabsBar, TabsBar, TabTitle} from "./tabs.jsx";
+import {VALID_TAB_KEYS} from "./tabList.js";
 import {usePager} from "./pager.js";
 
 import SwordIcon from "./icons/sword.svg";
@@ -49,49 +50,6 @@ const LATEST_RELEASE = "https://github.com/Lukaszpg/PD2-Sanctuary-of-Exile/relea
 const HIDDEN_MODIFIERS = [
     "One Ring to bring them all and in the darkness bind them",
 ];
-
-const TABS = {
-    weapons: "Weapons",
-    armors: "Armors",
-    uniques: "Uniques",
-    runewords: "Runewords",
-    affixes: "Affixes",
-    sacreds: "Sacreds",
-    corruptions: {
-        title: "Corruptions",
-        badge: "Beta"
-    },
-    skills: "Skills",
-    cube: "Cube Recipes",
-    changes: "Standard Mode",
-    help: "Help",
-    changelog: "Changelog",
-    calculators: "Skill Calculators",
-    dropcalc: {
-        title: "Drop calculator",
-        badge: "Alpha"
-    },
-    damnation: {
-        title: "Damnation Mode",
-        badge: "Beta"
-    },
-    ascendancies: "Ascendancies",
-    mapping: "Mapping",
-    fatecards: "Fate Cards",
-    kiln: "Infernal Kiln",
-    essences: "Essences"
-};
-
-// The tab sheet's groups on mobile (every tab except Changelog, which the footer opens).
-const TAB_GROUPS = [
-    {title: "Items", keys: ["weapons", "armors", "uniques", "runewords", "sacreds", "fatecards"]},
-    {title: "Mechanics", keys: ["affixes", "skills", "ascendancies", "corruptions", "mapping", "kiln", "cube"]},
-    {title: "Tools", keys: ["calculators", "dropcalc"]},
-    {title: "About", keys: ["changes", "damnation", "help"]},
-];
-
-// Tabs the URL hash may name. Not Object.keys(TABS): "essences" has no panel.
-const VALID_TAB_KEYS = [...TAB_GROUPS.flatMap((g) => g.keys), "changelog"];
 
 const ALL_RUNES = ["El", "Eld", "Tir", "Nef", "Eth", "Ith", "Tal", "Ral", "Ort", "Thul", "Amn", "Sol", "Shael", "Dol", "Hel", "Io", "Lum", "Ko", "Fal", "Lem", "Pul", "Um", "Mal", "Ist", "Gul", "Vex", "Ohm", "Lo", "Sur", "Ber", "Jah", "Cham", "Zod"];
 
@@ -1180,21 +1138,6 @@ function InfoPanel({title, markdownText, isOpen, onToggle, onLink}) {
             <Markdown text={markdownText} onLink={onLink}/>
         </div>) : null}
     </div>);
-}
-
-function renderTabTitle(tab) {
-    const value = TABS[tab];
-
-    if (value && typeof value === "object") {
-        return (
-            <>
-                {value.title}
-                {value.badge && <span className="tabBadge">{value.badge}</span>}
-            </>
-        );
-    }
-
-    return value;
 }
 
 function ListPanel({
@@ -3364,199 +3307,6 @@ function StaticDataPanel({data, loading, error, search, onLink}) {
     </>);
 }
 
-function DamnationToggle({damnationMode, toggleDamnationMode}) {
-    return (<label className="toggleWrap topBarToggle">
-        <span className="toggleLabel">Damnation</span>
-        <div className="toggle">
-            <input
-                type="checkbox"
-                checked={damnationMode}
-                onChange={(e) => toggleDamnationMode(e.target.checked)}
-            />
-            <span className="toggleSlider"/>
-        </div>
-    </label>);
-}
-
-// Mobile's tab list: a bottom sheet of all tabs, grouped. Rendered into <body> by MobileTabsBar.
-function TabSheet({tab, onSelect, onClose}) {
-    return (<div className="tabSheetBackdrop" onClick={onClose}>
-        <div
-            className="tabSheet"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Tabs"
-            onClick={(e) => e.stopPropagation()}
-        >
-            {TAB_GROUPS.map((group) => (<section key={group.title} className="tabSheetGroup">
-                <div className="tabSheetGroupTitle">{group.title}</div>
-                <div className="tabSheetGrid">
-                    {group.keys.map((key) => (<button
-                        key={key}
-                        type="button"
-                        className={"tabSheetItem" + (tab === key ? " active" : "")}
-                        onClick={() => onSelect(key)}
-                    >
-                        {renderTabTitle(key)}
-                    </button>))}
-                </div>
-            </section>))}
-        </div>
-    </div>);
-}
-
-// Mobile's top row (pinned by CSS): a menu button naming the current tab, and the Damnation toggle.
-// Opening the sheet adds no history entry, so Back while it's open goes to the previous tab. App keys
-// this component by tab, so any tab change (Back/Forward, jumps) remounts it with the sheet closed.
-function MobileTabsBar({tab, setTab, damnationMode, toggleDamnationMode}) {
-    const [sheetOpen, setSheetOpen] = React.useState(false);
-
-    React.useEffect(() => {
-        if (!sheetOpen) return;
-
-        function onKeyDown(e) {
-            if (e.key === "Escape") setSheetOpen(false);
-        }
-
-        window.addEventListener("keydown", onKeyDown);
-        return () => window.removeEventListener("keydown", onKeyDown);
-    }, [sheetOpen]);
-
-    const selectTab = (key) => {
-        // The page is long now that lists don't scroll on their own; start the new tab at the top.
-        if (key !== tab) window.scrollTo(0, 0);
-        setTab(key);
-        setSheetOpen(false);
-    };
-
-    return (<div className="tabsPanel">
-        <button
-            type="button"
-            className="tabMenuBtn"
-            aria-haspopup="dialog"
-            aria-expanded={sheetOpen}
-            onClick={() => setSheetOpen(true)}
-        >
-            <span aria-hidden="true">☰</span>
-            <span className="tabMenuTitle">{renderTabTitle(tab)}</span>
-            <span aria-hidden="true">▾</span>
-        </button>
-
-        <div className="tabsRight">
-            <DamnationToggle damnationMode={damnationMode} toggleDamnationMode={toggleDamnationMode}/>
-        </div>
-
-        {sheetOpen && createPortal(
-            <TabSheet tab={tab} onSelect={selectTab} onClose={() => setSheetOpen(false)}/>,
-            document.body,
-        )}
-    </div>);
-}
-
-function TabsBar({
-                     tab,
-                     setTab,
-                     damnationMode,
-                     toggleDamnationMode,
-                 }) {
-    const [moreOpen, setMoreOpen] = React.useState(false);
-    const moreRef = React.useRef(null);
-
-    const mainKeys = [
-        "weapons",
-        "armors",
-        "uniques",
-        "runewords",
-        "affixes",
-        "skills",
-        "sacreds",
-        "ascendancies",
-    ];
-
-    const moreKeys = [
-        "fatecards",
-        "kiln",
-        "corruptions",
-        "mapping",
-        "cube",
-        "changes",
-        "damnation",
-        "calculators",
-        "dropcalc",
-        "help",
-    ];
-
-    React.useEffect(() => {
-        function onClick(e) {
-            if (!moreRef.current?.contains(e.target)) {
-                setMoreOpen(false);
-            }
-        }
-
-        document.addEventListener("mousedown", onClick);
-        return () => document.removeEventListener("mousedown", onClick);
-    }, []);
-
-    const moreActive = moreKeys.includes(tab);
-
-    const selectTab = (key) => {
-        setTab(key);
-        setMoreOpen(false);
-    };
-
-    return (
-        <div className="tabsPanel">
-            <div className="tabsLeft">
-                <div className="tabs">
-                    {mainKeys.map((key) => (
-                        <div
-                            key={key}
-                            className={"tab" + (tab === key ? " active" : "")}
-                            onClick={() => selectTab(key)}
-                            role="button"
-                            tabIndex={0}
-                        >
-                            {renderTabTitle(key)}
-                        </div>
-                    ))}
-
-                    <div className="moreTabsWrap" ref={moreRef}>
-                        <div
-                            className={"tab" + (moreActive ? " active" : "")}
-                            onClick={() => setMoreOpen((v) => !v)}
-                            role="button"
-                            tabIndex={0}
-                        >
-                            More ▾
-                        </div>
-
-                        {moreOpen && (
-                            <div className="moreTabsDropdown">
-                                {moreKeys.map((key) => (
-                                    <div
-                                        key={key}
-                                        className={"moreTabItem" + (tab === key ? " active" : "")}
-                                        onClick={() => selectTab(key)}
-                                        role="button"
-                                        tabIndex={0}
-                                    >
-                                        {renderTabTitle(key)}
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
-
-            <div className="tabsRight">
-                <DamnationToggle damnationMode={damnationMode} toggleDamnationMode={toggleDamnationMode}/>
-            </div>
-        </div>
-    );
-}
-
-
 export default function App() {
     const [damnationMode, setDamnationMode] = React.useState(
         localStorage.getItem("damnation") === "true"
@@ -4614,7 +4364,7 @@ export default function App() {
 
                 <ListPanel
                     tab={tab}
-                    title={renderTabTitle(tab)}
+                    title={<TabTitle tab={tab}/>}
                     countLabel={countLabel}
                     items={filtered}
                     activeIndex={activeIndex}
