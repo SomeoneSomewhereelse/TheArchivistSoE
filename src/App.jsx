@@ -1,4 +1,4 @@
-import React, {useEffect, useMemo, useState} from "react";
+import React, {useEffect, useEffectEvent, useMemo, useState} from "react";
 import {createPortal} from "react-dom";
 
 import SwordIcon from "./icons/sword.svg";
@@ -204,16 +204,6 @@ const INFO_BY_TAB = {
     },
 };
 
-function getTitleByTab(tab) {
-    const value = TABS[tab];
-
-    if (value && typeof value === "object") {
-        return value.title;
-    }
-
-    return value;
-}
-
 function visibleProperties(properties) {
     return (properties || []).filter((prop) => {
         const text = String(prop);
@@ -362,9 +352,6 @@ function getUniqueBaseIconUrl(u) {
             return ARMOR_ICON_MAP[key];
         }
 
-        if (armorBase.itemType?.code) {
-            const typeCode = String(armorBase.itemType.code).toLowerCase();
-        }
     }
 
     if (u?.weaponBase) {
@@ -1477,6 +1464,11 @@ function DropCalculatorPanel({request, clearRequest, damnationMode}) {
     const [mf, setMf] = React.useState("");
     const wrapperRef = React.useRef(null);
 
+    // Effect events read the latest callbacks without being effect dependencies, so these effects
+    // still fire only when `request` or the inputs change.
+    const consumeRequest = useEffectEvent(() => clearRequest?.());
+    const runCalculation = useEffectEvent(() => calculateAll());
+
     useEffect(() => {
         if (!request) return;
 
@@ -1484,13 +1476,13 @@ function DropCalculatorPanel({request, clearRequest, damnationMode}) {
         setDifficulty("H");
         setQuery(request.item);
 
-        clearRequest?.();
+        consumeRequest();
 
     }, [request]);
 
     React.useEffect(() => {
         const id = window.setTimeout(() => {
-            calculateAll();
+            runCalculation();
         }, 300);
 
         return () => window.clearTimeout(id);
@@ -1532,13 +1524,6 @@ function DropCalculatorPanel({request, clearRequest, damnationMode}) {
     function byLower(rows, column, value) {
         const needle = n(value).toLowerCase();
         return rows.find((r) => n(r[column]).toLowerCase() === needle);
-    }
-
-    function applyPicks(probability, picks) {
-        if (picks === 1) return probability;
-
-        const cappedPicks = picks > 6 ? 6 : picks;
-        return 1 - Math.pow(1 - probability, cappedPicks);
     }
 
     function getRootTc(tcRows, tcName, monsterLevel) {
@@ -1628,11 +1613,6 @@ function DropCalculatorPanel({request, clearRequest, damnationMode}) {
         addRows(armors, ["armo"]);
 
         return buckets;
-    }
-
-    function isExpansionItem(baseItem) {
-        const v = n(baseItem.version);
-        return v === "1" || v === "100";
     }
 
     function isExceptionalOrElite(baseItem, exceptionalOrEliteCodes) {
@@ -2453,6 +2433,8 @@ function AuraEffectCalculator() {
     </div>);
 }
 
+const SUBTILE_TO_YARDS = 2 / 3;          // 0.666666...
+
 function AuraRadiusEffectCalculator() {
 
     // Radius inputs
@@ -2468,7 +2450,6 @@ function AuraRadiusEffectCalculator() {
         return Number.isFinite(x) ? x : 0;
     };
 
-    const SUBTILE_TO_YARDS = 2 / 3;          // 0.666666...
     const YARDS_TO_SUBTILES = 1.5; // 1.5
 
     const calcRadiusYards = React.useMemo(() => {
@@ -3360,9 +3341,8 @@ function UniqueTooltip({u, openDropCalculator, onLink}) {
 function StaticDataPanel({data, loading, error, search, onLink}) {
     const [openMap, setOpenMap] = React.useState({});
 
-    const all = Array.isArray(data) ? data : [];
-
     const filtered = React.useMemo(() => {
+        const all = Array.isArray(data) ? data : [];
         const q = (search || "").trim().toLowerCase();
         if (!q) return all;
 
@@ -3377,7 +3357,7 @@ function StaticDataPanel({data, loading, error, search, onLink}) {
 
             return title.includes(q) || textJoined.includes(q);
         });
-    }, [all, search]);
+    }, [data, search]);
 
     const toggle = (id) => {
         setOpenMap((m) => {
@@ -3934,8 +3914,6 @@ export default function App() {
 
         // 1) Apply all existing filters first
         const base = items.filter((it) => {
-            const name = (n(it?.displayName) || n(it?.runewordName) || n(it?.name)).toLowerCase();
-
             const searchText = buildSearchTextForItem(tab, it);
 
             for (const p of phrases) {
@@ -4052,8 +4030,6 @@ export default function App() {
 
         // 2) Extra sort for Affixes tab: sort by item type, then by name
         if (tab === "affixes") {
-            const typeFilterNorm = typeValue ? typeValue.toLowerCase() : "";
-
             const sorted = [...base].sort((a, b) => {
                 // Build a textual key from all item types (e.g. "Amulets, Rings")
                 const aTypes = affixTypes(a);
