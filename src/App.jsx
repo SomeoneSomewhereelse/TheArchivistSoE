@@ -1459,6 +1459,7 @@ function DropCalculatorPanel({request, clearRequest, damnationMode}) {
     const [difficulty, setDifficulty] = React.useState("");
     const [players, setPlayers] = React.useState("1");
     const [mf, setMf] = React.useState("");
+    const wrapperRef = React.useRef(null);
 
     useEffect(() => {
         if (!request) return;
@@ -2215,6 +2216,13 @@ function DropCalculatorPanel({request, clearRequest, damnationMode}) {
     const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
     const safePage = Math.min(page, totalPages);
     const pageRows = rows.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+    const pager = {
+        label: `Page ${safePage} / ${totalPages}`,
+        canPrev: safePage > 1,
+        canNext: safePage < totalPages,
+        onPrev: () => setPage((p) => Math.max(1, p - 1)),
+        onNext: () => setPage((p) => Math.min(totalPages, p + 1)),
+    };
 
     return (
         <>
@@ -2284,7 +2292,7 @@ function DropCalculatorPanel({request, clearRequest, damnationMode}) {
             </div>
 
             <div className="affixPanel">
-                <div className="affixTableWrapper">
+                <div className="affixTableWrapper" ref={wrapperRef}>
                     <div className="affixPager">
                         <div>
                             <div className="helpTitle">Drop calculator</div>
@@ -2294,29 +2302,7 @@ function DropCalculatorPanel({request, clearRequest, damnationMode}) {
                             </div>
                         </div>
 
-                        <div className="affixPagerRight">
-                            <button
-                                type="button"
-                                className="btn affixPagerBtn"
-                                disabled={safePage <= 1}
-                                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                            >
-                                ‹ Prev
-                            </button>
-
-                            <span className="affixPagerInfo">
-                    Page {safePage} / {totalPages}
-                </span>
-
-                            <button
-                                type="button"
-                                className="btn affixPagerBtn"
-                                disabled={safePage >= totalPages}
-                                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                            >
-                                Next ›
-                            </button>
-                        </div>
+                        <PagerButtons {...pager}/>
                     </div>
 
                     <div className="affixTableScroll">
@@ -2359,6 +2345,10 @@ function DropCalculatorPanel({request, clearRequest, damnationMode}) {
                             ))}
                             </tbody>
                         </table>
+                    </div>
+
+                    <div className="affixPager affixPagerBottom">
+                        <PagerButtons {...pager} scrollTargetRef={wrapperRef}/>
                     </div>
                 </div>
             </div>
@@ -2854,9 +2844,30 @@ function useIsMobile(maxWidth = 980) {
     return isMobile;
 }
 
+// Prev / page / Next controls shared by the three paged tables. The bottom copy (mobile only, via
+// CSS) passes scrollTargetRef so a page change scrolls back to the top of the table.
+function PagerButtons({label, canPrev, canNext, onPrev, onNext, ghost = false, scrollTargetRef = null}) {
+    const btnClass = ghost ? "btn ghost affixPagerBtn" : "btn affixPagerBtn";
+    const go = (fn) => () => {
+        fn();
+        scrollTargetRef?.current?.scrollIntoView({block: "start"});
+    };
+
+    return (<div className="affixPagerRight">
+        <button type="button" className={btnClass} disabled={!canPrev} onClick={go(onPrev)}>
+            ‹ Prev
+        </button>
+        <span className="affixPagerInfo">{label}</span>
+        <button type="button" className={btnClass} disabled={!canNext} onClick={go(onNext)}>
+            Next ›
+        </button>
+    </div>);
+}
+
 function CorruptionsTable({items}) {
     const PAGE_SIZE = 50;
     const [page, setPage] = React.useState(1);
+    const wrapperRef = React.useRef(null);
 
     React.useEffect(() => {
         setPage(1);
@@ -2870,8 +2881,16 @@ function CorruptionsTable({items}) {
         return items.slice(start, start + PAGE_SIZE);
     }, [items, safePage]);
 
+    const pager = {
+        label: `Page ${safePage} / ${totalPages}`,
+        canPrev: safePage > 1,
+        canNext: safePage < totalPages,
+        onPrev: () => setPage((p) => Math.max(1, p - 1)),
+        onNext: () => setPage((p) => Math.min(totalPages, p + 1)),
+    };
+
     return (
-        <div className="affixTableWrapper">
+        <div className="affixTableWrapper" ref={wrapperRef}>
             <div className="affixPager">
                 <div>
                     <div className="helpTitle">Corruptions</div>
@@ -2880,29 +2899,7 @@ function CorruptionsTable({items}) {
                     </div>
                 </div>
 
-                <div className="affixPagerRight">
-                    <button
-                        type="button"
-                        className="btn affixPagerBtn"
-                        disabled={safePage <= 1}
-                        onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    >
-                        ‹ Prev
-                    </button>
-
-                    <span className="affixPagerInfo">
-                        Page {safePage} / {totalPages}
-                    </span>
-
-                    <button
-                        type="button"
-                        className="btn affixPagerBtn"
-                        disabled={safePage >= totalPages}
-                        onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                    >
-                        Next ›
-                    </button>
-                </div>
+                <PagerButtons {...pager}/>
             </div>
 
             <div className="affixTableScroll">
@@ -2930,13 +2927,17 @@ function CorruptionsTable({items}) {
                     </tbody>
                 </table>
             </div>
+
+            <div className="affixPager affixPagerBottom">
+                <PagerButtons {...pager} scrollTargetRef={wrapperRef}/>
+            </div>
         </div>
     );
 }
 
 function AffixesPanel({data, loading, error, sort, onChangeSort}) {
     const [page, setPage] = React.useState(0);
-    const isMobile = useIsMobile(895);
+    const wrapperRef = React.useRef(null);
     const pageSize = 50;
 
     // Local state
@@ -2973,7 +2974,7 @@ function AffixesPanel({data, loading, error, sort, onChangeSort}) {
         return <span className="sortArrow">{sortDir === "asc" ? "▲" : "▼"}</span>;
     };
 
-    // --- Loading / empty / mobile -------------------------------------------
+    // --- Loading / empty ----------------------------------------------------
 
     if (loading) {
         return (<div className="infoPanel">
@@ -2995,21 +2996,6 @@ function AffixesPanel({data, loading, error, sort, onChangeSort}) {
         </div>);
     }
 
-    if (isMobile) {
-        return (<div className="infoPanel">
-            <div className="infoHeader">
-                <div className="infoTitle">Affixes</div>
-            </div>
-            <div
-                className="emptyState"
-                style={{padding: "16px", textAlign: "center"}}
-            >
-                The Affixes table is not viewable on mobile.
-                <br/>
-                Please use a device with larger screen.
-            </div>
-        </div>);
-    }
 
     const total = sorted.length;
     if (!total) {
@@ -3032,6 +3018,15 @@ function AffixesPanel({data, loading, error, sort, onChangeSort}) {
     const goPrev = () => setPage((p) => Math.max(0, p - 1));
     const goNext = () => setPage((p) => Math.min(pageCount - 1, p + 1));
 
+    const pager = {
+        label: `Page ${safePage + 1} / ${pageCount}`,
+        canPrev: safePage > 0,
+        canNext: safePage < pageCount - 1,
+        onPrev: goPrev,
+        onNext: goNext,
+        ghost: true,
+    };
+
     // --- Render table --------------------------------------------------------
 
     return (<div className="infoPanel">
@@ -3039,7 +3034,7 @@ function AffixesPanel({data, loading, error, sort, onChangeSort}) {
             <div className="infoTitle">Affixes</div>
         </div>
 
-        <div className="affixTableWrapper">
+        <div className="affixTableWrapper" ref={wrapperRef}>
             {/* Pager above table */}
             <div className="affixPager">
                 <div className="affixPagerLeft">
@@ -3047,27 +3042,7 @@ function AffixesPanel({data, loading, error, sort, onChangeSort}) {
               Showing {start + 1}–{Math.min(end, total)} of {total}
             </span>
                 </div>
-                <div className="affixPagerRight">
-                    <button
-                        type="button"
-                        className="btn ghost affixPagerBtn"
-                        onClick={goPrev}
-                        disabled={safePage === 0}
-                    >
-                        ‹ Prev
-                    </button>
-                    <span className="affixPagerInfo">
-              Page {safePage + 1} / {pageCount}
-            </span>
-                    <button
-                        type="button"
-                        className="btn ghost affixPagerBtn"
-                        onClick={goNext}
-                        disabled={safePage === pageCount - 1}
-                    >
-                        Next ›
-                    </button>
-                </div>
+                <PagerButtons {...pager}/>
             </div>
 
             {/* Scrollable table */}
@@ -3199,6 +3174,10 @@ function AffixesPanel({data, loading, error, sort, onChangeSort}) {
                     </tr>))}
                     </tbody>
                 </table>
+            </div>
+
+            <div className="affixPager affixPagerBottom">
+                <PagerButtons {...pager} scrollTargetRef={wrapperRef}/>
             </div>
         </div>
     </div>);
