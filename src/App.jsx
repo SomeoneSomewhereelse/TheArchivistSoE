@@ -2245,7 +2245,7 @@ function DropCalculatorPanel({request, clearRequest, damnationMode}) {
             <div className="filtersStack">
                 <div className="filtersRow">
                     <div className="filtersPanel">
-                        <div style={{display: "flex", gap: 12, width: "100%"}}>
+                        <div className="dropCalcInputs">
                             <SearchableSelect
                                 value={dropMode}
                                 onChange={setDropMode}
@@ -2254,7 +2254,7 @@ function DropCalculatorPanel({request, clearRequest, damnationMode}) {
                                     {value: "set", label: "Set Item"},
                                     {value: "misc", label: "Misc item by name"},
                                 ]}
-                                style={{flex: "0 0 260px"}}
+                                className="dropCalcMode"
                             />
 
                             <SearchableSelect
@@ -2265,7 +2265,7 @@ function DropCalculatorPanel({request, clearRequest, damnationMode}) {
                                     {value: "N", label: "Nightmare"},
                                     {value: "H", label: "Hell"},
                                 ]}
-                                style={{flex: "0 0 220px"}}
+                                className="dropCalcDifficulty"
                             />
 
                             <SearchableSelect
@@ -2275,24 +2275,19 @@ function DropCalculatorPanel({request, clearRequest, damnationMode}) {
                                     value: String(i + 1),
                                     label: `Players ${i + 1}`,
                                 }))}
-                                style={{flex: "0 0 180px"}}
+                                className="dropCalcPlayers"
                             />
 
                             <input
                                 type="text"
                                 inputMode="numeric"
-                                className="searchBar"
+                                className="searchBar dropCalcMf"
                                 value={mf}
                                 onChange={(e) => {
                                     const value = e.target.value.replace(/\D/g, "");
                                     setMf(value);
                                 }}
                                 placeholder="Magic Find"
-                                style={{
-                                    flex: "0 0 160px",
-                                    maxWidth: 160,
-                                    height: 31
-                                }}
                             />
                         </div>
 

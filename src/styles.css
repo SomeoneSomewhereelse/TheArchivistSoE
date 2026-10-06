@@ -2120,34 +2120,6 @@ a.mdLink {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Mobile footer: always at the bottom of the screen                          */
-/* -------------------------------------------------------------------------- */
-
-@media (max-width: 980px) {
-    /* Put the extra space on the main scrollable area instead of appRoot */
-    .wrap {
-        padding-bottom: 80px; /* adjust if your footer is taller/shorter */
-    }
-
-    /* Make sure appRoot itself isn't also adding padding */
-    .appRoot {
-        padding-bottom: 0;
-    }
-}
-
-@media (max-width: 720px) {
-    /* Put the extra space on the main scrollable area instead of appRoot */
-    .wrap {
-        padding-bottom: 80px; /* adjust if your footer is taller/shorter */
-    }
-
-    /* Make sure appRoot itself isn't also adding padding */
-    .appRoot {
-        padding-bottom: 0;
-    }
-}
-
-/* -------------------------------------------------------------------------- */
 /* Mobile-friendly: navigation (menu button + tab sheet)                       */
 /* -------------------------------------------------------------------------- */
 
@@ -2405,5 +2377,48 @@ a.mdLink {
     /* backdrop-filter would make thead the containing block of the fixed bubble. */
     .affixTable thead {
         backdrop-filter: none;
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Mobile-friendly: Drop calculator inputs (were inline styles), calculators   */
+/* -------------------------------------------------------------------------- */
+
+.dropCalcInputs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    width: 100%;
+}
+
+.dropCalcInputs .dropCalcMode {
+    flex: 0 0 260px;
+}
+
+.dropCalcInputs .dropCalcDifficulty {
+    flex: 0 0 220px;
+}
+
+.dropCalcInputs .dropCalcPlayers {
+    flex: 0 0 180px;
+}
+
+/* input.dropCalcMf ties `.filtersPanel input[type="text"]` on specificity and wins by coming later. */
+.dropCalcInputs input.dropCalcMf {
+    flex: 0 0 160px;
+    max-width: 160px;
+    height: 31px;
+}
+
+@media (max-width: 980px) {
+    .dropCalcInputs .selSearchWrap,
+    .dropCalcInputs input.dropCalcMf {
+        flex: 1 1 100%;
+        max-width: none;
+    }
+
+    /* Skill calculators: the Reset button drops below the title instead of off-screen. */
+    .infoHeader {
+        flex-wrap: wrap;
     }
 }
