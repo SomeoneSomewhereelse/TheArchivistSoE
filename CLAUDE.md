@@ -29,19 +29,23 @@ npm test          # Vitest unit tests (vitest run)
 npm run preview   # serve dist/
 ```
 
-**Lint baseline:** `npm run lint` already reports 14 problems (10 errors, 4 warnings) in
-`src/App.jsx`. The bar for a change is "no *new* problems", not zero. Compare the issue
-lists before and after; line numbers inside messages shift as code moves. CI fails if the count
-goes above `LINT_BASELINE` in `ci.yml`; lower that number as the old problems get fixed.
+**Lint is clean:** `npm run lint` reports 0 problems and CI fails on any (`LINT_BASELINE: 0` in
+`ci.yml`). The React Compiler rules (`react-hooks/set-state-in-effect`, `immutability`, `refs`) are
+active on `App`, so don't set state synchronously in an effect or read refs during render: adjust
+state during render instead (`if (tab !== prevTab) {setPrevTab(tab); ...}`, as `App` does) or derive
+the value. No `eslint-disable`.
 
 ## Layout
 
-- `src/App.jsx`: nearly the whole app, about 4,800 lines: constants, helpers, every panel
+- `src/App.jsx`: most of the app, about 4,400 lines: constants, helpers, every panel
   and tooltip component, and `App` itself. Put new, self-contained logic in small new
   modules under `src/` instead of growing this file further.
+- `src/tabList.js` (`TABS`, `TAB_GROUPS`, `VALID_TAB_KEYS`) and `src/tabs.jsx` (`TabsBar`,
+  `MobileTabsBar`, `TabTitle`, the Damnation toggle); `src/pager.js` (`pagerState`, `usePager`) and
+  `src/PagerButtons.jsx` for the paged tables; `src/useIsMobile.js`; `src/ErrorBoundary.jsx`.
 - `src/styles.css`: all real styling, about 2,400 lines (`src/App.css` is an unused template leftover; nothing imports it).
-- `src/sortCompare.js` (Affixes sort rules) and `src/hashTab.js` (tab ↔ URL hash): pure helpers,
-  with their tests beside them.
+- `src/sortCompare.js` (Affixes sort rules), `src/hashTab.js` (tab ↔ URL hash), `src/pager.js`,
+  `src/tabList.js` and `useIsMobile`'s `mobileQuery`: pure helpers, with their tests beside them.
 - `src/main.jsx`: renders `<App/>` inside `React.StrictMode`, so effects double-fire in dev.
 - `src/icons/*.svg`: item-type icons, imported as URLs.
 - `public/data/*.json`: game data, fetched at runtime (see Data).
@@ -65,12 +69,13 @@ goes above `LINT_BASELINE` in `ci.yml`; lower that number as the old problems ge
 
 ### Tabs
 
-- `TABS` (top of `App.jsx`) maps tab keys to titles. A value is either a string or
-  `{title, badge}` (Beta/Alpha), rendered by `renderTabTitle`.
+- `TABS` (`src/tabList.js`) maps tab keys to titles. A value is either a string or
+  `{title, badge}` (Beta/Alpha), rendered by `<TabTitle/>`.
 - The tab bar shows `mainKeys` plus a "More" dropdown of `moreKeys` (18 tabs in total).
   `TABS` also holds `changelog`, which is reached only from the footer, and `essences`,
   which has **no panel**, so don't expose it.
-- On mobile (≤980px) `MobileTabsBar` replaces `TabsBar`: a pinned top row with a menu button that
+- On mobile (≤980px, via `useIsMobile`, which asks the same `matchMedia` query as the CSS)
+  `MobileTabsBar` replaces `TabsBar`: a pinned top row with a menu button that
   opens a bottom sheet grouped by `TAB_GROUPS`. `VALID_TAB_KEYS` (the `TAB_GROUPS` keys plus
   `changelog`) is what the URL hash may name.
 - `tab` changes through many paths, not just `selectTab`: `handleMarkdownAppLink`,
@@ -80,6 +85,13 @@ goes above `LINT_BASELINE` in `ci.yml`; lower that number as the old problems ge
 - Keyboard: ↑/↓ move the selection in item lists on desktop (on mobile they're left alone, so
   they scroll the page), Escape blurs search, Ctrl+F (not Cmd) focuses search. There is no ←/→
   tab switching.
+- A tab's panel renders inside `ErrorBoundary` (keyed by tab): a render-time throw shows a failure
+  panel instead of a blank page, and the tab bar keeps working.
+- `activeIndex` (the selected list row) is derived from a `{sig, index}` state keyed by the tab and
+  filters, so any filter change selects row 0. Jumps that clear filters and select a row in the same
+  update call `setActive({sig: activeSig(...), index})`. Jumps that wait for data
+  (`pendingLinkTarget`, `pendingUniqueCode`, `pendingSacredMatch`) resolve during render once it has
+  loaded, and are dropped if the tab leaves their target first. Expanding a mobile row also selects it.
 - In-app links use `<a href="#">` with `preventDefault`. Keep that pattern, so a link never
   writes `#` to the URL.
 

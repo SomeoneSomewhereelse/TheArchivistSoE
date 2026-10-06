@@ -15,9 +15,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
     env:
-      # src/App.jsx has 14 pre-existing problems (10 errors, 4 warnings). Lint fails only if a
-      # change adds more; lower this when they're fixed, and make it 0 to require a clean lint.
-      LINT_BASELINE: 14
+      # Lint must be clean: any problem fails the job. (The count-vs-baseline gate below is kept so a
+      # known problem could be tolerated temporarily by raising this number; leave it at 0.)
+      LINT_BASELINE: 0
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -31,7 +31,7 @@ jobs:
         run: npm ci
       - name: Unit tests
         run: npm test
-      - name: Lint (no new problems beyond the baseline)
+      - name: Lint (must report no problems)
         run: |
           npx eslint . -f json -o eslint-report.json || true
           node -e '
