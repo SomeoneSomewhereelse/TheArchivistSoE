@@ -89,7 +89,7 @@ the value. No `eslint-disable`.
   panel instead of a blank page, and the tab bar keeps working.
 - `activeIndex` (the selected list row) is derived from a `{sig, index}` state keyed by the tab and
   filters, so any filter change selects row 0. Jumps that clear filters and select a row in the same
-  update call `setActive({sig: activeSig(...), index})`. Jumps that wait for data
+  update call `setActive({sig: activeSig({...filterState, ...cleared}), index})`. Jumps that wait for data
   (`pendingLinkTarget`, `pendingUniqueCode`, `pendingSacredMatch`) resolve during render once it has
   loaded, and are dropped if the tab leaves their target first. Expanding a mobile row also selects it.
 - In-app links use `<a href="#">` with `preventDefault`. Keep that pattern, so a link never

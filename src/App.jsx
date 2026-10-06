@@ -2763,9 +2763,10 @@ function RunewordTooltip({rw, onGoSacred, onLink}) {
     </>);
 }
 
-// Identifies a tab + filter combination for the selected row (see `active` in App).
-function activeSig(...parts) {
-    return JSON.stringify(parts);
+// Identifies a tab + filter combination for the selected row (see `active` in App). Every filter that
+// changes the filtered list belongs in the state object, so a change to any of them selects row 0.
+function activeSig(filterState) {
+    return JSON.stringify(filterState);
 }
 
 function CorruptionsTable({items}) {
@@ -3365,7 +3366,11 @@ export default function App() {
 
     // The selected row belongs to one tab + filter combination: a different combination derives row 0.
     // Jumps that change the filters and select a row in the same update store their own signature.
-    const filterSig = activeSig(tab, search, tierValue, typeValue, socketsValue, uberValue, highlightOnly);
+    const filterState = {
+        tab, search, tierValue, typeValue, socketsValue, uberValue, hellforgedValue, highlightOnly,
+        affixTypeValue, runeCountValue, selectedRunes,
+    };
+    const filterSig = activeSig(filterState);
     const [active, setActive] = useState({sig: filterSig, index: 0});
     if (active.sig !== filterSig) setActive({sig: filterSig, index: 0});
     const activeIndex = active.sig === filterSig ? active.index : 0;
@@ -3835,7 +3840,13 @@ export default function App() {
         const all = dataset.data;
         const idx = all.findIndex((it) => n(it?.code) === c);
         if (idx >= 0) {
-            setActive({sig: activeSig(tab, "", "", "", "", false, false), index: idx});
+            setActive({
+                sig: activeSig({
+                    ...filterState, search: "", tierValue: "", typeValue: "", socketsValue: "",
+                    uberValue: false, hellforgedValue: false, highlightOnly: false,
+                }),
+                index: idx,
+            });
             setPendingExpandIndex(idx);
         }
     }
