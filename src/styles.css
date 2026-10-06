@@ -2368,3 +2368,42 @@ a.mdLink {
         box-shadow: 1px 0 0 rgba(255, 255, 255, 0.08);
     }
 }
+
+/* -------------------------------------------------------------------------- */
+/* Mobile-friendly: Tip tooltips on touch screens (tap to toggle)              */
+/* -------------------------------------------------------------------------- */
+
+@media (hover: none) {
+    /* Touch browsers keep :hover after a tap; let the .open state alone decide. */
+    .tipWrap:hover .tipBubble {
+        opacity: 0;
+        transform: translateY(-2px);
+    }
+
+    /* A strip near the bottom of the viewport: never off-screen, never clipped by a swipe table. */
+    .tipBubble {
+        position: fixed;
+        left: 8px;
+        right: 8px;
+        top: auto;
+        bottom: 76px; /* clears the go-to-top button (top edge 54px up to 700px wide, 68px above) */
+        min-width: 0;
+        max-width: none;
+        text-transform: none;
+        letter-spacing: normal;
+    }
+
+    .tipBubble::before {
+        display: none;
+    }
+
+    .tipWrap.open .tipBubble {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    /* backdrop-filter would make thead the containing block of the fixed bubble. */
+    .affixTable thead {
+        backdrop-filter: none;
+    }
+}

@@ -640,11 +640,27 @@ function isDontDisplay(it) {
 }
 
 function Tip({text, children}) {
+    const [open, setOpen] = React.useState(false);
+    const wrapRef = React.useRef(null);
+
+    // Touch screens show the bubble on tap (CSS keys off .open under hover: none). Any tap outside
+    // closes it, so only one bubble is open at a time. In a sortable header, one tap also sorts.
+    React.useEffect(() => {
+        if (!open) return;
+
+        function onPointerDown(e) {
+            if (!wrapRef.current?.contains(e.target)) setOpen(false);
+        }
+
+        document.addEventListener("pointerdown", onPointerDown);
+        return () => document.removeEventListener("pointerdown", onPointerDown);
+    }, [open]);
+
     if (!text) return children;
 
     const parts = String(text).split("\n");
 
-    return (<span className="tipWrap">
+    return (<span ref={wrapRef} className={"tipWrap" + (open ? " open" : "")} onClick={() => setOpen((o) => !o)}>
       {children}
         <span className="tipBubble" role="tooltip">
         {parts.map((line, i) => (<React.Fragment key={i}>
