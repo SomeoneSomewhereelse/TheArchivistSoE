@@ -26,7 +26,11 @@ function attachFloatingHead({scroller, table, realHead, copy}) {
         // On mobile the pinned top bar's real height wins when it is taller than --topbar-h (a min-height;
         // a 900px-wide desktop window renders it 53px tall), so the copy never sits under the bar.
         const bar = cssTop > 0 ? document.querySelector(".tabsPanel") : null;
-        const stickTop = Math.max(cssTop, bar ? bar.offsetHeight : 0);
+        // Pinch-zoomed in, `position: fixed` stays in the layout viewport and pans out of view with it (the
+        // top bar does too), so the line follows the visible area's top instead.
+        const vv = window.visualViewport;
+        const zoomed = vv && vv.scale > 1.01;
+        const stickTop = zoomed ? vv.offsetTop : Math.max(cssTop, bar ? bar.offsetHeight : 0);
         const visible = floatingHeadVisible({
             headTop: headRect.top,
             headHeight: headRect.height,
@@ -61,6 +65,8 @@ function attachFloatingHead({scroller, table, realHead, copy}) {
     window.addEventListener("scroll", sync, {passive: true});
     window.addEventListener("resize", onResize);
     scroller.addEventListener("scroll", sync, {passive: true});
+    window.visualViewport?.addEventListener("scroll", sync);
+    window.visualViewport?.addEventListener("resize", sync);
     readCssTop();
     sync();
 
@@ -69,6 +75,8 @@ function attachFloatingHead({scroller, table, realHead, copy}) {
         window.removeEventListener("scroll", sync);
         window.removeEventListener("resize", onResize);
         scroller.removeEventListener("scroll", sync);
+        window.visualViewport?.removeEventListener("scroll", sync);
+        window.visualViewport?.removeEventListener("resize", sync);
     };
 }
 
