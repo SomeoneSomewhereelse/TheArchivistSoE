@@ -2365,6 +2365,12 @@ a.mdLink {
         background: var(--bg);
         box-shadow: 1px 0 0 rgba(255, 255, 255, 0.08);
     }
+
+    /* Affixes: Attributes, Item types and Excluded item types wrap at min-content width, which made
+       rows up to ~150px tall. A floor keeps rows short (median ~47px) at the cost of more swiping. */
+    .affixesTable :is(th, td):is(:nth-child(2), :nth-child(8), :nth-child(9)) {
+        min-width: 14rem;
+    }
 }
 
 /* -------------------------------------------------------------------------- */

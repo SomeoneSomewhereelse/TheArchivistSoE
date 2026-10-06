@@ -2909,7 +2909,7 @@ function AffixesPanel({data, loading, error, sort, onChangeSort}) {
 
             {/* Scrollable table */}
             <div className="affixTableScroll">
-                <table className="affixTable">
+                <table className="affixTable affixesTable">
                     <thead>
                     <tr>
                         <th
