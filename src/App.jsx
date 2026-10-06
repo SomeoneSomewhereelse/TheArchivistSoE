@@ -1,6 +1,7 @@
 import React, {useEffect, useEffectEvent, useMemo, useState} from "react";
 import {createPortal} from "react-dom";
 import {useIsMobile} from "./useIsMobile.js";
+import ErrorBoundary from "./ErrorBoundary.jsx";
 
 import SwordIcon from "./icons/sword.svg";
 import StaffIcon from "./icons/staff.svg";
@@ -4339,6 +4340,7 @@ export default function App() {
                          toggleDamnationMode={toggleDamnationMode}/>
             )}
 
+            <ErrorBoundary resetKey={tab}>
             {tab === "help" ? (<HelpPanel/>) : tab === "calculators" ? (<>
                     <div className="calcWide">
                         <div className="panels">
@@ -4692,6 +4694,7 @@ export default function App() {
 
                 {!isMobile && <TooltipShell>{renderTooltip(activeItem)}</TooltipShell>}
             </>)}
+            </ErrorBoundary>
         </div>
 
         <footer className="footer">

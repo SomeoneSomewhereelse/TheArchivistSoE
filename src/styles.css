@@ -742,6 +742,13 @@ button.btn {
     border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+.errorPanel .errorDetail {
+    margin: 10px 0 12px;
+    color: var(--muted);
+    font-family: monospace;
+    overflow-wrap: anywhere;
+}
+
 .helpTitle {
     color: var(--c-gold);
     font-weight: 900;
