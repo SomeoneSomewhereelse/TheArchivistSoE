@@ -35,6 +35,7 @@ import RuneIcon from "./icons/rune.svg";
 import SacredIcon from "./icons/sacred.svg";
 import FateCardIcon from "./icons/fatecard.svg";
 import {compareAffixes} from "./sortCompare.js";
+import {useHashTab} from "./hashTab.js";
 
 const APP_VERSION = import.meta.env.VITE_APP_VERSION;
 const GAME_VERSION = "13.0.2";
@@ -75,6 +76,17 @@ const TABS = {
     kiln: "Infernal Kiln",
     essences: "Essences"
 };
+
+// The tab sheet's groups on mobile (every tab except Changelog, which the footer opens).
+const TAB_GROUPS = [
+    {title: "Items", keys: ["weapons", "armors", "uniques", "runewords", "sacreds", "fatecards"]},
+    {title: "Mechanics", keys: ["affixes", "skills", "ascendancies", "corruptions", "mapping", "kiln", "cube"]},
+    {title: "Tools", keys: ["calculators", "dropcalc"]},
+    {title: "About", keys: ["changes", "damnation", "help"]},
+];
+
+// Tabs the URL hash may name. Not Object.keys(TABS): "essences" has no panel.
+const VALID_TAB_KEYS = [...TAB_GROUPS.flatMap((g) => g.keys), "changelog"];
 
 const ALL_RUNES = ["El", "Eld", "Tir", "Nef", "Eth", "Ith", "Tal", "Ral", "Ort", "Thul", "Amn", "Sol", "Shael", "Dol", "Hel", "Io", "Lum", "Ko", "Fal", "Lem", "Pul", "Um", "Mal", "Ist", "Gul", "Vex", "Ohm", "Lo", "Sur", "Ber", "Jah", "Cham", "Zod"];
 
@@ -3560,7 +3572,7 @@ export default function App() {
     const [pendingLinkTarget, setPendingLinkTarget] = useState(null);
     const [showTopButton, setShowTopButton] = useState(false);
 
-    const [tab, setTab] = useState("weapons");
+    const [tab, setTab] = useHashTab(VALID_TAB_KEYS, "weapons");
     const [dropCalculatorRequest, setDropCalculatorRequest] = useState(null);
 
     const openDropCalculator = (itemName) => {
@@ -3743,7 +3755,7 @@ export default function App() {
         setTab(t);
         setSearch(needle);
         setPendingLinkTarget({tab: t, name: needle});
-    }, []);
+    }, [setTab]);
 
 
     const typeOptions = useMemo(() => {
