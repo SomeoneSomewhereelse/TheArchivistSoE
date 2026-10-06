@@ -1058,14 +1058,6 @@ button.btn {
     line-height: 1;
 }
 
-.affixTableScroll:has(tbody tr:first-child:hover),
-.affixTableScroll:has(tbody tr:first-child) {
-    /* no shadow initially */
-}
-
-.affixTableScroll.scrolled thead {
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
-}
 
 .affixTable {
     width: 100%;
@@ -1091,6 +1083,35 @@ button.btn {
 
 .affixAttr {
     white-space: pre-wrap;
+}
+
+/* Floating copy of a table header (StickyHeadTable): shown under the stick line once the real header has
+   scrolled away. Fixed, so it follows the page scroll that sticky can't (.appRoot is a scroll container on
+   desktop; the scroller is one on mobile). Horizontal scroll is mirrored with `left`, never `transform`:
+   a transform would trap the touch Tip's position: fixed bubble, like thead's backdrop-filter does. */
+.floatingHead {
+    position: fixed;
+    top: var(--topbar-h, 0px);
+    z-index: 30; /* inside .wrap: above pinned cells (1) and thead (2), below .selDropdown (40) */
+    display: none;
+    overflow-x: clip; /* y stays visible: desktop Tip bubbles hang below the header */
+    background: var(--bg);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+.floatingHead.on {
+    display: block;
+}
+
+.floatingHead table {
+    table-layout: fixed;
+    position: relative;
+    left: calc(-1 * var(--copy-scroll, 0px));
+}
+
+.floatingHead .affixTable thead {
+    position: static;
+    backdrop-filter: none;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -2364,6 +2385,13 @@ a.mdLink {
         z-index: 1;
         background: var(--bg);
         box-shadow: 1px 0 0 rgba(255, 255, 255, 0.08);
+    }
+
+    /* The floating header's corner: the copy isn't a scroll container, so sticky can't pin its first
+       cell; it counter-shifts by the mirrored scroll instead. */
+    .floatingHead .affixTable th:first-child {
+        position: relative;
+        left: var(--copy-scroll, 0px);
     }
 
     /* Affixes: Attributes, Item types and Excluded item types wrap at min-content width, which made

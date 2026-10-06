@@ -2,6 +2,7 @@ import React, {useEffect, useEffectEvent, useMemo, useState} from "react";
 import {useIsMobile} from "./useIsMobile.js";
 import ErrorBoundary from "./ErrorBoundary.jsx";
 import PagerButtons from "./PagerButtons.jsx";
+import StickyHeadTable from "./StickyHeadTable.jsx";
 import {MobileTabsBar, TabsBar, TabTitle} from "./tabs.jsx";
 import {VALID_TAB_KEYS} from "./tabList.js";
 import {usePager} from "./pager.js";
@@ -2235,47 +2236,42 @@ function DropCalculatorPanel({request, clearRequest, damnationMode}) {
                         <PagerButtons {...pager.pagerProps}/>
                     </div>
 
-                    <div className="affixTableScroll">
-                        <table className="affixTable">
-                            <thead>
+                    <StickyHeadTable
+                        className="affixTable"
+                        head={<tr>
+                            <th>Monster</th>
+                            <th>Treasure Class</th>
+                            <th>Level</th>
+                            <th>Drop chance</th>
+                            <th>Drop chance %</th>
+                        </tr>}
+                    >
+                        {loading && (
                             <tr>
-                                <th>Monster</th>
-                                <th>Treasure Class</th>
-                                <th>Level</th>
-                                <th>Drop chance</th>
-                                <th>Drop chance %</th>
+                                <td colSpan="5" className="table-message">
+                                    Calculating...
+                                </td>
                             </tr>
-                            </thead>
+                        )}
 
-                            <tbody>
-                            {loading && (
-                                <tr>
-                                    <td colSpan="5" className="table-message">
-                                        Calculating...
-                                    </td>
-                                </tr>
-                            )}
+                        {!loading && error && (
+                            <tr>
+                                <td colSpan="5" className="table-message">
+                                    {error}
+                                </td>
+                            </tr>
+                        )}
 
-                            {!loading && error && (
-                                <tr>
-                                    <td colSpan="5" className="table-message">
-                                        {error}
-                                    </td>
-                                </tr>
-                            )}
-
-                            {!loading && !error && pageRows.map((r, i) => (
-                                <tr key={`${r.monsterId || r.monsterName}-${i}`}>
-                                    <td>{r.monsterName}</td>
-                                    <td>{r.treasureClass}</td>
-                                    <td>{r.levelName}</td>
-                                    <td>1:{r.oneIn}</td>
-                                    <td>{r.percent.toFixed(6)}%</td>
-                                </tr>
-                            ))}
-                            </tbody>
-                        </table>
-                    </div>
+                        {!loading && !error && pageRows.map((r, i) => (
+                            <tr key={`${r.monsterId || r.monsterName}-${i}`}>
+                                <td>{r.monsterName}</td>
+                                <td>{r.treasureClass}</td>
+                                <td>{r.levelName}</td>
+                                <td>1:{r.oneIn}</td>
+                                <td>{r.percent.toFixed(6)}%</td>
+                            </tr>
+                        ))}
+                    </StickyHeadTable>
 
                     <div className="affixPager affixPagerBottom">
                         <PagerButtons {...pager.pagerProps} scrollTargetRef={wrapperRef}/>
@@ -2788,31 +2784,26 @@ function CorruptionsTable({items}) {
                 <PagerButtons {...pager.pagerProps}/>
             </div>
 
-            <div className="affixTableScroll">
-                <table className="affixTable corruptionsTable">
-                    <thead>
-                    <tr>
-                        <th>Item</th>
-                        <th>Corruption</th>
-                        <th>Chance</th>
+            <StickyHeadTable
+                className="affixTable corruptionsTable"
+                head={<tr>
+                    <th>Item</th>
+                    <th>Corruption</th>
+                    <th>Chance</th>
+                </tr>}
+            >
+                {pageItems.map((it, idx) => (
+                    <tr key={`${pager.page}-${idx}-${n(it?.displayName)}-${n(it?.chance)}`}>
+                        <td>{n(it?.displayName)}</td>
+                        <td className="affixAttr">
+                            {Array.isArray(it?.corruptionProperties) && it.corruptionProperties.length
+                                ? it.corruptionProperties.join("\n")
+                                : "—"}
+                        </td>
+                        <td className="corruptionChance">{n(it?.chance)}%</td>
                     </tr>
-                    </thead>
-
-                    <tbody>
-                    {pageItems.map((it, idx) => (
-                        <tr key={`${pager.page}-${idx}-${n(it?.displayName)}-${n(it?.chance)}`}>
-                            <td>{n(it?.displayName)}</td>
-                            <td className="affixAttr">
-                                {Array.isArray(it?.corruptionProperties) && it.corruptionProperties.length
-                                    ? it.corruptionProperties.join("\n")
-                                    : "—"}
-                            </td>
-                            <td className="corruptionChance">{n(it?.chance)}%</td>
-                        </tr>
-                    ))}
-                    </tbody>
-                </table>
-            </div>
+                ))}
+            </StickyHeadTable>
 
             <div className="affixPager affixPagerBottom">
                 <PagerButtons {...pager.pagerProps} scrollTargetRef={wrapperRef}/>
@@ -2908,11 +2899,10 @@ function AffixesPanel({data, loading, error, sort, onChangeSort}) {
                 <PagerButtons {...pager.pagerProps}/>
             </div>
 
-            {/* Scrollable table */}
-            <div className="affixTableScroll">
-                <table className="affixTable affixesTable">
-                    <thead>
-                    <tr>
+            {/* Scrollable table; its header row also floats while the page scrolls */}
+            <StickyHeadTable
+                className="affixTable affixesTable"
+                head={<tr>
                         <th
                             className="sortable"
                             onClick={() => handleSort("name")}
@@ -3012,32 +3002,28 @@ function AffixesPanel({data, loading, error, sort, onChangeSort}) {
                       <Tip text={String(TOOLTIPS_TEXT_MAP["affixRequiredLevel"])}>Req lvl</Tip> {sortArrowFor("reqLevel")}
                   </span>
                         </th>
-                    </tr>
-                    </thead>
-
-                    <tbody>
-                    {current.map((it, idx) => (<tr key={`${pager.page}-${idx}-${it.id || it.name}`}>
-                        <td>{n(it?.name)}</td>
-                        <td>{affixDisplayString(it)}</td>
-                        <td>{has(it?.level) ? it.level : ""}</td>
-                        <td>{has(it?.group) ? it.group : ""}</td>
-                        <td>{it?.rare ? "Yes" : "No"}</td>
-                        <td>{has(it?.frequency) ? it.frequency : ""}</td>
-                        <td>{has(it?.maxLevel) ? it.maxLevel : ""}</td>
-                        <td>
-                            {(it?.displayItemTypeNames || []).join(", ")}
-                        </td>
-                        <td>
-                            {(it?.displayExcludedItemTypeNames || []).join(", ")}
-                        </td>
-                        <td>{n(it?.classDisplayName)}</td>
-                        <td>
-                            {has(it?.requiredLevel) ? it.requiredLevel : ""}
-                        </td>
-                    </tr>))}
-                    </tbody>
-                </table>
-            </div>
+                    </tr>}
+            >
+                {current.map((it, idx) => (<tr key={`${pager.page}-${idx}-${it.id || it.name}`}>
+                    <td>{n(it?.name)}</td>
+                    <td>{affixDisplayString(it)}</td>
+                    <td>{has(it?.level) ? it.level : ""}</td>
+                    <td>{has(it?.group) ? it.group : ""}</td>
+                    <td>{it?.rare ? "Yes" : "No"}</td>
+                    <td>{has(it?.frequency) ? it.frequency : ""}</td>
+                    <td>{has(it?.maxLevel) ? it.maxLevel : ""}</td>
+                    <td>
+                        {(it?.displayItemTypeNames || []).join(", ")}
+                    </td>
+                    <td>
+                        {(it?.displayExcludedItemTypeNames || []).join(", ")}
+                    </td>
+                    <td>{n(it?.classDisplayName)}</td>
+                    <td>
+                        {has(it?.requiredLevel) ? it.requiredLevel : ""}
+                    </td>
+                </tr>))}
+            </StickyHeadTable>
 
             <div className="affixPager affixPagerBottom">
                 <PagerButtons {...pager.pagerProps} scrollTargetRef={wrapperRef}/>
