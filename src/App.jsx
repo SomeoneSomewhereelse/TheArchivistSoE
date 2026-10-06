@@ -3859,12 +3859,13 @@ export default function App() {
         }
 
         // Name present → full "go-to-item" behavior
-        setSkipFilterReset(true);
+        // Only a real tab change consumes the skip; a link to the current tab would leave it set.
+        if (t !== tab) setSkipFilterReset(true);
 
         setTab(t);
         setSearch(needle);
         setPendingLinkTarget({tab: t, name: needle});
-    }, [setTab]);
+    }, [setTab, tab]);
 
 
     const typeOptions = useMemo(() => {
