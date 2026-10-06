@@ -3516,6 +3516,8 @@ function MobileTabsBar({tab, setTab, damnationMode, toggleDamnationMode}) {
     }, [sheetOpen]);
 
     const selectTab = (key) => {
+        // The page is long now that lists don't scroll on their own; start the new tab at the top.
+        if (key !== tab) window.scrollTo(0, 0);
         setTab(key);
         setSheetOpen(false);
     };
@@ -4274,6 +4276,9 @@ export default function App() {
             const tag = e.target?.tagName;
             if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA") return;
 
+            // On mobile the arrows have no list selection to move; leave them to scroll the page.
+            if (isMobile) return;
+
             if (e.key === "ArrowDown") {
                 e.preventDefault();
                 setActiveIndex((i) => Math.min(i + 1, Math.max(filtered.length - 1, 0)));
@@ -4289,7 +4294,7 @@ export default function App() {
 
         window.addEventListener("keydown", onKeyDown);
         return () => window.removeEventListener("keydown", onKeyDown);
-    }, [tab, filtered.length]);
+    }, [tab, filtered.length, isMobile]);
 
 
     const subLabel = useMemo(() => {
