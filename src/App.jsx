@@ -1,4 +1,5 @@
 import React, {useEffect, useMemo, useState} from "react";
+import {createPortal} from "react-dom";
 
 import SwordIcon from "./icons/sword.svg";
 import StaffIcon from "./icons/staff.svg";
@@ -3424,6 +3425,93 @@ function StaticDataPanel({data, loading, error, search, onLink}) {
     </>);
 }
 
+function DamnationToggle({damnationMode, toggleDamnationMode}) {
+    return (<label className="toggleWrap topBarToggle">
+        <span className="toggleLabel">Damnation</span>
+        <div className="toggle">
+            <input
+                type="checkbox"
+                checked={damnationMode}
+                onChange={(e) => toggleDamnationMode(e.target.checked)}
+            />
+            <span className="toggleSlider"/>
+        </div>
+    </label>);
+}
+
+// Mobile's tab list: a bottom sheet of all tabs, grouped. Rendered into <body> by MobileTabsBar.
+function TabSheet({tab, onSelect, onClose}) {
+    return (<div className="tabSheetBackdrop" onClick={onClose}>
+        <div
+            className="tabSheet"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Tabs"
+            onClick={(e) => e.stopPropagation()}
+        >
+            {TAB_GROUPS.map((group) => (<section key={group.title} className="tabSheetGroup">
+                <div className="tabSheetGroupTitle">{group.title}</div>
+                <div className="tabSheetGrid">
+                    {group.keys.map((key) => (<button
+                        key={key}
+                        type="button"
+                        className={"tabSheetItem" + (tab === key ? " active" : "")}
+                        onClick={() => onSelect(key)}
+                    >
+                        {renderTabTitle(key)}
+                    </button>))}
+                </div>
+            </section>))}
+        </div>
+    </div>);
+}
+
+// Mobile's top row (pinned by CSS): a menu button naming the current tab, and the Damnation toggle.
+// Opening the sheet adds no history entry, so Back while it's open goes to the previous tab. App keys
+// this component by tab, so any tab change (Back/Forward, jumps) remounts it with the sheet closed.
+function MobileTabsBar({tab, setTab, damnationMode, toggleDamnationMode}) {
+    const [sheetOpen, setSheetOpen] = React.useState(false);
+
+    React.useEffect(() => {
+        if (!sheetOpen) return;
+
+        function onKeyDown(e) {
+            if (e.key === "Escape") setSheetOpen(false);
+        }
+
+        window.addEventListener("keydown", onKeyDown);
+        return () => window.removeEventListener("keydown", onKeyDown);
+    }, [sheetOpen]);
+
+    const selectTab = (key) => {
+        setTab(key);
+        setSheetOpen(false);
+    };
+
+    return (<div className="tabsPanel">
+        <button
+            type="button"
+            className="tabMenuBtn"
+            aria-haspopup="dialog"
+            aria-expanded={sheetOpen}
+            onClick={() => setSheetOpen(true)}
+        >
+            <span aria-hidden="true">☰</span>
+            <span className="tabMenuTitle">{renderTabTitle(tab)}</span>
+            <span aria-hidden="true">▾</span>
+        </button>
+
+        <div className="tabsRight">
+            <DamnationToggle damnationMode={damnationMode} toggleDamnationMode={toggleDamnationMode}/>
+        </div>
+
+        {sheetOpen && createPortal(
+            <TabSheet tab={tab} onSelect={selectTab} onClose={() => setSheetOpen(false)}/>,
+            document.body,
+        )}
+    </div>);
+}
+
 function TabsBar({
                      tab,
                      setTab,
@@ -3521,17 +3609,7 @@ function TabsBar({
             </div>
 
             <div className="tabsRight">
-                <label className="toggleWrap topBarToggle">
-                    <span className="toggleLabel">Damnation</span>
-                    <div className="toggle">
-                        <input
-                            type="checkbox"
-                            checked={damnationMode}
-                            onChange={(e) => toggleDamnationMode(e.target.checked)}
-                        />
-                        <span className="toggleSlider"/>
-                    </div>
-                </label>
+                <DamnationToggle damnationMode={damnationMode} toggleDamnationMode={toggleDamnationMode}/>
             </div>
         </div>
     );
@@ -3573,6 +3651,7 @@ export default function App() {
     const [showTopButton, setShowTopButton] = useState(false);
 
     const [tab, setTab] = useHashTab(VALID_TAB_KEYS, "weapons");
+    const isMobile = useIsMobile();
     const [dropCalculatorRequest, setDropCalculatorRequest] = useState(null);
 
     const openDropCalculator = (itemName) => {
@@ -4247,7 +4326,13 @@ export default function App() {
 
     return (<div className="appRoot">
         <div className="wrap">
-            <TabsBar tab={tab} setTab={setTab} damnationMode={damnationMode} toggleDamnationMode={toggleDamnationMode}/>
+            {isMobile ? (
+                <MobileTabsBar key={tab} tab={tab} setTab={setTab} damnationMode={damnationMode}
+                               toggleDamnationMode={toggleDamnationMode}/>
+            ) : (
+                <TabsBar tab={tab} setTab={setTab} damnationMode={damnationMode}
+                         toggleDamnationMode={toggleDamnationMode}/>
+            )}
 
             {tab === "help" ? (<HelpPanel/>) : tab === "calculators" ? (<>
                     <div className="calcWide">
