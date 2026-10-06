@@ -9,11 +9,12 @@ import {floatingHeadVisible} from "./stickyHead.js";
 // table. Plain DOM work outside React (no state, no re-renders); returns the cleanup.
 function attachFloatingHead({scroller, table, realHead, copy}) {
     const copyTable = copy.querySelector("table");
-    let stickTop = 0;
+    let cssTop = 0;
 
     // CSS decides the line (top: var(--topbar-h, 0px)); it computes even while the copy is display: none.
-    function readStickTop() {
-        stickTop = parseFloat(getComputedStyle(copy).top) || 0;
+    function readCssTop() {
+        copy.style.top = "";
+        cssTop = parseFloat(getComputedStyle(copy).top) || 0;
     }
 
     function sync() {
@@ -22,6 +23,10 @@ function attachFloatingHead({scroller, table, realHead, copy}) {
         const tableRect = table.getBoundingClientRect();
         const headRect = realHead.getBoundingClientRect();
         const widths = Array.from(realHead.rows[0].cells, (cell) => cell.getBoundingClientRect().width);
+        // On mobile the pinned top bar's real height wins when it is taller than --topbar-h (a min-height;
+        // a 900px-wide desktop window renders it 53px tall), so the copy never sits under the bar.
+        const bar = cssTop > 0 ? document.querySelector(".tabsPanel") : null;
+        const stickTop = Math.max(cssTop, bar ? bar.offsetHeight : 0);
         const visible = floatingHeadVisible({
             headTop: headRect.top,
             headHeight: headRect.height,
@@ -29,6 +34,7 @@ function attachFloatingHead({scroller, table, realHead, copy}) {
             stickTop,
         });
 
+        copy.style.top = stickTop === cssTop ? "" : `${stickTop}px`;
         copy.style.left = `${box.left}px`;
         copy.style.width = `${scroller.clientWidth}px`;
         copy.style.setProperty("--copy-scroll", `${scroller.scrollLeft}px`);
@@ -43,7 +49,7 @@ function attachFloatingHead({scroller, table, realHead, copy}) {
     }
 
     function onResize() {
-        readStickTop(); // crossing the 980px breakpoint moves the line
+        readCssTop(); // crossing the 980px breakpoint moves the line
         sync();
     }
 
@@ -55,7 +61,7 @@ function attachFloatingHead({scroller, table, realHead, copy}) {
     window.addEventListener("scroll", sync, {passive: true});
     window.addEventListener("resize", onResize);
     scroller.addEventListener("scroll", sync, {passive: true});
-    readStickTop();
+    readCssTop();
     sync();
 
     return () => {
