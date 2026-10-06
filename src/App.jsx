@@ -3705,6 +3705,12 @@ export default function App() {
         if (tab !== "changes") setChangesSearch("");
         if (tab !== "skills") setSkillsSearch("");
 
+        // A jump still waiting for its data is abandoned once the tab is no longer its target (Back
+        // before the load finished); left set, it would fire on some later visit.
+        if (pendingLinkTarget && pendingLinkTarget.tab !== tab) setPendingLinkTarget(null);
+        if (pendingUniqueCode && tab !== "uniques") setPendingUniqueCode("");
+        if (pendingSacredMatch && tab !== "sacreds") setPendingSacredMatch(null);
+
         if (skipFilterReset) {
             setSkipFilterReset(false);
         } else {
