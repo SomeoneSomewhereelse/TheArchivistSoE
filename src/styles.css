@@ -2266,3 +2266,54 @@ a.mdLink {
         background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)), #050608;
     }
 }
+
+/* -------------------------------------------------------------------------- */
+/* Mobile-friendly: extra filters fold behind "Filters (n)"                    */
+/* -------------------------------------------------------------------------- */
+
+/* Desktop: the wrappers vanish from layout, so the controls sit in .filtersPanel exactly as before. */
+.filtersSearchRow,
+.filtersFold {
+    display: contents;
+}
+
+.filtersToggle {
+    display: none;
+}
+
+@media (max-width: 980px) {
+    .filtersSearchRow {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        width: 100%;
+    }
+
+    .filtersToggle {
+        display: inline-flex;
+        flex: 0 0 auto;
+        align-items: center;
+        appearance: none;
+        -webkit-appearance: none;
+        font: inherit;
+        font-weight: 800;
+        white-space: nowrap;
+        cursor: pointer;
+        padding: 6px 10px;
+        border-radius: 8px;
+        border: 1px solid rgba(202, 161, 74, 0.45);
+        background: rgba(202, 161, 74, 0.18);
+        color: rgba(255, 255, 255, 0.85);
+    }
+
+    .filtersFold {
+        display: none;
+    }
+
+    .filtersFold.open {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
+    }
+}

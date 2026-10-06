@@ -1010,6 +1010,7 @@ function FiltersBar({
                         runeCountValue = "",
                         setRuneCountValue = () => {
                         },
+                        extraActiveCount = 0,
                     }) {
     // Build option lists once per render
     const typeOptions = [{value: "", label: typePlaceholder}, ...types.map((t) => ({value: t, label: t})),];
@@ -1033,98 +1034,125 @@ function FiltersBar({
         label: "Prefix"
     }, {value: "Suffix", label: "Suffix"},];
 
+    // Mobile folds everything but the search box behind a "Filters (n)" button. n counts folded
+    // filters that are set (truthy), plus extraActiveCount (the Rune filter's selection).
+    const [foldOpen, setFoldOpen] = React.useState(false);
+    const hasFolded = showType || showSockets || showRuneCount || showTier || showAffixType || showUber || showHellforged || showHighlight;
+    const activeCount = [
+        showType && typeValue,
+        showSockets && socketsValue,
+        showRuneCount && runeCountValue,
+        showTier && tierValue,
+        showAffixType && affixTypeValue,
+        showUber && uberValue,
+        showHellforged && hellforgedValue,
+        showHighlight && highlightOnly,
+    ].filter(Boolean).length + extraActiveCount;
+
     return (<div className="filtersRow">
         <div className="filtersPanel">
-            <input
-                ref={searchInputRef}
-                type="text"
-                value={search}
-                className="searchBar"
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search item name…"
-            />
+            <div className="filtersSearchRow">
+                <input
+                    ref={searchInputRef}
+                    type="text"
+                    value={search}
+                    className="searchBar"
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search item name…"
+                />
+                {hasFolded && (<button
+                    type="button"
+                    className="filtersToggle"
+                    aria-expanded={foldOpen}
+                    onClick={() => setFoldOpen((v) => !v)}
+                >
+                    Filters ({activeCount}) {foldOpen ? "▴" : "▾"}
+                </button>)}
+            </div>
 
+            <div className={"filtersFold" + (foldOpen ? " open" : "")}>
 
-            {showType && (
-                <SearchableSelect
-                    value={typeValue}
-                    onChange={setTypeValue}
-                    options={typeOptions}
-                    placeholder={typePlaceholder}
-                    style={{maxWidth: 260}}
+                {showType && (
+                    <SearchableSelect
+                        value={typeValue}
+                        onChange={setTypeValue}
+                        options={typeOptions}
+                        placeholder={typePlaceholder}
+                        style={{maxWidth: 260}}
+                    />)}
+
+                {showSockets && (<SearchableSelect
+                    value={socketsValue}
+                    onChange={setSocketsValue}
+                    options={socketsOptions}
+                    placeholder="All sockets"
+                    style={{maxWidth: 180}}
                 />)}
 
-            {showSockets && (<SearchableSelect
-                value={socketsValue}
-                onChange={setSocketsValue}
-                options={socketsOptions}
-                placeholder="All sockets"
-                style={{maxWidth: 180}}
-            />)}
+                {showRuneCount && (<SearchableSelect
+                    value={runeCountValue}
+                    onChange={setRuneCountValue}
+                    options={runeCountOptions}
+                    placeholder="All counts"
+                    style={{maxWidth: 180}}
+                />)}
 
-            {showRuneCount && (<SearchableSelect
-                value={runeCountValue}
-                onChange={setRuneCountValue}
-                options={runeCountOptions}
-                placeholder="All counts"
-                style={{maxWidth: 180}}
-            />)}
+                {/* Tier (searchable) */}
+                {showTier && (<SearchableSelect
+                    value={tierValue}
+                    onChange={setTierValue}
+                    options={tierOptions}
+                    placeholder="All tiers"
+                    style={{maxWidth: 180}}
+                />)}
 
-            {/* Tier (searchable) */}
-            {showTier && (<SearchableSelect
-                value={tierValue}
-                onChange={setTierValue}
-                options={tierOptions}
-                placeholder="All tiers"
-                style={{maxWidth: 180}}
-            />)}
+                {/* Affix type (Prefix / Suffix) – affixes tab only */}
+                {showAffixType && (<SearchableSelect
+                    value={affixTypeValue}
+                    onChange={setAffixTypeValue}
+                    options={affixTypeOptions}
+                    placeholder="All affix types"
+                    style={{maxWidth: 200}}
+                />)}
 
-            {/* Affix type (Prefix / Suffix) – affixes tab only */}
-            {showAffixType && (<SearchableSelect
-                value={affixTypeValue}
-                onChange={setAffixTypeValue}
-                options={affixTypeOptions}
-                placeholder="All affix types"
-                style={{maxWidth: 200}}
-            />)}
+                {/* Uber boss toggle (unchanged) */}
+                {showUber && (<label className="toggleWrap">
+                    <span className="toggleLabel">Uber boss unique</span>
+                    <div className="toggle">
+                        <input
+                            type="checkbox"
+                            checked={!!uberValue}
+                            onChange={(e) => setUberValue(e.target.checked ? "yes" : "")}
+                        />
+                        <span className="toggleSlider"/>
+                    </div>
+                </label>)}
 
-            {/* Uber boss toggle (unchanged) */}
-            {showUber && (<label className="toggleWrap">
-                <span className="toggleLabel">Uber boss unique</span>
-                <div className="toggle">
-                    <input
-                        type="checkbox"
-                        checked={!!uberValue}
-                        onChange={(e) => setUberValue(e.target.checked ? "yes" : "")}
-                    />
-                    <span className="toggleSlider"/>
-                </div>
-            </label>)}
+                {showHellforged && (<label className="toggleWrap">
+                    <span className="toggleLabel">Hellforged</span>
+                    <div className="toggle">
+                        <input
+                            type="checkbox"
+                            checked={!!hellforgedValue}
+                            onChange={(e) => setHellforgedValue(e.target.checked ? "yes" : "")}
+                        />
+                        <span className="toggleSlider"/>
+                    </div>
+                </label>)}
 
-            {showHellforged && (<label className="toggleWrap">
-                <span className="toggleLabel">Hellforged</span>
-                <div className="toggle">
-                    <input
-                        type="checkbox"
-                        checked={!!hellforgedValue}
-                        onChange={(e) => setHellforgedValue(e.target.checked ? "yes" : "")}
-                    />
-                    <span className="toggleSlider"/>
-                </div>
-            </label>)}
-
-            {/* Highlight toggle (unchanged) */}
-            {showHighlight && (<label className="toggleWrap">
-                <span className="toggleLabel">SoE exclusive</span>
-                <div className="toggle">
-                    <input
-                        type="checkbox"
-                        checked={!!highlightOnly}
-                        onChange={(e) => setHighlightOnly(e.target.checked)}
-                    />
-                    <span className="toggleSlider"/>
-                </div>
-            </label>)}
+                {/* Highlight toggle (unchanged) */}
+                {showHighlight && (<label className="toggleWrap">
+                    <span className="toggleLabel">SoE exclusive</span>
+                    <div className="toggle">
+                        <input
+                            type="checkbox"
+                            checked={!!highlightOnly}
+                            onChange={(e) => setHighlightOnly(e.target.checked)}
+                        />
+                        <span className="toggleSlider"/>
+                    </div>
+                </label>)}
+            </div>
         </div>
     </div>);
 }
@@ -4431,6 +4459,7 @@ export default function App() {
             </>) : tab === "corruptions" ? (<>
                 <div className="filtersStack">
                     <FiltersBar
+                        key={tab}
                         search={search}
                         setSearch={setSearch}
                         typeValue={typeValue}
@@ -4485,6 +4514,7 @@ export default function App() {
             </>) : tab === "affixes" ? (<>
                 <div className="filtersStack">
                     <FiltersBar
+                        key={tab}
                         search={search}
                         setSearch={setSearch}
                         typeValue={typeValue}
@@ -4598,6 +4628,8 @@ export default function App() {
                         showRuneCount={tab === "runewords"}
                         runeCountValue={runeCountValue}
                         setRuneCountValue={setRuneCountValue}
+                        key={tab}
+                        extraActiveCount={selectedRunes.length ? 1 : 0}
                     />
                     {(tab === "runewords" || tab === "sacreds") && (
                         <div className="runeFilterPanel">
