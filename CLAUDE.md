@@ -43,6 +43,10 @@ the value. No `eslint-disable`.
 - `src/tabList.js` (`TABS`, `TAB_GROUPS`, `VALID_TAB_KEYS`) and `src/tabs.jsx` (`TabsBar`,
   `MobileTabsBar`, `TabTitle`, the Damnation toggle); `src/pager.js` (`pagerState`, `usePager`) and
   `src/PagerButtons.jsx` for the paged tables; `src/useIsMobile.js`; `src/ErrorBoundary.jsx`.
+- `src/StickyHeadTable.jsx`: the scroller + table used by Affixes, Corruptions and the Drop calculator, plus
+  a fixed, `aria-hidden` floating copy of the header row that shows once the real header scrolls away
+  (`attachFloatingHead` syncs it by direct DOM writes; the show/hide rule is `floatingHeadVisible` in
+  `src/stickyHead.js`, tested beside it).
 - `src/styles.css`: all real styling, about 2,400 lines (`src/App.css` is an unused template leftover; nothing imports it).
 - `src/sortCompare.js` (Affixes sort rules), `src/hashTab.js` (tab ↔ URL hash), `src/pager.js`,
   `src/tabList.js` and `useIsMobile`'s `mobileQuery`: pure helpers, with their tests beside them.
@@ -121,8 +125,10 @@ the value. No `eslint-disable`.
   key with no case, and an unlisted key with no case throws on first sort rather than silently
   tying every row (the old Affix level bug). Missing values sort lowest, except Max lvl, where
   null (no cap) sorts highest.
-- Affixes, Corruptions and the Drop calculator results all share the
-  `.affixTable` / `.affixTableScroll` classes. A CSS change to one affects all three.
+- Affixes, Corruptions and the Drop calculator results all render through `StickyHeadTable` and share the
+  `.affixTable` / `.affixTableScroll` classes. A CSS change to one affects all three. The floating header
+  copy (`.floatingHead`) carries the same table classes, so `.affixTable th` rules style it too; its header
+  cells get inline widths, so never give those `th`s a `style` prop.
 - On mobile the three tables scroll horizontally with a pinned first column, and get a second
   pager below the table.
 
@@ -147,6 +153,10 @@ the value. No `eslint-disable`.
 - `.affixTable thead` has `backdrop-filter`. That makes it the containing block for any
   `position: fixed` descendant. It's removed under `hover: none` so the fixed touch tooltip
   works.
+- `.floatingHead` mirrors horizontal scroll with `position: relative; left`, not `transform`: a transform
+  on it would become the containing block of the touch `Tip`'s fixed bubble (the same trap as `thead`'s
+  `backdrop-filter`). It sits at `top: var(--topbar-h, 0px)` (or the pinned bar's real height if taller)
+  with z-index 30 inside `.wrap`.
 - On mobile, list rows expand in place (`.rowDetail` after the `.row`); lists and tables have no
   inner vertical scroll box. Rules that land things under the pinned row use `--topbar-h`
   (mobile only) for `scroll-margin-top`.
