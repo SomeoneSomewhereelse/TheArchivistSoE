@@ -1,16 +1,23 @@
-# React + Vite
+# The Archivist
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A wiki for *Sanctuary of Exile*, a Project Diablo 2 mod: items, uniques, runewords, affixes, skills,
+cube recipes, mapping, a drop calculator and more. It's a static single-page React app deployed to
+GitHub Pages.
 
-Currently, two official plugins are available:
+## Credit
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+This repository is a fork of [Lukaszpg/TheArchivistSoE](https://github.com/Lukaszpg/TheArchivistSoE).
+The Archivist was created by MindH1ve ([@Lukaszpg](https://github.com/Lukaszpg)), as the site footer
+also credits.
 
-## React Compiler
+## Local development
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Requires Node 22.12 or newer.
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```
+npm ci            # install dependencies
+npm run dev       # dev server at http://localhost:5173/TheArchivistSoE/
+npm run build     # production build to dist/
+npm run lint      # ESLint
+npm test          # unit tests (Vitest)
+```
