@@ -74,8 +74,9 @@ lists before and after; line numbers inside messages shift as code moves.
   `openDropCalculator`, `handleVersionClick` and the jump-to-unique/sacred flows call
   `setTab` directly. Anything that has to follow the current tab should key off the `tab`
   state. The URL-hash sync keys off `tab` too, so every path updates the URL.
-- Keyboard: ↑/↓ move the selection in item lists, Escape blurs search, Ctrl+F (not Cmd) focuses
-  search. There is no ←/→ tab switching.
+- Keyboard: ↑/↓ move the selection in item lists on desktop (on mobile they're left alone, so
+  they scroll the page), Escape blurs search, Ctrl+F (not Cmd) focuses search. There is no ←/→
+  tab switching.
 - In-app links use `<a href="#">` with `preventDefault`. Keep that pattern, so a link never
   writes `#` to the URL.
 
