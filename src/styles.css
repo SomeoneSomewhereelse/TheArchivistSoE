@@ -1693,9 +1693,6 @@ body::-webkit-scrollbar-thumb:hover {
         top: auto;
     }
 
-    .list {
-        max-height: 46vh;
-    }
 
     .listPanel,
     .tooltipShell {
@@ -1879,9 +1876,6 @@ a.mdLink {
         max-height: none;
     }
 
-    .list {
-        max-height: 45vh;
-    }
 
     .tooltipShell {
         grid-column: 1 / -1;
@@ -2031,9 +2025,6 @@ a.mdLink {
         max-height: none;
     }
 
-    .list {
-        max-height: 45vh;
-    }
 
     .tooltipShell {
         grid-column: 1 / -1;
@@ -2315,5 +2306,29 @@ a.mdLink {
         flex-direction: column;
         align-items: stretch;
         gap: 6px;
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Mobile-friendly: list rows expand in place; the page is the only scroller   */
+/* -------------------------------------------------------------------------- */
+
+@media (max-width: 980px) {
+    .list {
+        max-height: none;
+        overflow: visible;
+    }
+
+    .row {
+        scroll-margin-top: calc(var(--topbar-h) + 4px);
+    }
+
+    .rowDetail {
+        padding: 0 6px 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .rowDetail .tooltip {
+        margin-top: 0;
     }
 }

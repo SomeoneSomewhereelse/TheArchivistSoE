@@ -1190,13 +1190,20 @@ function renderTabTitle(tab) {
     return value;
 }
 
-function ListPanel({title, countLabel, items, activeIndex, setActiveIndex, subLabel, tinyLabel, tab}) {
+function ListPanel({
+                       title, countLabel, items, activeIndex, setActiveIndex, subLabel, tinyLabel, tab,
+                       mobile = false, expandedIndex = null, onToggleExpanded, renderDetail,
+                   }) {
 
     const activeRowRef = React.useRef(null);
+    // Desktop highlights the selected row; mobile highlights the expanded one (none by default).
+    const focusIndex = mobile ? expandedIndex : activeIndex;
 
     React.useEffect(() => {
-        activeRowRef.current?.scrollIntoView({block: "nearest"});
-    }, [activeIndex]);
+        if (focusIndex === null) return;
+        // On mobile, scroll-margin-top lands the opened row just below the pinned top row.
+        activeRowRef.current?.scrollIntoView({block: mobile ? "start" : "nearest"});
+    }, [focusIndex, mobile]);
 
     return (<div className="listPanel">
         <div className="listHeader">
@@ -1208,26 +1215,33 @@ function ListPanel({title, countLabel, items, activeIndex, setActiveIndex, subLa
             {items.length === 0 ? (
                 <div className="emptyState">No items match your filters.</div>) : (items.map((it, i) => {
                 const iconUrl = getItemIconUrl(tab, it);
+                const isFocus = i === focusIndex;
 
-                return (<div
-                    key={`${i}::${n(it?.code)}::${n(it?.displayName) || n(it?.name)}`}
-                    ref={i === activeIndex ? activeRowRef : null}
-                    className={"row" + (i === activeIndex ? " active" : "")}
-                    onClick={() => setActiveIndex(i)}
-                    role="listitem"
-                >
-                    <div className="ico">
-                        {iconUrl ? (<img src={iconUrl} className="icon" alt=""/>) : null}
-                    </div>
-                    <div className="meta">
-                        <div className={tab === "uniques" ? "uniqueName" : "name"}>
-                            {n(it?.displayName) || n(it?.name) || "Unknown"} {isHighlightedItem(it) && (tab === "uniques" || tab === "armors" || tab === "weapons" || tab === "runewords") ?
-                            <span className="uniqueSOEAsterisk">*</span> : null}
+                return (<React.Fragment key={`${i}::${n(it?.code)}::${n(it?.displayName) || n(it?.name)}`}>
+                    <div
+                        ref={isFocus ? activeRowRef : null}
+                        className={"row" + (isFocus ? " active" : "")}
+                        onClick={() => (mobile ? onToggleExpanded(i) : setActiveIndex(i))}
+                        role="listitem"
+                    >
+                        <div className="ico">
+                            {iconUrl ? (<img src={iconUrl} className="icon" alt=""/>) : null}
                         </div>
-                        <div className="sub">{subLabel(it)}</div>
-                        <div className="tiny">{tinyLabel(it)}</div>
+                        <div className="meta">
+                            <div className={tab === "uniques" ? "uniqueName" : "name"}>
+                                {n(it?.displayName) || n(it?.name) || "Unknown"} {isHighlightedItem(it) && (tab === "uniques" || tab === "armors" || tab === "weapons" || tab === "runewords") ?
+                                <span className="uniqueSOEAsterisk">*</span> : null}
+                            </div>
+                            <div className="sub">{subLabel(it)}</div>
+                            <div className="tiny">{tinyLabel(it)}</div>
+                        </div>
                     </div>
-                </div>);
+
+                    {/* A sibling of the row, not a child, so taps on links and tips inside don't toggle it. */}
+                    {mobile && isFocus ? (<div className="rowDetail">
+                        <div className="tooltip">{renderDetail(it)}</div>
+                    </div>) : null}
+                </React.Fragment>);
             }))}
         </div>
     </div>);
@@ -4076,6 +4090,23 @@ export default function App() {
         return base;
     }, [items, tab, search, tierValue, typeValue, socketsValue, uberValue, hellforgedValue, highlightOnly, affixTypeValue, runeCountValue, selectedRunes]);
 
+    // Mobile list rows expand in place. An expansion belongs to one `filtered` array, so any tab,
+    // search or filter change (a new array) collapses it, with no reset effect to race the jumps.
+    const [expanded, setExpanded] = useState({list: null, index: null});
+    const expandedIndex = expanded.list === filtered ? expanded.index : null;
+    const toggleExpanded = (i) => setExpanded((prev) => ({
+        list: filtered,
+        index: prev.list === filtered && prev.index === i ? null : i,
+    }));
+
+    // Jumps (tier, unique, sacred and app: links) expand their target once its list has settled.
+    const [pendingExpandIndex, setPendingExpandIndex] = useState(null);
+    useEffect(() => {
+        if (pendingExpandIndex === null) return;
+        setExpanded({list: filtered, index: pendingExpandIndex});
+        setPendingExpandIndex(null);
+    }, [pendingExpandIndex, filtered]);
+
     useEffect(() => {
         if (!pendingLinkTarget) return;
         if (tab !== pendingLinkTarget.tab) return;
@@ -4091,6 +4122,7 @@ export default function App() {
 
         if (idx >= 0) {
             setActiveIndex(idx);
+            setPendingExpandIndex(idx);
         } else if (filtered.length) {
             setActiveIndex(0);
         }
@@ -4116,7 +4148,10 @@ export default function App() {
         if (dataset.loading) return;
 
         const idx = dataset.data.findIndex((it) => n(it?.code) === pendingUniqueCode);
-        if (idx >= 0) setActiveIndex(idx);
+        if (idx >= 0) {
+            setActiveIndex(idx);
+            setPendingExpandIndex(idx);
+        }
 
         setPendingUniqueCode("");
     }, [pendingUniqueCode, tab, dataset.loading, dataset.data]);
@@ -4140,7 +4175,10 @@ export default function App() {
             return true;
         });
 
-        if (idx >= 0) setActiveIndex(idx);
+        if (idx >= 0) {
+            setActiveIndex(idx);
+            setPendingExpandIndex(idx);
+        }
 
         setPendingSacredMatch(null);
     }, [pendingSacredMatch, tab, sacreds.loading, sacreds.data, setActiveIndex]);
@@ -4186,7 +4224,10 @@ export default function App() {
 
         const all = dataset.data;
         const idx = all.findIndex((it) => n(it?.code) === c);
-        if (idx >= 0) setActiveIndex(idx);
+        if (idx >= 0) {
+            setActiveIndex(idx);
+            setPendingExpandIndex(idx);
+        }
     }
 
     function jumpToUnique(code) {
@@ -4347,6 +4388,17 @@ export default function App() {
             return parts.join(" • ");
         };
     }, [tab]);
+
+    // An item's details: desktop shows them in TooltipShell, mobile under the expanded row.
+    const renderTooltip = (item) => {
+        if (tab === "weapons") return <WeaponTooltip w={item} onGoCode={jumpToCode} onGoUnique={jumpToUnique}/>;
+        if (tab === "armors") return <ArmorTooltip a={item} onGoCode={jumpToCode} onGoUnique={jumpToUnique}/>;
+        if (tab === "runewords") return <RunewordTooltip rw={item} onGoSacred={jumpToSacred} onLink={handleMarkdownAppLink}/>;
+        if (tab === "uniques") return <UniqueTooltip u={item} onLink={handleMarkdownAppLink} openDropCalculator={openDropCalculator}/>;
+        if (tab === "sacreds") return <SacredTooltip s={item} onLink={handleMarkdownAppLink}/>;
+        if (tab === "fatecards") return <FateCardTooltip card={item}/>;
+        return null;
+    };
 
     const countLabel = dataset.loading ? "Loading…" : dataset.error ? `Error: ${dataset.error.message}` : `${filtered.length} items`;
     const showSockets = tab === "weapons" || tab === "armors";
@@ -4707,29 +4759,13 @@ export default function App() {
                     setActiveIndex={setActiveIndex}
                     subLabel={subLabel}
                     tinyLabel={tinyLabel}
+                    mobile={isMobile}
+                    expandedIndex={expandedIndex}
+                    onToggleExpanded={toggleExpanded}
+                    renderDetail={renderTooltip}
                 />
 
-                <TooltipShell>
-                    {tab === "weapons" && (<WeaponTooltip
-                        w={activeItem}
-                        onGoCode={jumpToCode}
-                        onGoUnique={jumpToUnique}
-                    />)}
-
-                    {tab === "runewords" && <RunewordTooltip rw={activeItem} onGoSacred={jumpToSacred}
-                                                             onLink={handleMarkdownAppLink}/>}
-
-                    {tab === "armors" && (<ArmorTooltip
-                        a={activeItem}
-                        onGoCode={jumpToCode}
-                        onGoUnique={jumpToUnique}
-                    />)}
-                    {tab === "uniques" && <UniqueTooltip u={activeItem} onLink={handleMarkdownAppLink}
-                                                         openDropCalculator={openDropCalculator}/>}
-                    {tab === "sacreds" && <SacredTooltip s={activeItem} onLink={handleMarkdownAppLink}/>}
-                    {tab === "fatecards" && (<FateCardTooltip card={activeItem}/>
-                    )}
-                </TooltipShell>
+                {!isMobile && <TooltipShell>{renderTooltip(activeItem)}</TooltipShell>}
             </>)}
         </div>
 
