@@ -31,7 +31,7 @@
 2. **Exactly one history entry per tab change**, including under React StrictMode's double effects in dev and on jump paths (app: links): one press of Back returns to the previous tab. Pinned in Task 3 (check-hash, "one history entry", "Back", "app: link jump").
 3. **Crossing the 980px breakpoint** (rotation or resize) while the tab sheet is open or a row is expanded: no stray backdrop or sheet remains, desktop shows its tooltip panel, and the sheet doesn't pop back open on returning to mobile. Pinned in Task 4 (check-header, "widening past 980px") and Task 6 (check-list, "breakpoint").
 4. **Tapping a tooltip label or link inside an expanded row's details** must not collapse the row. A link does its normal jump. Pinned in Task 6 (check-list, "tapping a tooltip label inside the details").
-5. **A cross-tab jump to Uniques right after toggling Damnation**, while `Uniques.json` reloads from `data/damnation/`, still lands on the target with its row expanded. Pinned in Task 6 (check-list, "after toggling Damnation").
+5. **A cross-tab jump to Uniques right after toggling Damnation**, while `Uniques.json` reloads from `data/damnation/`, still lands on the target with its row expanded. Pinned in Task 6 (check-list, "after toggling Damnation"), which holds that request in flight with CDP `Fetch` interception so the jump really happens mid-reload.
 
 ## Spec verification notes (from planning)
 
@@ -40,19 +40,21 @@
 - The Affixes data counts in the spec's sorting table match `public/data/Affixes.json` exactly (1,412 rows; `maxLevel` null 1,027; `requiredLevel` null 6; `classDisplayName` null 1,281; and so on). `rare` is `"1"` or `""`.
 - The mobile-only bottom pager is gated in CSS (`.affixPager.affixPagerBottom { display: none }` outside the mobile query). That way `AffixesPanel` can drop its `useIsMobile(895)` call, as the spec says, without a new `isMobile` there.
 
+- **Known pre-existing bug, out of scope (list it in the final report):** `handleMarkdownAppLink` with a name that targets the *current* tab sets `skipFilterResetRef` but never consumes it, so the next tab change keeps the old filters. Back makes that easier to reach. Not fixed here.
+
 ## Decisions this plan makes where the spec is silent (flag any you disagree with)
 
 1. **Expanded-row state is tied to the `filtered` array's identity** (`{list, index}`), so any tab, search or filter change collapses it with no reset effect and no ordering race. Jumps set a `pendingExpandIndex` that an effect applies against the settled list.
 2. **`MobileTabsBar` is a separate component** with its own sheet state. The sheet renders through `createPortal` into `document.body`, from `react-dom`, an existing dependency, so it stacks above the go-to-top button. App renders the bar with `key={tab}`, so any tab change, including Back/Forward, remounts it and closes the sheet.
 3. **Filters (n)** counts `selectedRunes` (non-empty = 1), exactly as the spec's text says, even though the Rune filter panel itself isn't folded.
-4. **The list-tabs `FiltersBar` gets `key={tab}`**, so the fold starts collapsed on every tab. Desktop DOM is identical.
+4. **Every `FiltersBar` gets `key={tab}`** (list tabs, Affixes, Corruptions), so the fold starts collapsed on every tab. Desktop DOM is identical.
 5. **The bottom pager scrolls back to the top of the table** (to just under the pinned bar) after paging, so the new page starts in view.
 6. **The Affixes sort logic moves into `src/sortCompare.js`**: `affixSortValue`, `compareAffixes`, and the existing `affixPrimaryPropertyAndMax`, which is only used for sorting. In numeric columns, a value that isn't a finite number counts as missing. There's none in the data.
 7. **`setTab` with a key outside `VALID_TAB_KEYS`** (reachable only through a malformed `app:` link in the data) leaves the hash alone.
-8. **The touch tooltip strip sits at `bottom: 64px`** to clear the go-to-top button (40px at 14px from the bottom). On touch screens only, its text drops the table header's uppercase.
+8. **The touch tooltip strip sits at `bottom: 76px`** to clear the go-to-top button at every width: its top edge is at 54px up to 700px wide, and at 68px above that, including touch tablets wider than 980px. On touch screens only, its text drops the table header's uppercase.
 9. **The pinned first table column gets an opaque `var(--bg)` background** with a 1px divider.
 10. **Workspace:** the implementation worktree is `.worktrees/mobile-friendly` (excluded via `.git/info/exclude`) on a new branch `mobile-friendly-impl`. At the end, `mobile-friendly` is fast-forwarded to it locally. This step is local only and pushes nothing.
-11. **Final review model:** "most capable available" is taken to mean **Fable 5.1** (`model: "fable"`), the first entry in this environment's model list. Correct this at plan review if you mean Opus 5.5. The review covers `main...mobile-friendly-impl`.
+11. **Final review model: Opus 5.5** (`model: "opus"`), as the user chose at plan review. The review covers the full branch diff of `mobile-friendly-impl` against `main`.
 
 ## Conventions used in every task
 
@@ -104,7 +106,7 @@ Expected: no `>` lines. A `<` line means a baseline problem disappeared, which i
   - `AFFIX_SORT_KEYS: string[]`, which is `["name","attrs","level","group","rare","freq","maxLevel","types","excluded","class","reqLevel"]`
   - `isMissing(v): boolean`
   - `compareValues(a, b, dir = "asc", {missing = "low"} = {}): -1 | 0 | 1`
-  - `affixSortValue(affix, key): number | string | string[] | null | undefined`
+  - `affixSortValue(affix, key): number | string | string[] | null | undefined`, which throws for a key with no case
   - `affixPrimaryPropertyAndMax(affix): {property: string, max: number}`, moved verbatim from App.jsx
   - `compareAffixes(a, b, key, dir): -1 | 0 | 1`
   - `npm test` runs `vitest run`.
@@ -258,6 +260,11 @@ describe("affixSortValue", () => {
     it("reads Rares as a boolean: '' is No (0), not missing", () => {
         expect(affixSortValue(affix("a", {rare: ""}), "rare")).toBe(0);
         expect(affixSortValue(affix("b", {rare: "1"}), "rare")).toBe(1);
+    });
+
+    it("throws for a column key it has no case for, instead of tying every row", () => {
+        expect(() => affixSortValue(affix("a"), "bogus")).toThrow(/bogus/);
+        expect(() => compareAffixes(affix("a"), affix("b"), "bogus", "asc")).toThrow(/bogus/);
     });
 
     it("treats null numeric fields as missing", () => {
@@ -443,7 +450,9 @@ export function affixSortValue(affix, key) {
         case "reqLevel":
             return numeric(affix?.requiredLevel);
         default:
-            return undefined;
+            // Loud on purpose: a silent fallback would make every row tie, so clicking the header
+            // would only flip the arrow (the old Affix level bug).
+            throw new Error(`No sort value for Affixes column "${key}"`);
     }
 }
 ```
@@ -487,7 +496,7 @@ git commit -m "Add Vitest and null-aware Affixes sort helpers"
 
 **Interfaces:**
 - Consumes: `compareAffixes(a, b, key, dir)` from Task 1.
-- Produces: `TOOLTIPS_TEXT_MAP.affixRequiredLevel`, plus the harness API every later check uses: `run(fn)`, `checker()`, `BASE`, `sleep`, `TAB_KEYS`, `TAB_TITLES`, `clickDesktopTab(page, key)`, `activeDesktopTab(page)`, `openTab(page, key)`, `OVERFLOW_CHECK`, and `page.{goto, eval, waitFor, mobile, desktop, tap, tapAt, click, hover, type, key, screenshot, send}`.
+- Produces: `TOOLTIPS_TEXT_MAP.affixRequiredLevel`, plus the harness API every later check uses: `run(fn)`, `checker()`, `BASE`, `sleep`, `TAB_KEYS`, `TAB_TITLES`, `clickDesktopTab(page, key)`, `activeDesktopTab(page)`, `openTab(page, key)`, `OVERFLOW_CHECK`, and `page.{goto, eval, waitFor, mobile, desktop, tap, tapAt, click, hover, type, key, screenshot, send, once}`.
 
 - [ ] **Step 1: Wire the comparator into `AffixesPanel`**
 
@@ -637,6 +646,7 @@ async function openPage(port) {
 
     const page = {
         send,
+        once,
         async eval(expression) {
             const r = await send("Runtime.evaluate", {expression, awaitPromise: true, returnByValue: true});
             if (r.exceptionDetails) {
@@ -801,9 +811,11 @@ export async function openTab(page, key) {
     await sleep(700);
 }
 
-// Visible elements whose box ends past the viewport's right (or starts past its left) edge, ignoring
-// boxes clipped by a non-visible-overflow ancestor (e.g. inside a swipe table). .appRoot's own clip
-// is deliberately not counted: content cut off at the screen edge is still a failure.
+// Visible elements whose box ends past the viewport's right (or starts past its left) edge. Exempt:
+// content inside a horizontal scroller (auto/scroll, e.g. a swipe table: reachable by swiping), and
+// content clipped by a hidden/clip box that sits strictly inside the screen (an intentional in-row
+// truncation such as .uniqueName). A hidden/clip box flush with the screen edge (.appRoot, the
+// edge-to-edge .listPanel) doesn't exempt anything: content cut off at the screen edge is a failure.
 export const OVERFLOW_CHECK = `(() => {
     const vw = document.documentElement.clientWidth;
     const offenders = [];
@@ -813,9 +825,13 @@ export const OVERFLOW_CHECK = `(() => {
         if (r.width === 0 || r.height === 0) continue;
         if (r.right <= vw + 0.5 && r.left >= -0.5) continue;
         let clipped = false;
-        for (let a = el.parentElement; a && !a.classList.contains("appRoot") && a !== document.body; a = a.parentElement) {
+        for (let a = el.parentElement; a && a !== document.body; a = a.parentElement) {
+            const ox = getComputedStyle(a).overflowX;
+            if (ox === "visible") continue;
             const ar = a.getBoundingClientRect();
-            if (getComputedStyle(a).overflowX !== "visible" && ar.right <= vw + 0.5 && ar.left >= -0.5) {
+            const inside = ar.right <= vw + 0.5 && ar.left >= -0.5;
+            const strictlyInside = ar.right < vw - 0.5 && ar.left > 0.5;
+            if ((ox === "auto" || ox === "scroll") ? inside : strictlyInside) {
                 clipped = true;
                 break;
             }
@@ -1526,7 +1542,7 @@ cd "$WT" && git add src/App.jsx src/styles.css && git commit -m "Mobile: pinned 
 
 - [ ] **Step 1: `FiltersBar` markup**
 
-Add `extraActiveCount = 0,` as the last destructured prop (after `setRuneCountValue = () => { },`). In the body, before `return`, add:
+Add `extraActiveCount = 0,` as the last destructured prop, after the `setRuneCountValue` default (which spans two lines: `setRuneCountValue = () => {` / `},`). In the body, before `return`, add:
 
 ```js
     // Mobile folds everything but the search box behind a "Filters (n)" button. n counts folded
@@ -1584,6 +1600,8 @@ On the list-tabs `<FiltersBar` (in App's last branch), add two props:
                         key={tab}
                         extraActiveCount={selectedRunes.length ? 1 : 0}
 ```
+
+Also add `key={tab}` to the two other `<FiltersBar` instances, in the Corruptions branch (`tab === "corruptions" ? (<>`) and the Affixes branch (`tab === "affixes" ? (<>`). Those two branches have the same shape (Fragment → `div.filtersStack` → `FiltersBar`), so without a key React keeps one instance, and its open fold, across Affixes ↔ Corruptions.
 
 `key={tab}` remounts the bar per tab, so the fold starts collapsed on every tab. On desktop the DOM is identical.
 
@@ -1664,6 +1682,12 @@ await run(async (page) => {
         c.ok(await page.eval(foldDisplay) === "none", `${key}: extra filters folded by default`);
         c.ok(await page.eval(`document.querySelector(".filtersPanel .searchBar").checkVisibility()`), `${key}: search stays visible`);
     }
+    // Affixes and Corruptions render FiltersBar in the same tree position; the fold must not carry over.
+    await openTab(page, "affixes");
+    await page.tap(".filtersToggle");
+    await openTab(page, "corruptions");
+    c.ok(await page.eval(foldDisplay) === "none", "affixes to corruptions: the fold starts collapsed again");
+
     for (const key of ["fatecards", "skills", "ascendancies", "kiln", "mapping", "cube", "changes"]) {
         await openTab(page, key);
         c.ok(await page.eval(`!document.querySelector(".filtersToggle")`), `${key}: no Filters button`);
@@ -1802,6 +1826,8 @@ Directly after the `filtered` memo's closing `}, [items, tab, search, tierValue,
     }, [pendingExpandIndex, filtered]);
 ```
 
+Lint note: this effect adds no problem today only because the React Compiler lint rules stop at `App`'s existing `react-hooks/immutability` errors. The same code in a standalone component or hook reports `react-hooks/set-state-in-effect`. Keep it inline in `App`, as the plan does. If the lint comparison ever shows it, for example because those baseline errors were fixed, switch to React's "adjust state during render" pattern instead of suppressing the rule.
+
 - [ ] **Step 3: Every jump also expands its target**
 
 In the `pendingLinkTarget` effect, replace `if (idx >= 0) { setActiveIndex(idx); }` with:
@@ -1862,7 +1888,7 @@ Replace the `<ListPanel … />` and the whole `<TooltipShell> … </TooltipShell
 
 - [ ] **Step 5: CSS**
 
-In `src/styles.css`, delete these three rules, each inside a mobile media block. Search for `max-height: 4` to find them:
+In `src/styles.css`, delete these three `.list` rules, each inside a mobile media block, at ~L1696, ~L1882 and ~L2034 (as of `fa1ea5c`). Find them with `grep -n -A2 '^    \.list {' src/styles.css`. Don't touch the other `max-height: 4…` rules: `.cubeInfoBody` (~L1724) stays, and the two `.affixTableScroll` rules belong to Task 7.
 
 ```css
     .list {
@@ -1909,18 +1935,22 @@ In `src/styles.css`, delete these three rules, each inside a mobile media block.
 import {run, checker, BASE, openTab, sleep} from "./cdp.mjs";
 
 const c = checker();
-// Distance from the bottom of the pinned top row to the top of the expanded row.
+// Distance from the bottom of the pinned top row to the top of the expanded row, and whether the page
+// is scrolled to its end (a short page can't bring a low row all the way up; that still counts).
 const GAP = `(() => {
     const d = document.querySelector(".rowDetail");
     if (!d) return null;
-    return d.previousElementSibling.getBoundingClientRect().top - document.querySelector(".tabsPanel").getBoundingClientRect().bottom;
+    return {
+        gap: d.previousElementSibling.getBoundingClientRect().top - document.querySelector(".tabsPanel").getBoundingClientRect().bottom,
+        atEnd: window.scrollY >= document.documentElement.scrollHeight - window.innerHeight - 1,
+    };
 })()`;
 const detailText = `document.querySelector(".rowDetail")?.textContent ?? ""`;
 
 await run(async (page) => {
     const gapOk = async (label) => {
-        const gap = await page.eval(GAP);
-        c.ok(gap !== null && gap >= 0 && gap <= 8, label, `${gap}px`);
+        const g = await page.eval(GAP);
+        c.ok(g !== null && g.gap >= 0 && (g.gap <= 8 || g.atEnd), label, JSON.stringify(g));
     };
     const collapse = async () => {
         if (await page.eval(`!!document.querySelector(".rowDetail")`)) await page.tap(".row.active");
@@ -1930,7 +1960,7 @@ await run(async (page) => {
         await collapse();
         for (let i = 0; i < max; i++) {
             await page.tap(".list .row", {nth: i});
-            if (await page.eval(`!!document.querySelector(".rowDetail ${selector}")`)) return i;
+            if (await page.eval(`!!document.querySelector(${JSON.stringify(`.rowDetail ${selector}`)})`)) return i;
         }
         return -1;
     };
@@ -2003,11 +2033,19 @@ await run(async (page) => {
     await page.tap("button.mdLinkInternal", {text: "Hellfire Torch"});
     await jumpCheck("#/uniques", "Hellfire Torch", "app: link");
 
-    // Review focus 5: the same jump while Uniques reloads after toggling Damnation.
+    // Review focus 5: the same jump while Uniques is still reloading after toggling Damnation.
+    // Hold damnation/Uniques.json in flight, jump, then let it through.
     await openTab(page, "cube");
-    await page.tap(".topBarToggle");
     await page.waitFor(`[...document.querySelectorAll("button.mdLinkInternal")].some((b) => b.textContent === "Hellfire Torch")`);
+    await page.send("Fetch.enable", {patterns: [{urlPattern: "*damnation/Uniques.json*", requestStage: "Request"}]});
+    const paused = page.once("Fetch.requestPaused");
+    await page.tap(".topBarToggle");
+    const {requestId} = await paused;
     await page.tap("button.mdLinkInternal", {text: "Hellfire Torch"});
+    await page.waitFor(`location.hash === "#/uniques"`);
+    c.ok(await page.eval(`!document.querySelector(".rowDetail")`), "while Uniques reloads, the jump waits (nothing expanded yet)");
+    await page.send("Fetch.continueRequest", {requestId});
+    await page.send("Fetch.disable");
     await jumpCheck("#/uniques", "Hellfire Torch", "app: link after toggling Damnation");
     await page.tap(".topBarToggle");
 
@@ -2229,8 +2267,12 @@ await run(async (page) => {
         await page.tap(".affixPagerBottom .affixPagerBtn", {text: "Next"});
         const info = await page.eval(`[...document.querySelectorAll(".affixPagerInfo")].map((e) => e.textContent.trim())`);
         c.ok(info.length === 2 && info.every((t) => t.startsWith("Page 2 /")), `${key}: bottom Next goes to page 2 (both pagers agree)`, JSON.stringify(info));
-        const top = await page.eval(`document.querySelector(".affixTableWrapper").getBoundingClientRect().top - document.querySelector(".tabsPanel").getBoundingClientRect().bottom`);
-        c.ok(top >= 0 && top <= 8, `${key}: paging from the bottom scrolls back to the table top`, `${top}px`);
+        // A short page can't scroll the table top all the way up; being at the page's end counts too.
+        const t = await page.eval(`({
+            top: document.querySelector(".affixTableWrapper").getBoundingClientRect().top - document.querySelector(".tabsPanel").getBoundingClientRect().bottom,
+            atEnd: window.scrollY >= document.documentElement.scrollHeight - window.innerHeight - 1,
+        })`);
+        c.ok(t.top >= 0 && (t.top <= 8 || t.atEnd), `${key}: paging from the bottom scrolls back to the table top`, JSON.stringify(t));
         await page.tap(".affixPager:not(.affixPagerBottom) .affixPagerBtn", {text: "Prev"});
         c.ok((await page.eval(`document.querySelector(".affixPagerInfo").textContent.trim()`)).startsWith("Page 1 /"), `${key}: top Prev goes back`);
     };
@@ -2248,15 +2290,18 @@ await run(async (page) => {
     await openTab(page, "dropcalc");
     await page.tap(".filtersPanel .selTrigger");
     await page.tap(".selOption", {text: "Misc item by name"});
+    // Need at least two full pages, so page 2 is long enough to scroll the table top under the bar.
     let rows = 0;
-    for (const code of ["r01", "r02", "r03", "r04"]) {
+    for (const code of ["r01", "r02", "r03", "r04", "r05", "r06"]) {
         await page.type(`input[placeholder^="Enter misc code"]`, code);
-        await sleep(2500);
+        await sleep(600); // past the 300ms debounce, so the calculation has started
+        await page.waitFor(`![...document.querySelectorAll(".table-message")].some((td) => td.textContent.includes("Calculating"))`, 60000);
         rows = await page.eval(total);
-        if (rows > 50) break;
+        if (rows >= 100) break;
     }
-    c.ok(rows > 50, "dropcalc: a query with more than one page of results", `${rows} rows`);
-    if (rows > 50) await tableChecks("dropcalc", {expectHScroll: true});
+    c.ok(rows >= 100, "dropcalc: a query with at least two full pages of results", `${rows} rows`);
+    // Five columns at 390px may or may not overflow; the pin check runs whenever it does.
+    if (rows >= 100) await tableChecks("dropcalc", {expectHScroll: false});
     c.ok(await page.eval(`(() => {
         const tr = document.createElement("tr");
         tr.innerHTML = '<td colspan="5">x</td>';
@@ -2360,7 +2405,7 @@ Append to `src/styles.css`:
         left: 8px;
         right: 8px;
         top: auto;
-        bottom: 64px; /* clears the go-to-top button */
+        bottom: 76px; /* clears the go-to-top button (top edge 54px up to 700px wide, 68px above) */
         min-width: 0;
         max-width: none;
         text-transform: none;
@@ -2589,7 +2634,7 @@ await run(async (page) => {
 });'
 ```
 
-Open `$SCRATCH/shots/mobile/uniques-soe.png` with the Read tool. Expected: long names are cut off inside their row, which is clipped by `.uniqueName { overflow: hidden }` within a `.meta { min-width: 0 }` box, and nothing extends past the screen edge. The survey already ignores clipped boxes. **No change** unless the asterisk visibly escapes its row. If it does, fix it with a mobile-only rule and report it.
+Open `$SCRATCH/shots/mobile/uniques-soe.png` with the Read tool. Expected: long names are cut off inside their row, which is clipped by `.uniqueName { overflow: hidden }` within a `.meta { min-width: 0 }` box, and nothing extends past the screen edge. The survey ignores boxes clipped inside the row, but would flag anything cut off at the screen edge. **No change** unless the asterisk visibly escapes its row. If it does, fix it with a mobile-only rule and report it.
 
 - [ ] **Step 6: Build, lint, commit**
 
@@ -2627,7 +2672,7 @@ also credits.
 
 ## Local development
 
-Requires Node 20.19 or newer.
+Requires Node 22.12 or newer.
 
 ```
 npm ci            # install dependencies
@@ -2643,10 +2688,10 @@ npm test          # unit tests (Vitest)
 Make these edits, keeping the file's voice:
 
 - **Stack:** replace `- No router: the current tab is React state (\`tab\` in \`App\`).` with `- No router library: the current tab is React state (\`tab\` in \`App\`), kept in sync with the URL hash (\`#/<tabKey>\`) by \`useHashTab\` in \`src/hashTab.js\`.`. Replace the `- No test runner yet. Vitest is planned …` bullet with `- Vitest (dev dependency only) unit-tests the pure helper modules (\`src/*.test.js\`). Test files import \`describe\`/\`it\`/\`expect\` from \`vitest\` explicitly; ESLint has no Vitest globals.`
-- **Commands:** add the line `npm test          # Vitest unit tests (vitest run)` after `npm run lint`.
+- **Commands:** add the line `npm test          # Vitest unit tests (vitest run)` after `npm run lint`. Change the `npm ci` comment from `(Node ≥ 20.19 for Vite 7)` to `(Node ≥ 22.12: Vitest 5; Vite 7 alone needs 20.19)`.
 - **Layout:** add the bullet `- \`src/sortCompare.js\` (Affixes sort rules) and \`src/hashTab.js\` (tab ↔ URL hash): pure helpers, with their tests beside them.`
 - **Tabs:** after the `TABS`/`mainKeys` bullets, add `- On mobile (≤980px) \`MobileTabsBar\` replaces \`TabsBar\`: a pinned top row with a menu button that opens a bottom sheet grouped by \`TAB_GROUPS\`. \`VALID_TAB_KEYS\` (the \`TAB_GROUPS\` keys plus \`changelog\`) is what the URL hash may name.` In the bullet about `tab` changing through many paths, append: `The URL-hash sync keys off \`tab\` too, so every path updates the URL.`
-- **Affixes:** replace the `Sorting goes through the getValue switch …` bullet with `- Sorting goes through \`compareAffixes\` in \`src/sortCompare.js\`. Every sortable column needs an entry in \`AFFIX_SORT_KEYS\` and a case in \`affixSortValue\`; a unit test fails if one is missing. Missing values sort lowest, except Max lvl, where null (no cap) sorts highest.` Add `- On mobile the three tables (Affixes, Corruptions, Drop calculator) scroll horizontally with a pinned first column, and get a second pager below the table.`
+- **Affixes:** replace the `Sorting goes through the getValue switch …` bullet with `- Sorting goes through \`compareAffixes\` in \`src/sortCompare.js\`. Every sortable column needs an entry in \`AFFIX_SORT_KEYS\` and a case in \`affixSortValue\`. A unit test fails for a listed key with no case, and an unlisted key with no case throws on first sort rather than silently tying every row. Missing values sort lowest, except Max lvl, where null (no cap) sorts highest.` Add `- On mobile the three tables (Affixes, Corruptions, Drop calculator) scroll horizontally with a pinned first column, and get a second pager below the table.`
 - **CSS gotchas:** append to the `.appRoot { overflow-x: hidden }` bullet: `On mobile it's overridden to \`overflow-x: clip\`, which is what lets the top row (\`.tabsPanel\`) stick.` Replace the `Tip` bullet's first sentence with `\`Tip\` (dotted-underline tooltips) shows on hover on desktop; under \`@media (hover: none)\` it toggles on tap (\`.tipWrap.open\`) and the bubble is a fixed strip near the bottom of the viewport.` and drop the now-false part about sticky hover and the bubble running off-screen. Append to the `.affixTable thead` bullet: `It's removed under \`hover: none\` so the fixed touch tooltip works.` Add `- On mobile, list rows expand in place (\`.rowDetail\` after the \`.row\`); lists and tables have no inner vertical scroll box. Rules that pin things use \`--topbar-h\` (mobile only) for \`scroll-margin-top\`.`
 - **Verifying UI changes:** append: `On mobile the tab row is replaced by \`.tabMenuBtn\` and the sheet's \`.tabSheetItem\` buttons; setting \`location.hash = "#/<key>"\` switches tabs on any layout.`
 - **Lint baseline:** re-run `npx eslint . 2>&1 | tail -1`. If the count changed from 14, update the numbers in the bullet.
@@ -2797,9 +2842,9 @@ Give the user `http://100.91.245.9:5179/TheArchivistSoE/` with a short list of t
 
 - [ ] **Step 1: Single-agent review at high effort**
 
-Run `free -h` first. Dispatch **one** Agent with `model: "fable"` (or whichever model the user named at plan review) and this prompt, adapted only if paths changed:
+Run `free -h` first. Dispatch **one** Agent with `model: "opus"` (Opus 5.5, the user's choice) and this prompt, adapted only if paths changed:
 
-> You are reviewing the branch `mobile-friendly-impl` in the git worktree `/home/emanresu/TheArchivistSoE/.worktrees/mobile-friendly` (run all git commands there). Invoke the `code-review` skill with the args `high main...mobile-friendly-impl`: HIGH effort, not max, on the full branch diff against `main`. You must work as a single agent: do not spawn subagents, Agent calls or Workflows, and don't split the review into parallel angles, even if the skill suggests it. Review the diff yourself. Context: the approved spec is `docs/superpowers/specs/2026-10-05-mobile-friendly-design.md`, the plan is `docs/superpowers/plans/2026-10-05-mobile-friendly.md`, and the repo's `CLAUDE.md` lists conventions and CSS gotchas. The lint baseline has 14 pre-existing problems in `src/App.jsx`. Don't modify files. Report verified findings ranked by severity.
+> You are reviewing the branch `mobile-friendly-impl` in the git worktree `/home/emanresu/TheArchivistSoE/.worktrees/mobile-friendly` (run all git commands there). Invoke the `code-review` skill at HIGH effort (not max) on the full branch diff of `mobile-friendly-impl` against `main`. The skill takes a branch as its target. Pass `high` plus the branch in whatever form it documents, then confirm that the diff it reviews is `git diff main...mobile-friendly-impl` and not something narrower (e.g. only uncommitted changes). You must work as a single agent: do not spawn subagents, Agent calls or Workflows, and don't split the review into parallel angles, even if the skill suggests it. Review the diff yourself. Context: the approved spec is `docs/superpowers/specs/2026-10-05-mobile-friendly-design.md`, the plan is `docs/superpowers/plans/2026-10-05-mobile-friendly.md`, and the repo's `CLAUDE.md` lists conventions and CSS gotchas. The lint baseline has 14 pre-existing problems in `src/App.jsx`. Don't modify files. Report verified findings ranked by severity.
 
 Run `free -h` again after it returns.
 
