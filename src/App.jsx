@@ -4057,10 +4057,12 @@ export default function App() {
     // search or filter change (a new array) collapses it, with no reset effect to race the jumps.
     const [expanded, setExpanded] = useState({list: null, index: null});
     const expandedIndex = expanded.list === filtered ? expanded.index : null;
-    const toggleExpanded = (i) => setExpanded((prev) => ({
-        list: filtered,
-        index: prev.list === filtered && prev.index === i ? null : i,
-    }));
+    // Expanding also selects the row, so widening to the desktop layout shows the row that was open.
+    const toggleExpanded = (i) => {
+        const collapsing = expandedIndex === i;
+        setExpanded({list: filtered, index: collapsing ? null : i});
+        if (!collapsing) setActiveIndex(i);
+    };
 
     // Jumps (tier, unique, sacred and app: links) select and expand their target once its list has
     // settled. They wait for the target tab's data, then resolve in the render that has it.
