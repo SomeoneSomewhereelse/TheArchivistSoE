@@ -1202,11 +1202,14 @@ function ListPanel({
     // Desktop highlights the selected row; mobile highlights the expanded one (none by default).
     const focusIndex = mobile ? expandedIndex : activeIndex;
 
+    // On mobile a jump to another tab can open the same row index that was open before; the tab
+    // is a dependency so that still scrolls to it. Desktop only follows the selected row.
+    const scrollTab = mobile ? tab : null;
     React.useEffect(() => {
         if (focusIndex === null) return;
         // On mobile, scroll-margin-top lands the opened row just below the pinned top row.
         activeRowRef.current?.scrollIntoView({block: mobile ? "start" : "nearest"});
-    }, [focusIndex, mobile]);
+    }, [focusIndex, mobile, scrollTab]);
 
     return (<div className="listPanel">
         <div className="listHeader">
@@ -2824,6 +2827,11 @@ function RunewordTooltip({rw, onGoSacred, onLink}) {
     </>);
 }
 
+// Identifies a tab + filter combination for the selected row (see `active` in App).
+function activeSig(...parts) {
+    return JSON.stringify(parts);
+}
+
 function useIsMobile(maxWidth = 980) {
     const [isMobile, setIsMobile] = React.useState(typeof window !== "undefined" ? window.innerWidth <= maxWidth : false);
 
@@ -3653,20 +3661,75 @@ export default function App() {
 
     const INFO_OPEN_STORAGE_KEY = "the-archivist-v1";
     const searchInputRef = React.useRef(null);
-    const skipAutoIndexRef = React.useRef(false);
     const cubeSearchInputRef = React.useRef(null);
     const ascendanciesSearchInputRef = React.useRef(null);
     const kilnSearchInputRef = React.useRef(null);
     const mappingSearchInputRef = React.useRef(null);
     const skillsSearchInputRef = React.useRef(null);
     const changesSearchInputRef = React.useRef(null);
-    const skipFilterResetRef = React.useRef(false);
     const [pendingLinkTarget, setPendingLinkTarget] = useState(null);
     const [showTopButton, setShowTopButton] = useState(false);
 
     const [tab, setTab] = useHashTab(VALID_TAB_KEYS, "weapons");
     const isMobile = useIsMobile();
     const [dropCalculatorRequest, setDropCalculatorRequest] = useState(null);
+
+    const [search, setSearch] = useState("");
+    const [typeValue, setTypeValue] = useState("");
+    const [tierValue, setTierValue] = useState("");
+    const [socketsValue, setSocketsValue] = useState("");
+    const [cubeSearch, setCubeSearch] = useState("");
+    const [kilnSearch, setKilnSearch] = useState("");
+    const [ascendanciesSearch, setAscendanciesSearch] = useState("");
+    const [mappingSearch, setMappingSearch] = useState("");
+    const [changesSearch, setChangesSearch] = useState("");
+    const [skillsSearch, setSkillsSearch] = useState("");
+    const [uberValue, setUberValue] = useState(false);
+    const [hellforgedValue, setHellforgedValue] = useState(false);
+    const [pendingUniqueCode, setPendingUniqueCode] = useState("");
+    const [pendingSacredMatch, setPendingSacredMatch] = useState(null);
+    const [highlightOnly, setHighlightOnly] = useState(false);
+    const [affixTypeValue, setAffixTypeValue] = useState("");
+    const [runeCountValue, setRuneCountValue] = useState("");
+    const [selectedRunes, setSelectedRunes] = useState([]);
+    const [showRuneFilterBar, setShowRuneFilterBar] = useState(false);
+
+    // The selected row belongs to one tab + filter combination: a different combination derives row 0.
+    // Jumps that change the filters and select a row in the same update store their own signature.
+    const filterSig = activeSig(tab, search, tierValue, typeValue, socketsValue, uberValue, highlightOnly);
+    const [active, setActive] = useState({sig: filterSig, index: 0});
+    if (active.sig !== filterSig) setActive({sig: filterSig, index: 0});
+    const activeIndex = active.sig === filterSig ? active.index : 0;
+    const setActiveIndex = (next) => setActive((prev) => ({
+        sig: prev.sig, index: typeof next === "function" ? next(prev.index) : next,
+    }));
+
+    // Switching tabs clears the other tabs' searches and resets the filters, except after an internal
+    // Markdown app: link, which skips the filter reset once.
+    const [prevTab, setPrevTab] = useState(tab);
+    const [skipFilterReset, setSkipFilterReset] = useState(false);
+    if (tab !== prevTab) {
+        setPrevTab(tab);
+
+        if (tab !== "cube") setCubeSearch("");
+        if (tab !== "changes") setChangesSearch("");
+        if (tab !== "skills") setSkillsSearch("");
+
+        if (skipFilterReset) {
+            setSkipFilterReset(false);
+        } else {
+            setSearch("");
+            setTypeValue("");
+            setTierValue("");
+            setSocketsValue("");
+            setUberValue(false);
+            setHellforgedValue(false);
+            setHighlightOnly(false);
+            setAffixTypeValue("");
+            setRuneCountValue("");
+            setSelectedRunes([]);
+        }
+    }
 
     const openDropCalculator = (itemName) => {
         setDropCalculatorRequest({
@@ -3686,9 +3749,17 @@ export default function App() {
         dir: "asc",     // or "desc" if you prefer
     });
 
-    const [infoOpenByTab, setInfoOpenByTab] = useState(() => ({
-        weapons: true, armors: true, uniques: true, runewords: true, sacreds: true,
-    }));
+    const [infoOpenByTab, setInfoOpenByTab] = useState(() => {
+        const defaults = {weapons: true, armors: true, uniques: true, runewords: true, sacreds: true};
+        try {
+            const raw = window.localStorage.getItem(INFO_OPEN_STORAGE_KEY);
+            const parsed = raw ? JSON.parse(raw) : null;
+            return parsed && typeof parsed === "object" ? {...defaults, ...parsed} : defaults;
+        } catch (e) {
+            console.warn("Failed to read info panel state from storage", e);
+            return defaults;
+        }
+    });
 
     const info = INFO_BY_TAB[tab] || {title: "About", text: ""};
     const infoOpen = !!infoOpenByTab[tab];
@@ -3726,60 +3797,6 @@ export default function App() {
             ALL_RUNES.includes(n(x))
         );
     }
-
-    useEffect(() => {
-        if (tab !== "cube") {
-            setCubeSearch("");
-        }
-    }, [tab]);
-
-    useEffect(() => {
-        if (tab !== "changes") {
-            setChangesSearch("");
-        }
-    }, [tab]);
-
-    useEffect(() => {
-        if (tab !== "skills") {
-            setSkillsSearch("");
-        }
-    }, [tab]);
-
-    useEffect(() => {
-        try {
-            const raw = window.localStorage.getItem(INFO_OPEN_STORAGE_KEY);
-            if (!raw) return;
-
-            const parsed = JSON.parse(raw);
-            if (parsed && typeof parsed === "object") {
-                setInfoOpenByTab((prev) => ({
-                    ...prev, ...parsed,
-                }));
-            }
-        } catch (e) {
-            console.warn("Failed to read info panel state from storage", e);
-        }
-    }, []);
-
-    const [search, setSearch] = useState("");
-    const [typeValue, setTypeValue] = useState("");
-    const [tierValue, setTierValue] = useState("");
-    const [socketsValue, setSocketsValue] = useState("");
-    const [cubeSearch, setCubeSearch] = useState("");
-    const [kilnSearch, setKilnSearch] = useState("");
-    const [ascendanciesSearch, setAscendanciesSearch] = useState("");
-    const [mappingSearch, setMappingSearch] = useState("");
-    const [changesSearch, setChangesSearch] = useState("");
-    const [skillsSearch, setSkillsSearch] = useState("");
-    const [uberValue, setUberValue] = useState(false);
-    const [hellforgedValue, setHellforgedValue] = useState(false);
-    const [pendingUniqueCode, setPendingUniqueCode] = useState("");
-    const [pendingSacredMatch, setPendingSacredMatch] = useState(null);
-    const [highlightOnly, setHighlightOnly] = useState(false);
-    const [affixTypeValue, setAffixTypeValue] = useState("");
-    const [runeCountValue, setRuneCountValue] = useState("");
-    const [selectedRunes, setSelectedRunes] = useState([]);
-    const [showRuneFilterBar, setShowRuneFilterBar] = useState(false);
 
     const items = dataset.data;
 
@@ -3842,8 +3859,7 @@ export default function App() {
         }
 
         // Name present → full "go-to-item" behavior
-        skipFilterResetRef.current = true;
-        skipAutoIndexRef.current = true;
+        setSkipFilterReset(true);
 
         setTab(t);
         setSearch(needle);
@@ -3886,28 +3902,6 @@ export default function App() {
             return a.localeCompare(b);
         });
     }, [items]);
-
-    useEffect(() => {
-        // If we just switched tabs via an internal Markdown app: link,
-        // skip resetting filters once.
-        if (skipFilterResetRef.current) {
-            skipFilterResetRef.current = false;
-            return;
-        }
-
-        setSearch("");
-        setTypeValue("");
-        setTierValue("");
-        setSocketsValue("");
-        setUberValue(false);
-        setHellforgedValue(false);
-        setHighlightOnly(false);
-        setAffixTypeValue("");
-        setRuneCountValue("");
-        setSelectedRunes([]);
-
-        setActiveIndex(0);
-    }, [tab]);
 
     const filtered = useMemo(() => {
         const {phrases, terms} = parseSearchQuery(search);
@@ -4067,19 +4061,15 @@ export default function App() {
         index: prev.list === filtered && prev.index === i ? null : i,
     }));
 
-    // Jumps (tier, unique, sacred and app: links) expand their target once its list has settled.
+    // Jumps (tier, unique, sacred and app: links) select and expand their target once its list has
+    // settled. They wait for the target tab's data, then resolve in the render that has it.
     const [pendingExpandIndex, setPendingExpandIndex] = useState(null);
-    useEffect(() => {
-        if (pendingExpandIndex === null) return;
-        setExpanded({list: filtered, index: pendingExpandIndex});
+    if (pendingExpandIndex !== null) {
         setPendingExpandIndex(null);
-    }, [pendingExpandIndex, filtered]);
+        setExpanded({list: filtered, index: pendingExpandIndex});
+    }
 
-    useEffect(() => {
-        if (!pendingLinkTarget) return;
-        if (tab !== pendingLinkTarget.tab) return;
-        if (dataset.loading) return;
-
+    if (pendingLinkTarget && tab === pendingLinkTarget.tab && !dataset.loading) {
         const targetName = pendingLinkTarget.name;
 
         const idx = filtered.findIndex((it) => {
@@ -4088,47 +4078,26 @@ export default function App() {
             return nm === targetName;
         });
 
+        setPendingLinkTarget(null);
         if (idx >= 0) {
             setActiveIndex(idx);
             setPendingExpandIndex(idx);
         } else if (filtered.length) {
             setActiveIndex(0);
         }
+    }
 
-        setPendingLinkTarget(null);
-    }, [pendingLinkTarget, tab, dataset.loading, filtered]);
-
-    const [activeIndex, setActiveIndex] = useState(0);
-
-    useEffect(() => {
-        if (skipAutoIndexRef.current) {
-
-            skipAutoIndexRef.current = false;
-            return;
-        }
-
-        setActiveIndex(0);
-    }, [tab, search, tierValue, typeValue, socketsValue, uberValue, highlightOnly]);
-
-    useEffect(() => {
-        if (!pendingUniqueCode) return;
-        if (tab !== "uniques") return;
-        if (dataset.loading) return;
-
+    if (pendingUniqueCode && tab === "uniques" && !dataset.loading) {
         const idx = dataset.data.findIndex((it) => n(it?.code) === pendingUniqueCode);
+
+        setPendingUniqueCode("");
         if (idx >= 0) {
             setActiveIndex(idx);
             setPendingExpandIndex(idx);
         }
+    }
 
-        setPendingUniqueCode("");
-    }, [pendingUniqueCode, tab, dataset.loading, dataset.data]);
-
-    useEffect(() => {
-        if (!pendingSacredMatch) return;
-        if (tab !== "sacreds") return;
-        if (sacreds.loading) return;
-
+    if (pendingSacredMatch && tab === "sacreds" && !sacreds.loading) {
         const {name, types} = pendingSacredMatch;
 
         const all = sacreds.data;
@@ -4143,13 +4112,12 @@ export default function App() {
             return true;
         });
 
+        setPendingSacredMatch(null);
         if (idx >= 0) {
             setActiveIndex(idx);
             setPendingExpandIndex(idx);
         }
-
-        setPendingSacredMatch(null);
-    }, [pendingSacredMatch, tab, sacreds.loading, sacreds.data, setActiveIndex]);
+    }
 
     const activeItem = filtered[activeIndex] ?? null;
 
@@ -4158,8 +4126,6 @@ export default function App() {
         const types = Array.isArray(itemTypes) ? itemTypes.map((t) => n(t).toLowerCase()).filter(Boolean) : [];
 
         if (!name && !types.length) return;
-
-        skipAutoIndexRef.current = true;
 
         setTab("sacreds");
 
@@ -4180,8 +4146,6 @@ export default function App() {
         const c = n(code);
         if (!c) return;
 
-        skipAutoIndexRef.current = true;
-
         setSearch("");
         setTypeValue("");
         setTierValue("");
@@ -4193,7 +4157,7 @@ export default function App() {
         const all = dataset.data;
         const idx = all.findIndex((it) => n(it?.code) === c);
         if (idx >= 0) {
-            setActiveIndex(idx);
+            setActive({sig: activeSig(tab, "", "", "", "", false, false), index: idx});
             setPendingExpandIndex(idx);
         }
     }
@@ -4201,8 +4165,6 @@ export default function App() {
     function jumpToUnique(code) {
         const c = n(code);
         if (!c) return;
-
-        skipAutoIndexRef.current = true;
 
         setTab("uniques");
 
