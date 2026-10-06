@@ -34,6 +34,7 @@ import OrnateCharmIcon from "./icons/cm4.svg";
 import RuneIcon from "./icons/rune.svg";
 import SacredIcon from "./icons/sacred.svg";
 import FateCardIcon from "./icons/fatecard.svg";
+import {compareAffixes} from "./sortCompare.js";
 
 const APP_VERSION = import.meta.env.VITE_APP_VERSION;
 const GAME_VERSION = "13.0.2";
@@ -175,11 +176,12 @@ const TOOLTIPS_TEXT_MAP = {
     "uniCode": "This code can be used in your loot filter to highlight this specific base - remember to add UNI modifier.",
     "sacred": "Additionally to items mentioned here it is required to use Sacred Orb in the Cube.",
     "mythicDivineOrb": "In Sanctuary of Exile unique items can be created in the Cube by using base and an currency orb appropriate for item tier - Mythic Orb for normal and exceptional bases and Divine Orb for elite bases.",
-    "affixMaxLevel": "If the item level is high enough, then some affixes will not be eligible to roll on it, making it more likely for better affixes to appear on the item.",
-    "affixFrequency": "Frequency parameter determines how often will you roll this modifier on an item.",
+    "affixMaxLevel": "Max level: If the item level is high enough, then some affixes will not be eligible to roll on it, making it more likely for better affixes to appear on the item.",
+    "affixFrequency": "Frequency: Frequency parameter determines how often will you roll this modifier on an item.",
     "affixRares": "If true, then this modifier can occur on rare items.",
-    "affixLevel": "Determines minimum item level of the item for this affix to show.",
-    "affixGroup": "Affixes that share a group can't roll together on the same item."
+    "affixLevel": "Affix level: Determines minimum item level of the item for this affix to show.",
+    "affixGroup": "Group: Affixes that share a group can't roll together on the same item.",
+    "affixRequiredLevel": "Required level: Minimum character level needed to use an item with this affix."
 };
 
 const INFO_BY_TAB = {
@@ -249,31 +251,6 @@ function runewordRunes(rw) {
 }
 
 // ----- Affix helpers -----
-
-function affixPrimaryPropertyAndMax(affix) {
-    const dp = affix?.displayProperties;
-    if (!dp) return {property: "", max: 0};
-
-    // Pick the first object from displayProperties
-    let first = null;
-
-    if (Array.isArray(dp)) {
-        first = dp.find((p) => p && typeof p === "object") || dp[0];
-    } else if (typeof dp === "object") {
-        first = dp;
-    }
-
-    if (first && typeof first === "object") {
-        const prop = (first.property != null ? String(first.property) : first.prop != null ? String(first.prop) : "").trim();
-
-        const maxRaw = first.max != null ? Number(first.max) : 0;
-        const max = Number.isFinite(maxRaw) ? maxRaw : 0;
-
-        return {property: prop, max};
-    }
-
-    return {property: "", max: 0};
-}
 
 function affixDisplayString(affix) {
     const dp = affix?.displayProperties;
@@ -2923,68 +2900,7 @@ function AffixesPanel({data, loading, error, sort, onChangeSort}) {
 
     const sorted = React.useMemo(() => {
         const arr = [...all];
-        if (!sortKey) return arr;
-
-        // Special case: Attributes column
-        if (sortKey === "attrs") {
-            arr.sort((a, b) => {
-                const aa = affixPrimaryPropertyAndMax(a);
-                const bb = affixPrimaryPropertyAndMax(b);
-
-                // 1) group by property
-                const propCmp = aa.property.localeCompare(bb.property);
-                if (propCmp !== 0) {
-                    return sortDir === "asc" ? propCmp : -propCmp;
-                }
-
-                // 2) within same property, sort by max
-                const diff = aa.max - bb.max;
-                return sortDir === "asc" ? diff : -diff;
-            });
-            return arr;
-        }
-
-        // All other columns use the generic logic
-        const getValue = (it) => {
-            switch (sortKey) {
-                case "name":
-                    return n(it?.name);
-                case "types":
-                    return (it?.displayItemTypeNames || []).join(", ");
-                case "excluded":
-                    return (it?.displayExcludedItemTypeNames || []).join(", ");
-                case "class":
-                    return n(it?.classDisplayName);
-                case "level":
-                    return Number(it?.level ?? 0);
-                case "group":
-                    return Number(it?.group ?? 0);
-                case "rare":
-                    return Number(it?.rare || 0);
-                case "maxLevel":
-                    return Number(it?.maxLevel || 0);
-                case "reqLevel":
-                    return Number(it?.requiredLevel || 0);
-                case "freq":
-                    return Number(it?.frequency || 0);
-                default:
-                    return "";
-            }
-        };
-
-        arr.sort((a, b) => {
-            const va = getValue(a);
-            const vb = getValue(b);
-
-            const bothNumbers = typeof va === "number" && !Number.isNaN(va) && typeof vb === "number" && !Number.isNaN(vb);
-
-            if (bothNumbers) {
-                return sortDir === "asc" ? va - vb : vb - va;
-            }
-
-            return sortDir === "asc" ? String(va).localeCompare(String(vb)) : String(vb).localeCompare(String(va));
-        });
-
+        arr.sort((a, b) => compareAffixes(a, b, sortKey, sortDir));
         return arr;
     }, [all, sortKey, sortDir]);
 
@@ -3127,7 +3043,7 @@ function AffixesPanel({data, loading, error, sort, onChangeSort}) {
                             onClick={() => handleSort("level")}
                         >
                   <span className="thLabel">
-                      <Tip text={String(TOOLTIPS_TEXT_MAP["affixLevel"])}>Affix level</Tip> {sortArrowFor("level")}
+                      <Tip text={String(TOOLTIPS_TEXT_MAP["affixLevel"])}>Lvl</Tip> {sortArrowFor("level")}
                   </span>
                         </th>
 
@@ -3136,7 +3052,7 @@ function AffixesPanel({data, loading, error, sort, onChangeSort}) {
                             onClick={() => handleSort("group")}
                         >
                   <span className="thLabel">
-                      <Tip text={String(TOOLTIPS_TEXT_MAP["affixGroup"])}>Group</Tip> {sortArrowFor("group")}
+                      <Tip text={String(TOOLTIPS_TEXT_MAP["affixGroup"])}>Grp</Tip> {sortArrowFor("group")}
                   </span>
                         </th>
 
@@ -3145,7 +3061,7 @@ function AffixesPanel({data, loading, error, sort, onChangeSort}) {
                             onClick={() => handleSort("rare")}
                         >
                   <span className="thLabel">
-                      <Tip text={String(TOOLTIPS_TEXT_MAP["affixRares"])}>Rares {sortArrowFor("rare")}</Tip>
+                      <Tip text={String(TOOLTIPS_TEXT_MAP["affixRares"])}>Rares</Tip> {sortArrowFor("rare")}
                   </span>
 
                         </th>
@@ -3155,7 +3071,7 @@ function AffixesPanel({data, loading, error, sort, onChangeSort}) {
                             onClick={() => handleSort("freq")}
                         >
                   <span className="thLabel">
-                      <Tip text={String(TOOLTIPS_TEXT_MAP["affixFrequency"])}>Frequency</Tip> {sortArrowFor("freq")}
+                      <Tip text={String(TOOLTIPS_TEXT_MAP["affixFrequency"])}>Freq</Tip> {sortArrowFor("freq")}
                   </span>
                         </th>
 
@@ -3164,7 +3080,7 @@ function AffixesPanel({data, loading, error, sort, onChangeSort}) {
                             onClick={() => handleSort("maxLevel")}
                         >
                   <span className="thLabel">
-                      <Tip text={String(TOOLTIPS_TEXT_MAP["affixMaxLevel"])}>Max level</Tip> {sortArrowFor("maxLevel")}
+                      <Tip text={String(TOOLTIPS_TEXT_MAP["affixMaxLevel"])}>Max lvl</Tip> {sortArrowFor("maxLevel")}
                   </span>
                         </th>
 
@@ -3200,7 +3116,7 @@ function AffixesPanel({data, loading, error, sort, onChangeSort}) {
                             onClick={() => handleSort("reqLevel")}
                         >
                   <span className="thLabel">
-                    Required level {sortArrowFor("reqLevel")}
+                      <Tip text={String(TOOLTIPS_TEXT_MAP["affixRequiredLevel"])}>Req lvl</Tip> {sortArrowFor("reqLevel")}
                   </span>
                         </th>
                     </tr>
