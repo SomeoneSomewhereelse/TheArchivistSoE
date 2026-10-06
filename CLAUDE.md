@@ -31,7 +31,8 @@ npm run preview   # serve dist/
 
 **Lint baseline:** `npm run lint` already reports 14 problems (10 errors, 4 warnings) in
 `src/App.jsx`. The bar for a change is "no *new* problems", not zero. Compare the issue
-lists before and after; line numbers inside messages shift as code moves.
+lists before and after; line numbers inside messages shift as code moves. CI fails if the count
+goes above `LINT_BASELINE` in `ci.yml`; lower that number as the old problems get fixed.
 
 ## Layout
 
@@ -46,7 +47,9 @@ lists before and after; line numbers inside messages shift as code moves.
 - `public/data/*.json`: game data, fetched at runtime (see Data).
 - `public/data/standard/*.txt`, `public/data/damnation/*.txt`: raw game tables
   (MonStats, TreasureClassEx, Weapons, …) used by the Drop calculator.
-- `.github/workflows/deploy.yml`: every push to `main` builds and deploys to GitHub Pages.
+- `.github/workflows/ci.yml`: unit tests, a lint gate and the build, on pull requests and pushes
+  to other branches. `.github/workflows/deploy.yml` runs it on every push to `main` and deploys
+  to GitHub Pages only if it passes.
 - `docs/superpowers/specs/`, `docs/superpowers/plans/`: design specs and implementation plans.
 
 ## Deployment and versions

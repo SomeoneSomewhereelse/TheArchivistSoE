@@ -1,0 +1,51 @@
+# Tests, lint and build. Runs on pull requests and on pushes to branches other than main;
+# deploy.yml calls it before every deployment, so main is never deployed untested.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches-ignore: ['main']
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      # src/App.jsx has 14 pre-existing problems (10 errors, 4 warnings). Lint fails only if a
+      # change adds more; lower this when they're fixed, and make it 0 to require a clean lint.
+      LINT_BASELINE: 14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          # Vitest 5 needs Node 22.12 or newer.
+          node-version: lts/*
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Unit tests
+        run: npm test
+      - name: Lint (no new problems beyond the baseline)
+        run: |
+          npx eslint . -f json -o eslint-report.json || true
+          node -e '
+            const report = require("./eslint-report.json");
+            const count = report.reduce((n, file) => n + file.messages.length, 0);
+            const baseline = Number(process.env.LINT_BASELINE);
+            console.log(`ESLint: ${count} problem(s), baseline ${baseline}`);
+            if (count > baseline) {
+              for (const file of report) {
+                for (const m of file.messages) console.log(`${file.filePath}:${m.line} ${m.ruleId} ${m.message.split("\n")[0]}`);
+              }
+              console.log(`::error::ESLint found ${count} problems, more than the baseline of ${baseline}`);
+              process.exit(1);
+            }
+          '
+      - name: Build
+        run: npm run build
