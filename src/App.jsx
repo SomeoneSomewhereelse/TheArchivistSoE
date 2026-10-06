@@ -1,5 +1,6 @@
 import React, {useEffect, useEffectEvent, useMemo, useState} from "react";
 import {createPortal} from "react-dom";
+import {useIsMobile} from "./useIsMobile.js";
 
 import SwordIcon from "./icons/sword.svg";
 import StaffIcon from "./icons/staff.svg";
@@ -2830,18 +2831,6 @@ function RunewordTooltip({rw, onGoSacred, onLink}) {
 // Identifies a tab + filter combination for the selected row (see `active` in App).
 function activeSig(...parts) {
     return JSON.stringify(parts);
-}
-
-function useIsMobile(maxWidth = 980) {
-    const [isMobile, setIsMobile] = React.useState(typeof window !== "undefined" ? window.innerWidth <= maxWidth : false);
-
-    React.useEffect(() => {
-        const handler = () => setIsMobile(window.innerWidth <= maxWidth);
-        window.addEventListener("resize", handler);
-        return () => window.removeEventListener("resize", handler);
-    }, [maxWidth]);
-
-    return isMobile;
 }
 
 // Prev / page / Next controls shared by the three paged tables. The bottom copy (mobile only, via
