@@ -8,3 +8,12 @@
 export function floatingHeadVisible({headTop, headHeight, tableEnd, stickTop}) {
     return headTop < stickTop && tableEnd > stickTop + headHeight;
 }
+
+// The stick line in viewport px: the CSS line (top: var(--topbar-h, 0px)) or the pinned top bar's real
+// height when that is taller. While pinch-zoomed (`zoomOffsetTop` given: visualViewport.offsetTop) the
+// line follows the visible area's top, but never goes behind the pinned bar, which sits at the layout
+// viewport's top and covers it while offsetTop is smaller than the bar's height.
+export function stickLine({cssTop, barHeight, zoomOffsetTop}) {
+    const base = Math.max(cssTop, barHeight);
+    return zoomOffsetTop === undefined ? base : Math.max(base, zoomOffsetTop);
+}

@@ -3,7 +3,7 @@
 // scroll. A position: fixed, aria-hidden copy of the same header row shows under the stick line once the
 // real one has scrolled away; the same `head` element is rendered twice, so sorting and Tips work on both.
 import React from "react";
-import {floatingHeadVisible} from "./stickyHead.js";
+import {floatingHeadVisible, stickLine} from "./stickyHead.js";
 
 // Keeps the copy's position, column widths, horizontal scroll and visibility in step with the real
 // table. Plain DOM work outside React (no state, no re-renders); returns the cleanup.
@@ -26,11 +26,14 @@ function attachFloatingHead({scroller, table, realHead, copy}) {
         // On mobile the pinned top bar's real height wins when it is taller than --topbar-h (a min-height;
         // a 900px-wide desktop window renders it 53px tall), so the copy never sits under the bar.
         const bar = cssTop > 0 ? document.querySelector(".tabsPanel") : null;
-        // Pinch-zoomed in, `position: fixed` stays in the layout viewport and pans out of view with it (the
-        // top bar does too), so the line follows the visible area's top instead.
+        // Pinch-zoomed in, `position: fixed` stays in the layout viewport and pans out of view with it, so
+        // the line follows the visible area's top (see stickLine).
         const vv = window.visualViewport;
-        const zoomed = vv && vv.scale > 1.01;
-        const stickTop = zoomed ? vv.offsetTop : Math.max(cssTop, bar ? bar.offsetHeight : 0);
+        const stickTop = stickLine({
+            cssTop,
+            barHeight: bar ? bar.offsetHeight : 0,
+            zoomOffsetTop: vv && vv.scale > 1.01 ? vv.offsetTop : undefined,
+        });
         const visible = floatingHeadVisible({
             headTop: headRect.top,
             headHeight: headRect.height,
