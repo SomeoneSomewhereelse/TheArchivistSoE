@@ -2,7 +2,7 @@
 
 **Date:** 2026-10-07
 **Branch:** to be created from `main` when implementation starts (manual worktree, `.worktrees/<name>`, suggested name `dropcalc-perf`)
-**Status:** approved in brainstorming; revised after an independent review, awaiting spec review
+**Status:** approved (2026-10-07), after an independent review; the "View drop rates" link fix was added at approval
 
 ## Intent
 
@@ -42,6 +42,8 @@ nothing cancels a superseded run, so a slower older run can overwrite newer rows
 - An older query's rows never replace a newer query's rows. During the 300 ms debounce the previous
   rows stay visible, as today.
 - No visual change on any tab.
+- Every unique card's "View drop rates" link opens the calculator on that exact unique: all 550
+  linkable uniques in both modes (see "The View drop rates link").
 
 ### Constraints
 
@@ -245,6 +247,23 @@ src/App.jsx             DropCalculatorPanel: UI state, inputs, table; no calcula
 - **Empty query:** clears `rows`, `error` and also `loading` (a cancelled run no longer clears it).
 - Errors render as today, in the table's message row.
 
+### The "View drop rates" link (pre-existing bug, fixed in this change)
+
+- **Today:** `UniqueTooltip` (`src/App.jsx`, the `tooltip-link` under the drop info) calls
+  `openDropCalculator(n(u?.displayName) || n(u?.index))`. The calculator matches the query against
+  `UniqueItems.txt`'s `index`, the game's internal name, which often differs from the card's display
+  name. Of the 550 non-hellforged uniques (the same counts in both modes):
+  - 423 match exactly;
+  - 107 show "Unique item not found": "Skull Splitter" is `Mindrend`, "Axe of Fechmar" is
+    `Fechmars Axe`;
+  - 20 silently show a different unique through the `includes` fallback: "Maelstrom" finds
+    `Maelstromwrath`, "Death's Web" finds `Hellforged Death's Web`.
+- **Fix:** the link passes `n(u?.index) || n(u?.displayName)`. `Uniques.json`'s `index` is the same
+  internal name, and all 550 resolve exactly by it in both modes.
+- **Accepted trade-off:** after following the link, the calculator's search box shows the internal
+  name (for example "Mindrend" for Skull Splitter).
+- The engine and the golden snapshot are unaffected: this changes only what the link sends.
+
 ## Testing and verification
 
 ### 1. Golden snapshot, captured from the original code before any refactoring
@@ -294,7 +313,10 @@ src/App.jsx             DropCalculatorPanel: UI state, inputs, table; no calcula
   - an empty query returns `[]`;
   - `oneIn` and `percent` are derived from `chance`;
   - with `stats`, a second monster with the same root TC adds no walk;
-  - an empty-code target returns `[]` without an error.
+  - an empty-code target returns `[]` without an error;
+  - every non-hidden, non-hellforged unique in `Uniques.json` (the standard and Damnation copies)
+    resolves exactly by its `index` against that mode's `UniqueItems.txt`, which guards the link
+    against upstream data drift.
 - **`src/dropCalcLoad.test.js`:** with a mocked `fetch`, and a fresh module per test
   (`vi.resetModules()` plus a dynamic `import`, so no test-only export is needed):
   - one fetch per mode across calls;
@@ -324,6 +346,8 @@ src/App.jsx             DropCalculatorPanel: UI state, inputs, table; no calcula
       calculation is synchronous, so A could never still be running. This check therefore runs on a
       cold page, with `DropCalculator.json`'s response held back through CDP `Fetch` interception until
       both queries have been typed.
+  - Clicking "View drop rates" on the Skull Splitter card opens the calculator with the query
+    `Mindrend` and rows, not "Unique item not found".
   - Reported, WARN only: the longest main-thread task, against `DROPCALC_DESKTOP_TASK_MS` (default 300).
   - Phone (390×844, touch, CPU throttled 4×): reports the longest task for the slowest target from the
     sweep, WARN above `DROPCALC_PHONE_TASK_MS` (default 1000).
