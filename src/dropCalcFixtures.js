@@ -1,6 +1,11 @@
 // Node-only helpers for the Drop calculator's tests and tools/checks scripts. Later parts read files
 // with node:fs, so the app must never import this module.
 
+import {readFileSync} from "node:fs";
+import {DROP_CALC_TABLES, jsonToTables, tablesToJson} from "./dropCalcData.js";
+
+const DATA = new URL("../public/data/", import.meta.url);
+
 const golden = (dropMode, query, difficulty, {players = "1", mf = "", damnation = false} = {}) => (
     {damnation, dropMode, query, difficulty, players, mf}
 );
@@ -35,4 +40,16 @@ function formatGoldenEntry({q, rows, error}) {
 // One block per query. String(chance) is the shortest round-trip form, so equal text means equal numbers.
 export function formatGolden(entries) {
     return entries.map(formatGoldenEntry).join("\n\n") + "\n";
+}
+
+// The ten .txt tables of one mode ("standard" or "damnation"), keyed by table name.
+export function readDropCalcTexts(mode) {
+    return Object.fromEntries(DROP_CALC_TABLES.map((name) => [
+        name, readFileSync(new URL(`${mode}/${name}.txt`, DATA), "utf8"),
+    ]));
+}
+
+// The browser's path: .txt -> DropCalculator.json (through JSON text) -> row objects.
+export function loadDropCalcTables(mode) {
+    return jsonToTables(JSON.parse(JSON.stringify(tablesToJson(readDropCalcTexts(mode)))));
 }
