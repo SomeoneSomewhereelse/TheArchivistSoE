@@ -2,7 +2,7 @@
 
 **Date:** 2026-10-07
 **Branch:** to be created from `main` when implementation starts (manual worktree, `.worktrees/<name>`, suggested name `dropcalc-perf`)
-**Status:** approved in brainstorming, awaiting spec review
+**Status:** approved in brainstorming; revised after an independent review, awaiting spec review
 
 ## Intent
 
@@ -34,11 +34,13 @@ nothing cancels a superseded run, so a slower older run can overwrite newer rows
 - Every query returns the same rows as today's code: same monsters, areas, treasure classes and
   chances, compared exactly to full floating-point precision, in the same order.
 - With the data loaded, every target (all 1,366 uniques, set items and misc codes), every difficulty
-  and both modes stays within a deterministic work ceiling (see Testing). On the development machine
-  that means at most about 150 ms in Node.
+  and both modes stays within deterministic work ceilings (see Testing). Pass/fail never depends on
+  the machine's speed. Timings are reported against a configurable budget (default 150 ms per query in
+  Node, matched by the measurements below once the occurrence cache is in place).
 - The calculator's data is downloaded once per mode per page load (about 74 KB gzipped instead of
   265 KB), and no `.txt` file is fetched at runtime.
-- The page never shows results from a query older than the current inputs.
+- An older query's rows never replace a newer query's rows. During the 300 ms debounce the previous
+  rows stay visible, as today.
 - No visual change on any tab.
 
 ### Constraints
@@ -94,7 +96,9 @@ Sweep of every target with the tables preloaded (index, per-root cache and area 
 | Damnation, Hell | 64 ms | 84 ms | 159 ms (The Gnasher) |
 
 The Gnasher is the first row of `UniqueItems.txt`, so its time includes JIT warm-up. The slowest
-targets are low-level weapon uniques, whose bases sit in many automatic weapon TCs.
+targets are low-level weapon uniques, whose bases sit in many automatic weapon TCs. Damnation Hell's
+159 ms is over the 150 ms budget, so the design also caches the unique-occurrence weights per monster
+level (see the engine section); about 30 ms of a Hell query went to recomputing them.
 
 A JSON holding only the columns the calculator reads is about 550 KB per mode (74 KB gzipped). The
 ten `.txt` tables are 1.95 MB (265 KB gzipped). Storing the same data as one keyed object per row
@@ -154,15 +158,24 @@ src/App.jsx             DropCalculatorPanel: UI state, inputs, table; no calcula
 
 ### The Vite plugin (in `vite.config.js`, about 25 lines)
 
-- `configResolved`: notes the mode. When it is `test` (Vitest), the plugin does nothing.
-- `buildStart`: for `standard` and `damnation`, it reads the ten `.txt` files, calls `tablesToJson`,
-  and writes minified `public/data/<mode>/DropCalculator.json`. This covers `vite` (dev), `vite build`
-  and `vite preview`, so CI and deploy (`npm ci` then `npm run build`) need no change.
-- `configureServer`: a change to `public/data/<mode>/*.txt` regenerates that mode. The page then needs
-  a reload, since the runtime cache lives for the page.
-- Paths are built with `new URL("./public/data/", import.meta.url)`.
-- A generator error fails the build. In dev it is logged to the terminal, and the previous JSON (if
-  any) stays in place.
+- **`configResolved`** is the only place that generates at startup.
+  - It does nothing when the mode is `test` (Vitest resolves the mode as `"test"`) or when
+    `config.isPreview` is set (`vite preview` only serves `dist/`).
+  - Otherwise, for `standard` and `damnation`, it reads the ten `.txt` files, calls `tablesToJson`,
+    and writes minified `<config.publicDir>/data/<mode>/DropCalculator.json`.
+  - **Why not `buildStart`:** the dev server takes its snapshot of `public/` files before
+    `buildStart` runs (Vite `config.js` `initPublicFiles` at ~25365, `buildStart` at ~25632). A file
+    first created in `buildStart` could 404 on a fresh clone. In `vite build`, `public/` is copied in
+    `renderStart`, so either hook would do there.
+  - CI and deploy (`npm ci` then `npm run build`) need no change.
+- **`configureServer`:** a change to `public/data/<mode>/*.txt` regenerates that mode. The page then
+  needs a reload, since the runtime cache lives for the page.
+- **Only on change:** the JSON is written only when its content differs from the file on disk, so
+  restarts don't touch it.
+- **Errors:** a generator error fails the build. In dev it is logged to the terminal, and the previous
+  JSON (if any) stays in place.
+- **Config dependency:** `vite.config.js` imports `src/dropCalcData.js`, so editing that file restarts
+  the dev server. CLAUDE.md says so.
 - `.gitignore` gains `public/data/*/DropCalculator.json`.
 
 ### `src/dropCalcLoad.js`
@@ -173,7 +186,8 @@ src/App.jsx             DropCalculatorPanel: UI state, inputs, table; no calcula
     (the same freshness rule as `useJson`).
   - It throws `DropCalculator.json: HTTP <status>` on a response that isn't OK, and also throws on an
     unknown `version`.
-  - A rejected promise is removed from the cache, so the next query retries.
+  - A rejected promise is removed from the cache, but only if it is still the cached entry for that
+    mode, so the next query retries.
 
 ### `src/dropCalcEngine.js`
 
@@ -182,28 +196,41 @@ src/App.jsx             DropCalculatorPanel: UI state, inputs, table; no calcula
   - treasure class by trimmed, lowercased name, where the first row wins (today's `find`);
   - treasure classes by `group`, in file order, so the root-TC upgrade's stable sort resolves ties as
     today;
-  - base item by code, first wins, over Weapons, then Armor, then Misc (today's `baseItems` order);
+  - base item by trimmed code, first wins, over Weapons, then Armor, then Misc (today's `baseItems`
+    order). **The empty code `""` is a key like any other.** 50 `UniqueItems` rows have an empty
+    `code`: section headers like "Rings" and real items like "Gore Ripper". Today those targets resolve
+    to Weapons' empty-code "Expansion" row and give an empty table, not an error, and that must stay
+    so.
   - the set of exceptional and elite codes, and the automatic TCs (`buildAutoTcs`);
   - the monster → area map: for each monster id, the first `Levels.txt` row listing it in
     `mon1`…`mon10`;
   - the monster, unique, set, misc and ItemRatio rows.
-- **`calculateDrops(model, {dropMode, query, difficulty, players, mf}, stats?)`:** returns the rows
+- **`calculateDrops(model, {dropMode, query, difficulty, players, mf}, stats?)`:** the options arrive
+  exactly as the panel holds them: `query` raw and untrimmed (the error messages interpolate it
+  as-is), `players` and `mf` as strings (`num()` handles `""`). It returns the rows
   `{monsterId, monsterName, levelName, treasureClass, chance, oneIn, percent}`, sorted by chance as
   today.
   - An empty or whitespace-only query returns `[]`.
   - It throws today's messages: `Unique item not found: …`, `Set item not found: …`,
     `Misc code not found: …` and `Base item not found for code: …`.
-  - Walk results are cached per root TC for the duration of one call. That is valid because the walk
-    depends only on the root TC, the target code and the player count, which are fixed within a call.
+  - **Walk cache:** keyed by the root TC name after the group upgrade (`getRootTc`'s result). The
+    cached value is the walk's accumulator: its outcome groups of `{probability, ratios, picks}`, in
+    insertion order. `finalQualityFactor` and the `none` product still run per monster, because they
+    depend on the monster's level. The cache lives for one call. That is valid because the walk reads
+    only the treasure classes, the automatic TCs, the target code and the player count, all fixed
+    within a call, and nothing mutates the outcomes after the walk.
+  - **Occurrence cache:** `qualityOccurrenceChance`'s result is cached per monster level for one call.
+    It depends only on the source items, the target and the monster level. The filter and the sum keep
+    today's order, so the value is identical.
   - Every formula, and the order in which floating-point values are accumulated, moves over unchanged:
     selection probabilities, `adjustedNoDrop`, picks, `mergeRatios`, `qualityChance`,
     `qualityOccurrenceChance`, `probabilityForPicks` and the final combination.
-  - The optional `stats` object receives counters: `walkNodes` (calls into the walk) and `walks`
-    (root walks performed, i.e. cache misses). Without it nothing is counted.
+  - The optional `stats` object receives counters: `walkNodes` (calls into the walk), `walks` (root
+    walks performed, i.e. cache misses) and `outcomes` (outcome-by-monster evaluations in the final
+    combination). Without it nothing is counted.
   - The leftover `console.log("BASE DEBUG", …)` for targets containing "aldur" is removed.
-- **Performance fallback:** if the sweep (Testing, item 3) shows any target above its time budget, the
-  next step is to cache `qualityOccurrenceChance`'s eligible-unique weights per monster level within a
-  call. Nothing beyond that is planned.
+- No further optimisation is planned. If the sweep (Testing, item 3) still warns on this machine, the
+  measurements go back to the user before anything else is added.
 
 ### `DropCalculatorPanel` (in `App.jsx`)
 
@@ -212,9 +239,9 @@ src/App.jsx             DropCalculatorPanel: UI state, inputs, table; no calcula
   and errors, so the download starts as soon as the tab opens or the mode changes. Errors surface on
   the next query.
 - **Cancellation:** each run of the debounce effect gets a local `cancelled` flag, set by its cleanup.
-  `calculateAll(isCancelled)` awaits `loadModel` and, if cancelled by then, returns without setting
-  state. It then calls `calculateDrops` and sets rows, error and loading, as today. No refs are
-  involved.
+  `calculateAll(isCancelled)` awaits `loadModel`. If cancelled by then, it returns without setting any
+  state, whether the load succeeded or failed (the catch path checks too). Otherwise it calls
+  `calculateDrops` and sets rows, error and loading, as today. No refs are involved.
 - **Empty query:** clears `rows`, `error` and also `loading` (a cancelled run no longer clears it).
 - Errors render as today, in the table's message row.
 
@@ -222,11 +249,16 @@ src/App.jsx             DropCalculatorPanel: UI state, inputs, table; no calcula
 
 ### 1. Golden snapshot, captured from the original code before any refactoring
 
-- The scratch harness (the original panel code extracted from `App.jsx` at commit `c5070a9`, with a
-  file-reading `fetch`) runs a fixed query set once. It is slow, a few minutes.
+- The harness runs the original panel code, extracted from `App.jsx` at commit `c5070a9`, with a
+  file-reading `fetch`, over a fixed query set once. It is slow, a few minutes. It is committed as
+  `tools/checks/golden-dropcalc-legacy.mjs`, taking the `App.jsx` path as an argument (for example
+  `git show c5070a9:src/App.jsx > /tmp/App.legacy.jsx`), so the snapshot can be audited or regenerated
+  from the legacy code later.
 - The query set is fixed in the implementation plan. It covers at least:
   - unique, set and misc modes;
   - all three difficulties;
+  - a ring or amulet unique (Misc base), an exceptional or elite unique, and a bow unique;
+  - an empty-code unique ("Gore Ripper") and a section-header query ("rings");
   - 8 players with 300 magic find;
   - one Damnation query;
   - a partial-text query;
@@ -251,30 +283,36 @@ src/App.jsx             DropCalculatorPanel: UI state, inputs, table; no calcula
   - `tablesToJson`: a missing required column throws, naming table and column; a missing optional
     column comes back as `undefined`; converting to JSON and back gives the same rows as `parseTxt`,
     restricted to the kept columns.
+- **Column coverage, in `src/dropCalcEngine.test.js`:** the golden query set runs once more over rows
+  wrapped in a recording `Proxy`. The test asserts that every key the engine reads is listed in
+  `DROP_CALC_COLUMNS` for that table. The golden snapshot alone can't catch a dropped column whose
+  values happen not to change the queried results.
 - **`src/dropCalcEngine.test.js`:** with small hand-built tables:
   - the treasure-class index keeps the first match;
   - the root-TC upgrade picks the highest eligible level, keeping file order on ties;
   - the error messages;
   - an empty query returns `[]`;
   - `oneIn` and `percent` are derived from `chance`;
-  - with `stats`, a second monster with the same root TC adds no walk.
-- **`src/dropCalcLoad.test.js`:** with a mocked `fetch`:
+  - with `stats`, a second monster with the same root TC adds no walk;
+  - an empty-code target returns `[]` without an error.
+- **`src/dropCalcLoad.test.js`:** with a mocked `fetch`, and a fresh module per test
+  (`vi.resetModules()` plus a dynamic `import`, so no test-only export is needed):
   - one fetch per mode across calls;
-  - a failed load is retried on the next call;
+  - a failed load is retried on the next call, and evicting it doesn't remove a newer entry;
   - an unknown `version` is rejected;
   - the HTTP error message.
 
 ### 3. Committed checks in `tools/checks/`
 
 - **`bench-dropcalc.mjs`:** imports `src/dropCalcData.js` and `src/dropCalcEngine.js` directly in Node.
-  - It builds the model for each mode from the `.txt` files and runs every target in every difficulty,
-    with `stats`.
+  - It builds the model for each mode from the `.txt` files and does an untimed warm-up pass over a
+    few targets. It then runs every target in every difficulty, with `stats`.
   - It prints the median, the start of the slowest 10%, and the worst time and node count per mode and
     difficulty.
-  - **FAIL** (machine-independent): any target whose `walkNodes` exceeds the ceiling. The ceiling is
-    the measured maximum across the sweep plus 25%, rounded and written into the script with a comment
-    giving the measured value. Today's code walks about 516,000 nodes for Gnasher in Hell; with the
-    per-root cache, about 56,000.
+  - **FAIL** (machine-independent): any target whose `walkNodes` or `outcomes` exceeds its ceiling.
+    Each ceiling is the measured maximum across the sweep plus 25%, rounded and written into the script
+    with a comment giving the measured value. Today's code walks about 516,000 nodes for Gnasher in
+    Hell; with the per-root cache, about 56,000.
   - **WARN** (machine-dependent): any target slower than `DROPCALC_BUDGET_MS`, default 150. Warnings
     never fail the run.
 - **`check-dropcalc.mjs`:** in headless Chromium through `cdp.mjs`, against a dev server (`APP_URL`).
@@ -282,7 +320,10 @@ src/App.jsx             DropCalculatorPanel: UI state, inputs, table; no calcula
     - a query shows the expected row count;
     - three queries in a row fetch `DropCalculator.json` once and no `.txt` file;
     - the Damnation toggle fetches the Damnation file once;
-    - typing query A, then query B before A finishes, leaves B's rows.
+    - typing query A, then query B before A finishes, leaves B's rows. Once the model is cached the
+      calculation is synchronous, so A could never still be running. This check therefore runs on a
+      cold page, with `DropCalculator.json`'s response held back through CDP `Fetch` interception until
+      both queries have been typed.
   - Reported, WARN only: the longest main-thread task, against `DROPCALC_DESKTOP_TASK_MS` (default 300).
   - Phone (390×844, touch, CPU throttled 4×): reports the longest task for the slowest target from the
     sweep, WARN above `DROPCALC_PHONE_TASK_MS` (default 1000).
@@ -299,7 +340,9 @@ src/App.jsx             DropCalculatorPanel: UI state, inputs, table; no calcula
 
 - **CLAUDE.md:**
   - Layout: `src/dropCalcData.js`, `src/dropCalcEngine.js`, `src/dropCalcLoad.js` and their tests.
-  - The Vite plugin, and the generated, gitignored `DropCalculator.json`.
+  - The Vite plugin, and the generated, gitignored `DropCalculator.json` (generated in
+    `configResolved`; editing `src/dropCalcData.js` restarts the dev server).
   - Data: Damnation mode swaps the Drop calculator's `DropCalculator.json`, not its `.txt` folder.
-  - The new checks, `bench-dropcalc.mjs` and `check-dropcalc.mjs`, with their environment variables.
+  - The new checks, `bench-dropcalc.mjs`, `check-dropcalc.mjs` and `golden-dropcalc-legacy.mjs`, with
+    their environment variables.
 - **Memory notes:** update `drop-calculator-slow` and `preexisting-app-bugs` at the end.
