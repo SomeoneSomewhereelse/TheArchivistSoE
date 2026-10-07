@@ -50,7 +50,7 @@ async function openTable(page, tab, query = null) {
     // The Affixes sort is saved in localStorage, so a sort made by an earlier part of this run would carry
     // into the next page load and change what is on page 1 (column widths, where a Tip lands). Every
     // table starts from the default order, as it did before the sort was saved.
-    await page.eval(`try { localStorage.removeItem("the-archivist-affix-sort"); } catch {}`);
+    await page.eval(`try { localStorage.removeItem("the-archivist-affix-sort"); localStorage.removeItem("the-archivist-affix-multi"); } catch {}`);
     await page.goto(`${BASE}#/${tab}`);
     if (query !== null) {
         await page.waitFor(`!!document.querySelector('input[placeholder^="Enter item name"]')`);

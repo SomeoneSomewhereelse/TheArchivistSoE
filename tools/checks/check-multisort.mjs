@@ -7,6 +7,9 @@ import {run, checker, BASE, sleep, OVERFLOW_CHECK} from "./cdp.mjs";
 const OUT = process.argv[2] ?? ".";
 const c = checker();
 const STORAGE_KEY = "the-archivist-affix-sort";
+const MULTI_KEY = "the-archivist-affix-multi";
+// "At rest" means both saved values gone.
+const CLEAR_SAVED = `localStorage.removeItem(${JSON.stringify(STORAGE_KEY)}); localStorage.removeItem(${JSON.stringify(MULTI_KEY)})`;
 const URL_AFFIXES = `${BASE}#/affixes`;
 const HEADERS = ["Name", "Attributes", "Lvl", "Grp", "Rares", "Freq", "Max lvl", "Item types",
     "Excluded item types", "Class", "Req lvl"];
@@ -100,7 +103,7 @@ await run(async (page) => {
     // ---------------- Desktop, 1500px ----------------
     await page.desktop(1500, 1000);
     await page.goto(URL_AFFIXES);
-    await page.eval(`localStorage.removeItem(${JSON.stringify(STORAGE_KEY)})`);
+    await page.eval(CLEAR_SAVED);
     await freshAffixes(page);
 
     let s = await state(page);
@@ -191,23 +194,36 @@ await run(async (page) => {
     const back = await page.eval(`({top: Math.round(document.querySelector(".affixTableWrapper").getBoundingClientRect().top), chips: [...document.querySelectorAll(".affixSortBar .sortChipFlip")].map((b) => b.textContent.trim())})`);
     c.ok(Math.abs(back.top) <= 2 && same(back.chips, ["Freq ▲"]), "sorting from the floating header scrolls the table top into view", JSON.stringify(back));
 
-    // Persistence: reload restores the list, the switch starts off.
-    await page.click(".multiSortToggle input");
+    // Persistence: reload restores the list and the switch, on or off.
+    if (!(await state(page)).multi) await page.click(".multiSortToggle input");
     await clickHeader(page, "Grp");
     const saved = (await state(page)).chips;
     await freshAffixes(page);
     s = await state(page);
-    c.ok(same(s.chips, saved) && saved.length === 2 && s.multi === false, "reload restores the sort list, switch off", JSON.stringify([saved, s.chips, s.multi]));
+    c.ok(same(s.chips, saved) && saved.length >= 2 && s.multi === true, "reload restores the sort list and the switch (on)", JSON.stringify([saved, s.chips, s.multi]));
 
-    // A corrupt stored value loads the default.
-    await page.eval(`localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, "{nope")`);
+    // Leaving the tab and coming back keeps the switch (it lives in App, not the panel).
+    await page.eval(`location.hash = "#/weapons"`);
+    await sleep(400);
+    await page.eval(`location.hash = "#/affixes"`);
+    await page.waitFor(`document.querySelectorAll(".affixTableScroll tbody tr").length > 1`);
+    s = await state(page);
+    c.ok(s.multi === true && same(s.chips, saved), "leaving the Affixes tab and returning keeps the switch and the sort", JSON.stringify([s.multi, s.chips]));
+
+    await page.click(".multiSortToggle input");
     await freshAffixes(page);
     s = await state(page);
-    c.ok(s.def === "Attributes ▲ (default)" && !s.failed && s.rows > 1, "corrupt stored value → default, table renders", JSON.stringify(s));
+    c.ok(same(s.chips, saved) && s.multi === false, "reload restores the switch off too", JSON.stringify([s.chips, s.multi]));
+
+    // Corrupt stored values load the default sort and the switch off.
+    await page.eval(`localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, "{nope"); localStorage.setItem(${JSON.stringify(MULTI_KEY)}, "{nope")`);
+    await freshAffixes(page);
+    s = await state(page);
+    c.ok(s.def === "Attributes ▲ (default)" && s.multi === false && !s.failed && s.rows > 1, "corrupt stored values → default sort, switch off, table renders", JSON.stringify(s));
 
     // ---------------- Phone, 390x844 ----------------
     await page.mobile();
-    await page.eval(`localStorage.removeItem(${JSON.stringify(STORAGE_KEY)})`);
+    await page.eval(CLEAR_SAVED);
     await freshAffixes(page);
 
     const overflow = await page.eval(OVERFLOW_CHECK);
