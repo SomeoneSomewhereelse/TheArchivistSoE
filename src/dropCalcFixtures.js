@@ -3,6 +3,7 @@
 
 import {readFileSync} from "node:fs";
 import {DROP_CALC_TABLES, jsonToTables, tablesToJson} from "./dropCalcData.js";
+import {prepareModel} from "./dropCalcEngine.js";
 
 const DATA = new URL("../public/data/", import.meta.url);
 
@@ -52,4 +53,9 @@ export function readDropCalcTexts(mode) {
 // The browser's path: .txt -> DropCalculator.json (through JSON text) -> row objects.
 export function loadDropCalcTables(mode) {
     return jsonToTables(JSON.parse(JSON.stringify(tablesToJson(readDropCalcTexts(mode)))));
+}
+
+// The prepared model of one mode, built from the .txt tables the way the browser builds it.
+export function loadDropCalcModel(mode) {
+    return prepareModel(loadDropCalcTables(mode));
 }
