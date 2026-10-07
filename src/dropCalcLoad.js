@@ -8,7 +8,11 @@ const cache = new Map();
 async function fetchModel(mode) {
     const res = await fetch(`${import.meta.env.BASE_URL}data/${mode}/${DROP_CALC_FILE}`, {cache: "no-store"});
     if (!res.ok) throw new Error(`${DROP_CALC_FILE}: HTTP ${res.status}`);
-    return prepareModel(jsonToTables(await res.json()));
+    // A dev server answers a missing file with index.html and status 200, so the parse can fail too.
+    const json = await res.json().catch(() => {
+        throw new Error(`${DROP_CALC_FILE}: not valid JSON (file missing or not generated?)`);
+    });
+    return prepareModel(jsonToTables(json));
 }
 
 // A failed load is evicted, so the next query tries again.

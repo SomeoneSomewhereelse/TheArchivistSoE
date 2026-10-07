@@ -39,6 +39,13 @@ describe("loadModel", () => {
         expect(fetch).toHaveBeenCalledTimes(2);
     });
 
+    it("reports a 200 response that isn't JSON (a dev server's index.html fallback for a missing file)", async () => {
+        const loadModel = await freshLoader(async () => ({
+            ok: true, status: 200, json: async () => { throw new SyntaxError("Unexpected token '<'"); },
+        }));
+        await expect(loadModel(false)).rejects.toThrow(`${DROP_CALC_FILE}: not valid JSON (file missing or not generated?)`);
+    });
+
     it("rejects a file with an unknown version", async () => {
         const loadModel = await freshLoader(async () => ok({...EMPTY_JSON, version: 99}));
         await expect(loadModel(false)).rejects.toThrow(`${DROP_CALC_FILE}: unsupported version 99`);

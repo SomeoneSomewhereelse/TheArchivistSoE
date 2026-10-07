@@ -42,7 +42,7 @@ function dropCalcData() {
     },
     configureServer(server) {
       if (!dataDir) return
-      server.watcher.on('change', (file) => {
+      const onTxt = (file) => {
         const [mode, name, ...rest] = path.relative(dataDir, file).split(path.sep)
         if (rest.length || !DROP_CALC_MODES.includes(mode) || !name?.endsWith('.txt')) return
         try {
@@ -51,7 +51,10 @@ function dropCalcData() {
         } catch (e) {
           server.config.logger.error(`drop-calc-data: ${mode}: ${e.message}`)
         }
-      })
+      }
+      // 'add' too: a table that was missing at startup, or written as a delete then create.
+      server.watcher.on('change', onTxt)
+      server.watcher.on('add', onTxt)
     },
   }
 }

@@ -37,7 +37,7 @@ the value. No `eslint-disable`.
 
 ## Layout
 
-- `src/App.jsx`: most of the app, about 4,400 lines: constants, helpers, every panel
+- `src/App.jsx`: most of the app, about 3,700 lines: constants, helpers, every panel
   and tooltip component, and `App` itself. Put new, self-contained logic in small new
   modules under `src/` instead of growing this file further.
 - `src/tabList.js` (`TABS`, `TAB_GROUPS`, `VALID_TAB_KEYS`) and `src/tabs.jsx` (`TabsBar`,
@@ -219,6 +219,6 @@ The harness is committed in `tools/checks/` (Node ≥ 22, no dependencies; outpu
   `bench-dropcalc.mjs` (Node: every target, every difficulty, both modes; FAIL over the work ceilings,
   WARN over `DROPCALC_BUDGET_MS`). Tier filter: `check-tier-order.mjs`.
 
-Run them from `tools/checks/` against a dev server:
+Run them from `tools/checks/`; the browser checks need a dev server:
 `APP_URL=http://localhost:<port>/TheArchivistSoE/ node check-sticky.mjs <screenshot dir>`. The `.mjs`
 files sit outside the app's `**/*.{js,jsx}` ESLint block, so the browser and React rules don't apply.
