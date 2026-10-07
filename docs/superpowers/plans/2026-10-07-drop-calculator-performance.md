@@ -2358,8 +2358,12 @@ with
   `useIsMobile`'s `mobileQuery`: pure helpers, with their tests beside them.
 ```
 
-**5.** In **Verifying UI changes**, the harness list has the one-line bullet
-`- Feature checks: \`check-sticky.mjs\` (floating table header), \`check-multisort.mjs\` (Affixes multi-sort).`
+**5.** In **Verifying UI changes**, the harness list has this one-line bullet:
+
+```markdown
+- Feature checks: `check-sticky.mjs` (floating table header), `check-multisort.mjs` (Affixes multi-sort).
+```
+
 Insert this new bullet right after it:
 
 ```markdown
