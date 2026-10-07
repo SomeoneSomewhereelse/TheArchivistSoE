@@ -362,7 +362,7 @@ function collectPaths(
 
     const isRegularTc = !!tc;
     const isAutoTc = !!autoRows;
-    const isTargetBase = name === ctx.targetCode;
+    const isTargetBase = ctx.targetCodes.has(name);
 
     const configuredPicks = isRegularTc ? Math.trunc(num(tc.Picks) || 1) : 1;
     const parentPicksNegative = parentPicks < 0;
@@ -397,7 +397,7 @@ function collectPaths(
         if (total <= 0) return;
 
         for (const r of autoRows) {
-            if (r.code !== ctx.targetCode) continue;
+            if (!ctx.targetCodes.has(r.code)) continue;
 
             collectPaths(
                 ctx,
@@ -558,6 +558,7 @@ export function calculateDrops(model, {dropMode, query, difficulty, players, mf}
     const {uniqueItems, setItems, misc} = model;
     let targetItem = null;
     let targetCode = "";
+    const targetCodes = new Set();
 
     if (dropMode === "unique") {
         targetItem =
@@ -586,8 +587,15 @@ export function calculateDrops(model, {dropMode, query, difficulty, players, mf}
 
         targetItem = miscItem;
         targetCode = n(miscItem.code);
+
+        // SoE's treasure classes drop runes and gems as stacks ("r01s"), never as the plain code, so the
+        // stackable <code>s variant counts as the item too.
+        const stackCode = `${targetCode}s`.toLowerCase();
+        const stack = misc.find((m) => n(m.code).toLowerCase() === stackCode && n(m.stackable) === "1");
+        if (stack) targetCodes.add(n(stack.code));
     }
 
+    targetCodes.add(targetCode);
     const baseItem = model.baseByCode.get(targetCode);
 
     if (!baseItem) {
@@ -613,6 +621,7 @@ export function calculateDrops(model, {dropMode, query, difficulty, players, mf}
         dropMode,
         targetItem,
         targetCode,
+        targetCodes,
         baseItem,
         mf,
         players,

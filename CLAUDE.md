@@ -119,6 +119,8 @@ the value. No `eslint-disable`.
 - The Drop calculator's results are pinned by a golden snapshot (`src/__snapshots__/dropCalc.golden.txt`,
   captured from the pre-refactor code by `tools/checks/golden-dropcalc-legacy.mjs`). An upstream data drop
   or a deliberate formula change shows up as a snapshot diff: review it, then accept with `npx vitest -u`.
+- In Misc mode the target also counts its stackable `<code>s` variant: SoE's treasure classes drop runes and gems
+  as stacks (`r01s`), never as the plain code (`r01`), so "El Rune" shows its stack's drop rates.
 - The unique card's "View drop rates" link sends the unique's internal `index` (e.g. "Mindrend"), not
   its display name ("Skull Splitter"): the calculator matches `UniqueItems.txt`'s `index`.
 - Item list tabs (Weapons, Armors, Uniques, Runewords, Sacreds, Fate Cards) use `ListPanel`

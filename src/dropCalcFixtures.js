@@ -12,7 +12,7 @@ const golden = (dropMode, query, difficulty, {players = "1", mf = "", damnation 
 );
 
 // The golden snapshot's queries: captured once from the legacy code (golden-dropcalc-legacy.mjs) and
-// matched exactly by the new engine (dropCalcEngine.test.js). About 290 KB of output.
+// matched exactly by the new engine (dropCalcEngine.test.js). About 360 KB of output.
 export const GOLDEN_QUERIES = [
     golden("unique", "The Gnasher", "H"), // low-level axe: the most rows
     golden("unique", "Windforce", "H", {players: "8", mf: "300"}), // elite bow, 8 players, magic find
@@ -24,7 +24,7 @@ export const GOLDEN_QUERIES = [
     golden("unique", "", "H"), // empty query
     golden("set", "aldur", "N", {mf: "300"}), // partial name (includes match)
     golden("misc", "gld", ""), // misc mode, Normal
-    golden("misc", "r01", "H"), // the rune-stack bug: TCs drop r01s, so no rows
+    golden("misc", "r01", "H"), // a rune: counted through its stack variant r01s (captured from the legacy code as 0 rows, then deliberately updated)
     golden("unique", "Tyrael's Might", "H", {damnation: true}), // Damnation's tables
 ];
 

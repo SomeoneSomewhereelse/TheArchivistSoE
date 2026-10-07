@@ -81,6 +81,35 @@ describe("calculateDrops on hand-built tables", () => {
         expect(calculateDrops(model, options("unique", "rings"))).toEqual([]);
     });
 
+    // SoE's treasure classes drop runes and gems as stacks ("r01s"), never as the plain code ("r01").
+    it("counts a misc item's stackable <code>s variant as the item", () => {
+        const tables = {...EMPTY,
+            MonStats: [monster("m1", "TC X", 10)],
+            TreasureClassEx: [tc("TC X", [["haxs", 1]], {noDrop: "1"})],
+            Misc: [{code: "hax", level: "1", stackable: "0"}, {code: "haxs", level: "1", stackable: "1"}],
+        };
+        const rows = calculateDrops(prepareModel(tables), options("misc", "hax"));
+        expect(rows).toHaveLength(1);
+        expect(rows[0]).toMatchObject({monsterId: "m1", chance: 0.5});
+        expect(calculateDrops(prepareModel(tables), options("misc", "haxs"))).toEqual(rows);
+    });
+
+    it("adds the plain and the stack drops of one TC, and ignores a <code>s row that isn't stackable", () => {
+        const both = prepareModel({...EMPTY,
+            MonStats: [monster("m1", "TC X", 10)],
+            TreasureClassEx: [tc("TC X", [["hax", 1], ["haxs", 1], ["other", 2]])],
+            Misc: [{code: "hax", level: "1", stackable: "0"}, {code: "haxs", level: "1", stackable: "1"}],
+        });
+        expect(calculateDrops(both, options("misc", "hax"))[0].chance).toBe(0.5);
+
+        const notStack = prepareModel({...EMPTY,
+            MonStats: [monster("m1", "TC X", 10)],
+            TreasureClassEx: [tc("TC X", [["haxs", 1]])],
+            Misc: [{code: "hax", level: "1", stackable: "0"}, {code: "haxs", level: "1", stackable: "0"}],
+        });
+        expect(calculateDrops(notStack, options("misc", "hax"))).toEqual([]);
+    });
+
     it("walks each root TC once per query and counts the work in stats", () => {
         const model = prepareModel({...EMPTY,
             MonStats: [monster("m1", "TC X", 10), monster("m2", "TC X", 12), monster("m3", "TC Y", 10)],
@@ -123,6 +152,20 @@ describe("calculateDrops on the real tables", () => {
             }
         }
     }, 60000);
+});
+
+describe("rune stacks", () => {
+    it("a rune's rows are its stack's rows, in both modes and every difficulty", () => {
+        for (const mode of ["standard", "damnation"]) {
+            const model = loadDropCalcModel(mode);
+            for (const difficulty of ["", "N", "H"]) {
+                const rows = (query) => calculateDrops(model, {dropMode: "misc", query, difficulty, players: "1", mf: ""});
+                const stack = rows("r01s");
+                expect(stack.length, `${mode} r01s`).toBeGreaterThan(0);
+                expect(rows("r01"), `${mode} ${difficulty || "N"} r01`).toEqual(stack);
+            }
+        }
+    });
 });
 
 // The unique card's "View drop rates" link sends u.index; the calculator matches it exactly against

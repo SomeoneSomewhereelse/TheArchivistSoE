@@ -3504,7 +3504,874 @@ vampire3DjinnDark | DarkLord | DjinnsDomainRedMap | Act 3 Cast C | 0.27154308617
 imp1phlegethon | Imp1 |  | Act 4 Cast B | 0.2715430861723447
 unraveler2Ureh | Guardian | UrehCityMap | Act 2 Cast C | 0.2715430861723447
 
-## standard misc "r01" difficulty="H" players=1 mf="" -> 0 rows
+## standard misc "r01" difficulty="H" players=1 mf="" -> 867 rows
+tcextradrop | Dummy |  | Countess (H) | 0.007806758717383122
+treasurefallenMap | TreasureFallen |  | Treasure Fallen H | 0.0005356665281839312
+siegebeastMapBoss | SiegebeastMapBoss |  | UberAncients | 0.0004428564824666692
+bloodraven | Bloodraven |  | Blood Raven (H) | 0.00012474116855476503
+summoner | Summoner |  | Summoner (H) | 0.00009062063872489201
+nihlathakboss | Nihlathak |  | Nihlathak (H) | 0.00008218431594897435
+radament | Radament |  | Radament (H) | 0.00007334129883418417
+DungeonTest3 | Radament |  | Radament (H) | 0.00007334129883418417
+hephasto | The Feature Creep |  | Haphesto (H) | 0.00006705437727938524
+baalcrab | Baal Crab |  | Baal (H) | 0.000060163332457618957
+baalcrabMap | Baal Crab |  | Baal (H) | 0.000060163332457618957
+diablo | Diablo |  | Diablo (H) | 0.00005828900237403456
+diabloMap | Diablo |  | Diablo (H) | 0.00005828900237403456
+izual | izual |  | Izual (H) | 0.00005776443917915319
+mephisto | Mephisto |  | Mephisto (H) | 0.00005739178131314304
+mephistoMap | Mephisto |  | Mephisto (H) | 0.00005739178131314304
+councilmember1 | Council Member |  | Council (H) | 0.00005712059475282416
+councilmember2 | Council Member |  | Council (H) | 0.00005712059475282416
+councilmember3 | Council Member |  | Council (H) | 0.00005712059475282416
+councilmember3DjinnDark | Council Member | DjinnsDomainRedMap | Council (H) | 0.00005712059475282416
+duriel | Duriel |  | Duriel (H) | 0.00005658226614690953
+durielMap | Duriel |  | Duriel (H) | 0.00005658226614690953
+andariel | Andariel |  | Andariel (H) | 0.00005644033500429302
+andarielMap | Andariel |  | Andariel (H) | 0.00005644033500429302
+megademonboss | Megademon Boss |  | Map Boss T1 | 0.000048380806511150176
+unravelerboss | Unraveler Boss |  | Map Boss T1 | 0.000048380806511150176
+IceBoss | IceBoss |  | Map Boss T1 | 0.000048380806511150176
+TombBoss | TombBoss | Mesa | Map Boss T1 | 0.000048380806511150176
+torajanBoss | torajanBoss |  | Map Boss T1 | 0.000048380806511150176
+act2hireTraitorBoss | act2hireTraitorBoss |  | Map Boss T1 | 0.000048380806511150176
+spiderboss | spiderboss |  | Map Boss T1 | 0.000048380806511150176
+westmarchMapBoss | WestmarchBoss |  | Map Boss T1 | 0.000048380806511150176
+TortureHallsBoss | TortureHallsBoss |  | Map Boss T1 | 0.000048380806511150176
+NaKrulBoss | NakrulBoss |  | Map Boss T1 | 0.000048380806511150176
+cantorboss | Cantor Boss |  | Map Boss T2 | 0.00004715211079064918
+cantorbossbear | Bear |  | Map Boss T2 | 0.00004715211079064918
+ArcaneBoss | ArcaneBoss |  | Map Boss T2 | 0.00004715211079064918
+BastionBoss | BastionBoss |  | Map Boss T2 | 0.00004715211079064918
+ThroneBoss | ThroneBoss |  | Map Boss T2 | 0.00004715211079064918
+SewerBoss | SewerBoss |  | Map Boss T2 | 0.00004715211079064918
+archerBoss | PandemoniumBoss |  | Map Boss T2 | 0.00004715211079064918
+summonerMap | SummonerMap |  | Map Boss T2 | 0.00004715211079064918
+CanyonBoss | CanyonBoss |  | Map Boss T2 | 0.00004715211079064918
+doomknight3LibraryBoss | LibraryBoss |  | Map Boss T2 | 0.00004715211079064918
+AshenBoss | AshenBoss |  | Map Boss T2 | 0.00004715211079064918
+lernaeanhydra2 | CisternBoss |  | Map Boss T2 | 0.00004715211079064918
+GuardianOfFate | GuardianOfFate |  | Map Boss T2 | 0.00004715211079064918
+DjinnLightBoss | DjinnLightBoss |  | Map Boss T2 | 0.00004715211079064918
+DjinnDarkBoss | DjinnDarkBoss |  | Map Boss T2 | 0.00004715211079064918
+griswoldmap | StrAvunaos |  | Map Boss T3 | 0.00004584235395321823
+baalminionboss | StrBelial |  | Map Boss T3 | 0.00004584235395321823
+CowBoss | CowBoss |  | Map Boss T3 | 0.00004584235395321823
+SiegeBoss | SiegeBoss |  | Map Boss T3 | 0.00004584235395321823
+MarketBoss | MarketBoss |  | Map Boss T3 | 0.00004584235395321823
+leoricMapBoss | LeoricBoss |  | Map Boss T3 | 0.00004584235395321823
+ZharTheMad | ZharTheMad |  | Zhar (H) | 0.00004584235395321823
+WarlordOfBlood | WarlordOfBlood |  | Map Boss T3 | 0.00004584235395321823
+ZharMiniBossBigHead | ZharMiniBossBigHead |  | Map Boss T3 | 0.00004584235395321823
+ZharMiniBossBaboon | ZharMiniBossBaboon |  | Map Boss T3 | 0.00004584235395321823
+ZharMiniBossCantor | ZharMiniBossCantor |  | Map Boss T3 | 0.00004584235395321823
+WarlordMiniBossShaman | DamnedCavesMiniBoss |  | Map Boss T3 | 0.00004584235395321823
+WarlordMiniBossDefiler | WarlordOfBloodMiniBoss |  | Map Boss T3 | 0.00004584235395321823
+Iskatu | Iskatu |  | Map Boss T3 | 0.00004584235395321823
+Rakanoth | Rakanoth |  | Map Boss T3 | 0.00004584235395321823
+DemonRoadBoss | DemonRoadBoss |  | Map Boss T3 | 0.00004584235395321823
+SkovosBoss | SkovosBoss |  | Map Boss T3 | 0.00004584235395321823
+ImperialPalaceMiniBoss | Kamyr |  | Map Boss T3 | 0.00004584235395321823
+ImperialPalaceBossMinion | ImperialAdvisor |  | Map Boss T3 | 0.00004584235395321823
+ImperialPalaceBoss | ImperialAssassin |  | Map Boss T3 | 0.00004584235395321823
+CityofUrehMiniBoss | UrehMiniBoss |  | Map Boss T3 | 0.00004584235395321823
+KyovoshadBoss | KyovoshadBoss |  | Map Boss T3 | 0.00004584235395321823
+uberizual | UberIzual |  | Uber Izual | 0.00002981264240575765
+uberandariel | Lilith |  | Uber Andariel | 0.00002981264240575765
+uberduriel | UberDuriel |  | Uber Duriel | 0.00002981264240575765
+wraith2 | Wraith | Jail Level 1 | Act 2 (H) Wraith B | 0.00002643197775853423
+wraith1 | Ghost | Tower Cellar Level 1 | Act 3 (H) Wraith B | 0.000026209111166908272
+wraith3 | Specter | Arcane Sanctuary | Act 4 (H) Wraith A | 0.000025697017003278866
+wraith4 | Apparition | Tal Rasha's Tomb | Act 4 (H) Wraith B | 0.000025697017003278866
+willowisp1 | Gloam | Great Marsh | Act 4 (H) Wraith B | 0.000025697017003278866
+wraith5 | DarkShape | Flayer Dungeon Level 1 | Act 5 (H) Wraith A | 0.00002567218896754042
+willowisp2 | SwampGhost |  | Act 5 (H) Wraith A | 0.00002567218896754042
+willowisp3 | BurningSoul | Plains of Despair | Act 5 (H) Wraith B | 0.00002567218896754042
+willowisp4 | BlackSoul |  | Act 5 (H) Wraith C | 0.00002567218896754042
+fingermage1 | Groper | Outer Steppes | Act 5 (H) Wraith A | 0.00002567218896754042
+fingermage2 | Strangler | City of the Damned | Act 5 (H) Wraith B | 0.00002567218896754042
+fingermage3 | StormCaster | Chaos Sanctum | Act 5 (H) Wraith C | 0.00002567218896754042
+wraith6 | Ghost |  | Act 5 (H) Wraith A | 0.00002567218896754042
+wraith7 | Wraith |  | Act 5 (H) Wraith A | 0.00002567218896754042
+wraith8 | Specter |  | Act 5 (H) Wraith A | 0.00002567218896754042
+willowisp5 | Gloam |  | Act 5 (H) Wraith B | 0.00002567218896754042
+willowisp6 | BlackSoul |  | Act 5 (H) Wraith B | 0.00002567218896754042
+willowisp7 | BurningSoul |  | Act 5 (H) Wraith B | 0.00002567218896754042
+fingermage4 | Strangler |  | Act 5 (H) Wraith C | 0.00002567218896754042
+fingermage5 | StormCaster |  | Act 5 (H) Wraith C | 0.00002567218896754042
+willowisp8 | BurningSoul |  | Act 5 (H) Wraith B | 0.00002567218896754042
+griswold | Griswold |  | Griswold (H) | 0.00001552441565688678
+smith | The Smith |  | Smith (H) | 0.00001552441565688678
+quillrat1 | QuillRat | Blood Moor | Quill 3 (H) | 0.00001324781215961135
+quillrat2 | SpikeFiend | Dark Wood | Quill 4 (H) | 0.00001324781215961135
+quillrat3 | ThornBeast | Tamoe Highland | Quill 4 (H) | 0.00001324781215961135
+quillrat4 | RazorSpine | Outer Cloister | Quill 4 (H) | 0.00001324781215961135
+quillrat5 | JungleUrchin |  | Quill 4 (H) | 0.00001324781215961135
+quillrat6 | QuillRat | Bloody Foothills | Quill 4 (H) | 0.00001324781215961135
+quillrat7 | SpikeFiend |  | Quill 4 (H) | 0.00001324781215961135
+quillrat8 | RazorSpine |  | Quill 4 (H) | 0.00001324781215961135
+willowisp1Maus | Gloam |  | Dungeon Wraith | 0.000011552485035370985
+abysshordessuperior | StrGtAbyssHorde |  | Superior Horde H2H | 0.000011331298096495246
+flyingscimitar | FlyingScimitar |  | Flying Scimitar (H) | 0.000010726403799843354
+hellbovine | Hell Bovine | Moo Moo Farm | Cow (H) | 0.000010418072677209622
+reanimatedMaus | UnholyCorpse | Monastery Map | Dungeon Norm | 0.00001016397334363539
+pantherwomanMaus | Huntress | Monastery Map | Dungeon Norm | 0.00001016397334363539
+slingerMaus | SpearCat |  | Dungeon Miss | 0.00001016397334363539
+bloodlordMaus | Blood Lord5 | Monastery Map | Dungeon Norm | 0.00001016397334363539
+succubusMaus | Succubusexp | Monastery Map | Dungeon Cast | 0.00001016397334363539
+bigheadMaus | Misshapen | Monastery Map | Dungeon Miss | 0.00001016397334363539
+siegebeast3Maus | BloodBringer | Monastery Map | Dungeon Norm | 0.00001016397334363539
+vampire2Maus | NightLord | Monastery Map | Dungeon Cast | 0.00001016397334363539
+blunderbore1dungeon | Blunderbore | Monastery Map Basement | Dungeon Norm | 0.00001016397334363539
+batdemon3dungeon | ShriekingTerror | Monastery Map | Dungeon Norm | 0.00001016397334363539
+bonefetish7dungeon | Undead SoulKiller | Monastery Map | Dungeon Norm | 0.00001016397334363539
+putriddefiler1dungeon | Putrid Defiler1 | Monastery Map | Dungeon Cast | 0.00001016397334363539
+willowispminion | Wisp Minion1 |  | Map Wraith t1 | 0.00000753232582118013
+willowispminion2 | Wisp Minion2 |  | Map Wraith t1 | 0.00000753232582118013
+wraithArcane | Ghost | ArcaneMap | Map Wraith t1 | 0.00000753232582118013
+fingermageThrone | Groper | Throne Map | Map Wraith t1 | 0.00000753232582118013
+wraith3Ice | Specter | Ice Map | Map Wraith t1 | 0.00000753232582118013
+fingermage3Ice | StormCaster |  | Map Wraith t1 | 0.00000753232582118013
+willowisp1Spider | Gloam |  | Map Wraith t1 | 0.00000753232582118013
+willowisp1MapMod | BurningSoul |  | Map Wraith t1 | 0.00000753232582118013
+fingermage2Cistern | Strangler | Ruined Cistern | Map Wraith t1 | 0.00000753232582118013
+willowisp8Ash | BurningSoul | Ashen Plains | Map Wraith t1 | 0.00000753232582118013
+fingermage2FallenGardens | Strangler | FallenGardensMap | Map Wraith t1 | 0.00000753232582118013
+wraithMapMod | Ghost |  | Map Wraith t1 | 0.00000753232582118013
+cr_archer1 | DarkRanger | Stony Field | Act 1 (H) Miss C | 0.000007419170894640281
+sk_archer1 | SkeletonArcher | Dark Wood | Act 1 (H) Miss C | 0.000007419170894640281
+quillratJungle | QuillRat | Jungle Map | Map Quill t1 | 0.000007402671032497032
+quillratSiege | SpikeFiend | Siege Map | Map Quill t1 | 0.000007402671032497032
+willowisp1Library | Gloam | LibraryMap | Map Wraith t2 | 0.0000073410286575148476
+wraith3DjinnLight | Specter | DjinnsDomainMap | Map Wraith t2 | 0.0000073410286575148476
+fingermage2DjinnLight | Strangler | DjinnsDomainMap | Map Wraith t2 | 0.0000073410286575148476
+cr_archer2 | VileArcher | Black Marsh | Act 2 (H) Miss A | 0.000007334670087177919
+cr_archer4 | BlackArcher | Inner Cloister | Act 2 (H) Miss C | 0.000007334670087177919
+sk_archer2 | ReturnedArcher | Tamoe Highland | Act 2 (H) Miss A | 0.000007334670087177919
+sk_archer3 | BoneArcher | Barracks | Act 2 (H) Miss A | 0.000007334670087177919
+sk_archer4 | BurningDeadArcher | Sewers Level 1 | Act 3 (H) Miss A | 0.000007272826325843695
+slinger1 | Slinger | Rocky Waste | Act 3 (H) Miss B | 0.000007272826325843695
+slinger2 | SpearCat | Halls of the Dead Level 1 | Act 3 (H) Miss C | 0.000007272826325843695
+slinger5 | SpearCat | Dry Hills | Act 3 (H) Miss B | 0.000007272826325843695
+slinger6 | NightSlinger | Lost City | Act 3 (H) Miss C | 0.000007272826325843695
+skeleton1 | Skeleton | Stony Field | Act 1 (H) H2H C | 0.000007233319920252335
+zombie1 | Zombie | Blood Moor | Act 1 (H) H2H B | 0.000007233319920252335
+zombie2 | HungryDead | Stony Field | Act 1 (H) H2H C | 0.000007233319920252335
+foulcrow1 | FoulCrow |  | Act 1 (H) Cast C | 0.000007233319920252335
+fallen1 | Fallen | Blood Moor | Act 1 (H) H2H B | 0.000007233319920252335
+fallen2 | Carver | Dark Wood | Act 1 (H) H2H C | 0.000007233319920252335
+brute1 | GargantuanBeast | Cold Plains | Act 1 (H) H2H C | 0.000007233319920252335
+corruptrogue1 | DarkHunter | Cold Plains | Act 1 (H) H2H B | 0.000007233319920252335
+corruptrogue2 | VileHunter | Dark Wood | Act 1 (H) H2H C | 0.000007233319920252335
+goatman1 | MoonClan | Stony Field | Act 1 (H) H2H C | 0.000007233319920252335
+fallenshaman1 | FallenShaman | Cold Plains | Act 1 (H) Cast C | 0.000007233319920252335
+cr_lancer1 | DarkSpearwoman | Cold Plains | Act 1 (H) H2H B | 0.000007233319920252335
+cr_lancer2 | VileLancer | Dark Wood | Act 1 (H) H2H C | 0.000007233319920252335
+crownest1 | FoulCrowNest | Stony Field | Act 1 (H) Cast C | 0.000007233319920252335
+sandraider6 | Marauder |  | Act 1 (H) H2H B | 0.000007233319920252335
+abysshorde_lod_1 | StrLsAbyssThrall |  | Horde Act 1 (H) H2H | 0.000007175798489522656
+skeleton2 | Returned | Black Marsh | Act 2 (H) H2H A | 0.000007150935866562236
+zombie3 | Ghoul | Catacombs Level 3 | Act 2 (H) H2H C | 0.000007150935866562236
+bighead1 | Afflicted | Catacombs Level 3 | Act 2 (H) Cast C | 0.000007150935866562236
+bighead2 | Tainted | Cathedral | Act 2 (H) Cast C | 0.000007150935866562236
+bighead3 | Misshapen | Underground Passage Level 1 | Act 2 (H) Cast A | 0.000007150935866562236
+bighead4 | Disfigured | Monastery Gate | Act 2 (H) Cast A | 0.000007150935866562236
+foulcrow2 | BloodHawk |  | Act 2 (H) Cast A | 0.000007150935866562236
+fallen4 | DarkOne | Jail Level 1 | Act 2 (H) H2H B | 0.000007150935866562236
+brute2 | Brute | Black Marsh | Act 2 (H) H2H A | 0.000007150935866562236
+brute3 | Yeti | Outer Cloister | Act 2 (H) H2H A | 0.000007150935866562236
+corruptrogue3 | DarkStalker | Tamoe Highland | Act 2 (H) H2H A | 0.000007150935866562236
+corruptrogue4 | BlackRogue | Outer Cloister | Act 2 (H) H2H A | 0.000007150935866562236
+goatman2 | NightClan | Black Marsh | Act 2 (H) H2H A | 0.000007150935866562236
+goatman5 | DeathClan | Barracks | Act 2 (H) H2H A | 0.000007150935866562236
+fallenshaman2 | CarverShaman | Black Marsh | Act 2 (H) Cast A | 0.000007150935866562236
+fallenshaman3 | DevilkinShaman | Outer Cloister | Act 2 (H) Cast A | 0.000007150935866562236
+fallenshaman4 | DarkShaman | Cathedral | Act 2 (H) Cast C | 0.000007150935866562236
+arach1 | Arach | Catacombs Level 2 | Act 2 (H) H2H C | 0.000007150935866562236
+vampire5 | Banished | Catacombs Level 3 | Act 2 (H) Cast C | 0.000007150935866562236
+fetish1 | RatMan | Catacombs Level 1 | Act 2 (H) H2H B | 0.000007150935866562236
+cr_lancer3 | DarkLancer | Tamoe Highland | Act 2 (H) H2H A | 0.000007150935866562236
+cr_lancer4 | BlackLancer |  | Act 2 (H) H2H B | 0.000007150935866562236
+crownest2 | BloodHawkNest | Black Marsh | Act 2 (H) Cast A | 0.000007150935866562236
+bonefetish1 | Undead RatMan |  | Act 2 (H) H2H C | 0.000007150935866562236
+skmage_pois1 | ReturnedMage |  | Act 2 (H) Cast B | 0.000007150935866562236
+fetishshaman1 | RatManShaman |  | Act 2 (H) Cast C | 0.000007150935866562236
+skmage_cold1 | ReturnedMage |  | Act 2 (H) Cast A | 0.000007150935866562236
+skmage_cold2 | BoneMage |  | Act 2 (H) Cast A | 0.000007150935866562236
+skmage_fire1 | ReturnedMage | Tamoe Highland | Act 2 (H) Cast A | 0.000007150935866562236
+skmage_fire2 | BoneMage | Barracks | Act 2 (H) Cast A | 0.000007150935866562236
+skmage_ltng1 | ReturnedMage | Monastery Gate | Act 2 (H) Cast A | 0.000007150935866562236
+skmage_ltng2 | BoneMage | Jail Level 3 | Act 2 (H) Cast B | 0.000007150935866562236
+fetishblow1 | RatMan |  | Act 2 (H) H2H B | 0.000007150935866562236
+sk_archer7 | BoneArcher |  | Act 2 (H) H2H B | 0.000007150935866562236
+bighead6 | Afflicted | Bloody Foothills | Act 2 (H) H2H A | 0.000007150935866562236
+bighead7 | Tainted |  | Act 2 (H) H2H B | 0.000007150935866562236
+foulcrow6 | BloodHawk |  | Act 2 (H) H2H B | 0.000007150935866562236
+sandraider7 | Infidel |  | Act 2 (H) H2H B | 0.000007150935866562236
+countess | DarkStalker |  | Act 2 (H) H2H A | 0.000007150935866562236
+wraith3DemonRoad | Specter | Demon Road | Map Wraith t3 | 0.000007137111194710499
+fingermage2Imperial | Strangler | ImperialPalaceMap | Map Wraith t3 | 0.000007137111194710499
+wraith4Kyovoshad | Apparition | KyovashadMap | Map Wraith t3 | 0.000007137111194710499
+sk_archer5 | HorrorArcher | Harem Level 2 | Act 4 (H) Miss A | 0.000007130724142712097
+slinger3 | NightSlinger |  | Act 4 (H) Miss A | 0.000007130724142712097
+slinger4 | HellSlinger | Canyon of the Magi | Act 4 (H) Miss B | 0.000007130724142712097
+cr_archer3 | DarkArcher | Pit Level 1 | Act 5 (H) Miss B | 0.00000712383455414578
+cr_archer5 | FleshArcher | Forgotten Temple | Act 5 (H) Miss C | 0.00000712383455414578
+abysshorde_lod_2 | StrLsAbyssThrall |  | Horde Act 2 (H) H2H | 0.000007094069577329165
+skeleton4 | BurningDead | Sewers Level 1 | Act 3 (H) H2H A | 0.000007090641297669009
+skeleton5 | Horror | Stony Tomb Level 1 | Act 3 (H) H2H C | 0.000007090641297669009
+zombie5 | PlagueBearer | Lost City | Act 3 (H) H2H C | 0.000007090641297669009
+foulcrow3 | BlackRaptor |  | Act 3 (H) Cast B | 0.000007090641297669009
+sandraider1 | SandRaider | Sewers Level 1 | Act 3 (H) H2H A | 0.000007090641297669009
+sandraider2 | Marauder | Lost City | Act 3 (H) H2H C | 0.000007090641297669009
+sandraider3 | Invader | Harem Level 2 | Act 3 (H) H2H C | 0.000007090641297669009
+baboon1 | DuneBeast | Harem Level 2 | Act 3 (H) H2H C | 0.000007090641297669009
+goatman3 | BloodClan | Tower Cellar Level 1 | Act 3 (H) H2H A | 0.000007090641297669009
+sandmaggot1 | SandMaggot | Far Oasis | Act 3 (H) H2H B | 0.000007090641297669009
+clawviper1 | TombViper |  | Act 3 (H) H2H A | 0.000007090641297669009
+clawviper2 | ClawViper | Valley of Snakes | Act 3 (H) H2H B | 0.000007090641297669009
+clawviper3 | Salamander | Valley of Snakes | Act 3 (H) H2H C | 0.000007090641297669009
+sandleaper1 | SandLeaper | Rocky Waste | Act 3 (H) H2H A | 0.000007090641297669009
+sandleaper2 | CaveLeaper | Dry Hills | Act 3 (H) H2H B | 0.000007090641297669009
+sandleaper3 | TombCreeper | Lost City | Act 3 (H) H2H C | 0.000007090641297669009
+pantherwoman1 | Huntress | Rocky Waste | Act 3 (H) H2H A | 0.000007090641297669009
+pantherwoman2 | SaberCat | Dry Hills | Act 3 (H) H2H B | 0.000007090641297669009
+pantherwoman3 | NightTiger | Lost City | Act 3 (H) H2H C | 0.000007090641297669009
+scarab1 | DungSoldier | Rocky Waste | Act 3 (H) H2H A | 0.000007090641297669009
+scarab2 | SandWarrior | Far Oasis | Act 3 (H) H2H B | 0.000007090641297669009
+mummy1 | DriedCorpse | Sewers Level 1 | Act 3 (H) H2H A | 0.000007090641297669009
+mummy3 | Embalmed | Valley of Snakes | Act 3 (H) H2H C | 0.000007090641297669009
+unraveler2 | Guardian | Valley of Snakes | Act 3 (H) Cast C | 0.000007090641297669009
+arach2 | SandFisher |  | Act 3 (H) H2H A | 0.000007090641297669009
+arach3 | PoisonSpinner | Spider Cave | Act 3 (H) H2H C | 0.000007090641297669009
+blunderbore1 | Blunderbore | Harem Level 2 | Act 3 (H) H2H C | 0.000007090641297669009
+crownest3 | BlackVultureNest | Far Oasis | Act 3 (H) Cast B | 0.000007090641297669009
+skmage_pois2 | BoneMage |  | Act 3 (H) Cast B | 0.000007090641297669009
+skmage_cold3 | BaalColdMage |  | Act 3 (H) Cast A | 0.000007090641297669009
+skmage_fire3 | BurningDeadMage | Sewers Level 3 | Act 3 (H) Cast B | 0.000007090641297669009
+fetish11 | RatMan |  | Act 3 (H) H2H B | 0.000007090641297669009
+sk_archer8 | BurningDeadArcher |  | Act 3 (H) H2H C | 0.000007090641297669009
+bighead8 | Misshapen |  | Act 3 (H) H2H C | 0.000007090641297669009
+foulcrow7 | BlackRaptor |  | Act 3 (H) H2H C | 0.000007090641297669009
+clawviper8 | Salamander |  | Act 3 (H) H2H C | 0.000007090641297669009
+sandraider8 | SandRaider |  | Act 3 (H) H2H C | 0.000007090641297669009
+deathmauler6 | Death Mauler1 |  | Act 3 (H) H2H A | 0.000007090641297669009
+bloodwitch | Huntress |  | Act 3 (H) H2H A | 0.000007090641297669009
+abysshorde_lod_3 | StrLsAbyssThrall |  | Horde Act 3 (H) H2H | 0.000007034254488114122
+zombie4 | DrownedCarcass | Great Marsh | Act 4 (H) H2H B | 0.000006952098788426397
+foulcrow4 | CloudStalker | Spider Forest | Act 4 (H) Cast A | 0.000006952098788426397
+brute4 | Crusher | Canyon of the Magi | Act 4 (H) H2H A | 0.000006952098788426397
+sandraider4 | Infidel | Kurast Causeway | Act 4 (H) H2H B | 0.000006952098788426397
+baboon3 | JungleHunter | Spider Forest | Act 4 (H) H2H A | 0.000006952098788426397
+baboon4 | DoomApe | Lower Kurast | Act 4 (H) H2H B | 0.000006952098788426397
+baboon5 | TempleGuard | Kurast Causeway | Act 4 (H) H2H B | 0.000006952098788426397
+goatman4 | HellClan | Arcane Sanctuary | Act 4 (H) H2H A | 0.000006952098788426397
+sandmaggot3 | Devourer | Canyon of the Magi | Act 4 (H) H2H A | 0.000006952098788426397
+sandmaggot4 | GiantLamprey | Spider Cave | Act 4 (H) H2H A | 0.000006952098788426397
+sandleaper4 | TreeLurker | Lower Kurast | Act 4 (H) H2H B | 0.000006952098788426397
+pantherwoman4 | HellCat | Canyon of the Magi | Act 4 (H) H2H A | 0.000006952098788426397
+scarab4 | SteelWeevil | Canyon of the Magi | Act 4 (H) H2H A | 0.000006952098788426397
+mummy2 | Decayed | Halls of the Dead Level 1 | Act 4 (H) H2H A | 0.000006952098788426397
+mummy4 | PreservedDead | Tal Rasha's Tomb | Act 4 (H) H2H B | 0.000006952098788426397
+unraveler1 | HollowOne | Halls of the Dead Level 1 | Act 4 (H) Cast A | 0.000006952098788426397
+unraveler3 | Unraveler | Tal Rasha's Tomb | Act 4 (H) Cast B | 0.000006952098788426397
+arach4 | FlameSpider | Spider Cave | Act 4 (H) H2H A | 0.000006952098788426397
+thornhulk1 | ThornedHulk | Spider Forest | Act 4 (H) H2H A | 0.000006952098788426397
+thornhulk2 | BrambleHulk | Great Marsh | Act 4 (H) H2H B | 0.000006952098788426397
+thornhulk3 | Thrasher | Kurast Bazaar | Act 4 (H) H2H B | 0.000006952098788426397
+vampire1 | GhoulLord | Tal Rasha's Tomb | Act 4 (H) Cast B | 0.000006952098788426397
+batdemon1 | DesertWing | Halls of the Dead Level 1 | Act 4 (H) H2H A | 0.000006952098788426397
+batdemon2 | Fiend | Spider Cave | Act 4 (H) H2H A | 0.000006952098788426397
+batdemon3 | Gloombat | Flayer Dungeon Level 1 | Act 4 (H) H2H B | 0.000006952098788426397
+fetish2 | Fetish | Spider Forest | Act 4 (H) H2H A | 0.000006952098788426397
+fetish3 | Flayer | Flayer Jungle | Act 4 (H) H2H B | 0.000006952098788426397
+fetish4 | SoulKiller | Flayer Jungle | Act 4 (H) H2H B | 0.000006952098788426397
+blunderbore2 | Gorbelly | Tal Rasha's Tomb | Act 4 (H) H2H B | 0.000006952098788426397
+crownest4 | CloudStalkerNest |  | Act 4 (H) Cast A | 0.000006952098788426397
+bonefetish2 | Undead Fetish |  | Act 4 (H) H2H B | 0.000006952098788426397
+bonefetish3 | Undead Flayer | Flayer Dungeon Level 1 | Act 4 (H) H2H B | 0.000006952098788426397
+zealot1 | Zakarumite | Lower Kurast | Act 4 (H) H2H B | 0.000006952098788426397
+zealot2 | Faithful | Kurast Bazaar | Act 4 (H) H2H B | 0.000006952098788426397
+cantor1 | Sexton | Kurast Bazaar | Act 4 (H) Cast B | 0.000006952098788426397
+frogdemon1 | Swamp Dweller | Great Marsh | Act 4 (H) H2H A | 0.000006952098788426397
+frogdemon2 | Bog Creature | Great Marsh | Act 4 (H) H2H B | 0.000006952098788426397
+frogdemon3 | Slime Prince | Flayer Jungle | Act 4 (H) H2H B | 0.000006952098788426397
+skmage_pois3 | BurningDeadMage | Stony Tomb Level 2 | Act 4 (H) Cast A | 0.000006952098788426397
+skmage_pois4 | HorrorMage | Palace Cellar Level 2 | Act 4 (H) Cast A | 0.000006952098788426397
+fetishshaman2 | FetishShaman | Great Marsh | Act 4 (H) Cast B | 0.000006952098788426397
+maggotqueen1 | SandMaggotQueen |  | Act 4 (H) H2H B | 0.000006952098788426397
+skmage_cold4 | HorrorMage | Harem Level 2 | Act 4 (H) Cast A | 0.000006952098788426397
+skmage_fire4 | HorrorMage | Palace Cellar Level 1 | Act 4 (H) Cast A | 0.000006952098788426397
+skmage_ltng3 | BurningDeadMage | Stony Tomb Level 1 | Act 4 (H) Cast A | 0.000006952098788426397
+skmage_ltng4 | HorrorMage | Palace Cellar Level 3 | Act 4 (H) Cast A | 0.000006952098788426397
+fetishblow2 | Fetish | Spider Forest | Act 4 (H) H2H A | 0.000006952098788426397
+fetishblow3 | Flayer | Flayer Jungle | Act 4 (H) H2H B | 0.000006952098788426397
+reanimatedhorde1 | RotWalker | Cellar of Pity | Act 4 (H) H2H B | 0.000006952098788426397
+siegebeast1 | Siege Beast |  | Act 4 (H) H2H B | 0.000006952098788426397
+siegebeast2 | CrushBiest | Rigid Highlands | Act 4 (H) H2H B | 0.000006952098788426397
+siegebeast3 | BloodBringer |  | Act 4 (H) H2H B | 0.000006952098788426397
+minion1 | Minionexp | Bloody Foothills | Act 4 (H) H2H A | 0.000006952098788426397
+minion2 | Slayerexp | Arreat Plateau | Act 4 (H) H2H B | 0.000006952098788426397
+minion3 | IceBoar |  | Act 4 (H) H2H B | 0.000006952098788426397
+minion4 | FireBoar |  | Act 4 (H) H2H B | 0.000006952098788426397
+minion5 | HellSpawn |  | Act 4 (H) H2H B | 0.000006952098788426397
+minion6 | IceSpawn | Halls of Vaught | Act 4 (H) H2H B | 0.000006952098788426397
+overseer1 | OverSeer | Bloody Foothills | Act 4 (H) H2H B | 0.000006952098788426397
+overseer2 | Lasher | Arreat Plateau | Act 4 (H) H2H B | 0.000006952098788426397
+overseer5 | HellWhip |  | Act 4 (H) H2H B | 0.000006952098788426397
+minionspawner1 | MinionSpawner |  | Act 4 (H) H2H A | 0.000006952098788426397
+minionspawner2 | MinionSlayerSpawner |  | Act 4 (H) H2H A | 0.000006952098788426397
+minionspawner3 | MinionIce/fireBoarSpawner |  | Act 4 (H) H2H B | 0.000006952098788426397
+minionspawner4 | MinionIce/fireBoarSpawner |  | Act 4 (H) H2H B | 0.000006952098788426397
+minionspawner5 | Minionice/hellSpawnSpawner |  | Act 4 (H) H2H B | 0.000006952098788426397
+minionspawner6 | MinionIce/fireBoarSpawner |  | Act 4 (H) H2H B | 0.000006952098788426397
+imp1 | Imp1 | Bloody Foothills | Act 4 (H) Cast B | 0.000006952098788426397
+catapult1 | CatapultS |  | Act 4 (H) H2H B | 0.000006952098788426397
+catapult2 | CatapultE |  | Act 4 (H) H2H B | 0.000006952098788426397
+catapult3 | CatapultSiege |  | Act 4 (H) H2H B | 0.000006952098788426397
+catapult4 | CatapultW |  | Act 4 (H) H2H B | 0.000006952098788426397
+deathmauler1 | Death Mauler1 | Bloody Foothills | Act 4 (H) H2H B | 0.000006952098788426397
+deathmauler2 | Death Mauler2 | Halls of Death's Calling | Act 4 (H) H2H B | 0.000006952098788426397
+deathmauler3 | Death Mauler3 | Crystalized Cavern Level 2 | Act 4 (H) H2H B | 0.000006952098788426397
+putriddefiler1 | Putrid Defiler1 | Halls of Death's Calling | Act 4 (H) Cast B | 0.000006952098788426397
+sk_archer6 | BurningDeadArcher | Bloody Foothills | Act 4 (H) H2H B | 0.000006952098788426397
+goatman6 | MoonClan |  | Act 4 (H) H2H B | 0.000006952098788426397
+goatman9 | BloodClan |  | Act 4 (H) H2H B | 0.000006952098788426397
+foulcrow5 | FoulCrow |  | Act 4 (H) H2H B | 0.000006952098788426397
+clawviper9 | TombViper |  | Act 4 (H) H2H B | 0.000006952098788426397
+thornhulk5 | ThornedHulk |  | Act 4 (H) H2H B | 0.000006952098788426397
+slinger7 | Slinger |  | Act 4 (H) H2H B | 0.000006952098788426397
+slinger8 | Slinger |  | Act 4 (H) H2H B | 0.000006952098788426397
+slinger9 | Slinger |  | Act 4 (H) H2H B | 0.000006952098788426397
+cr_archer6 | VileArcher |  | Act 4 (H) H2H B | 0.000006952098788426397
+cr_lancer6 | VileLancer |  | Act 4 (H) H2H B | 0.000006952098788426397
+cr_lancer7 | DarkLancer |  | Act 4 (H) H2H B | 0.000006952098788426397
+cr_lancer8 | BlackLancer |  | Act 4 (H) H2H B | 0.000006952098788426397
+blunderbore5 | Blunderbore |  | Act 4 (H) H2H B | 0.000006952098788426397
+blunderbore6 | Mauler |  | Act 4 (H) H2H B | 0.000006952098788426397
+skmage_pois5 | HorrorMage |  | Act 4 (H) Cast A | 0.000006952098788426397
+skmage_pois6 | HorrorMage |  | Act 4 (H) Cast A | 0.000006952098788426397
+pantherwoman5 | Huntress |  | Act 4 (H) H2H B | 0.000006952098788426397
+pantherwoman6 | SaberCat |  | Act 4 (H) H2H B | 0.000006952098788426397
+baboon7 | TempleGuard |  | Act 4 (H) H2H B | 0.000006952098788426397
+baboon8 | TempleGuard |  | Act 4 (H) H2H B | 0.000006952098788426397
+cr_lancer9 | BlackLancer | Pandemonium Run 1 | Act 4 (H) H2H B | 0.000006952098788426397
+overseer6 | HellWhip | Pandemonium Run 3 | Act 4 (H) H2H B | 0.000006952098788426397
+skeleton3 | BoneWarrior | Pit Level 1 | Act 5 (H) H2H C | 0.000006945381784806415
+bighead5 | Damned | City of the Damned | Act 5 (H) Cast B | 0.000006945381784806415
+fallen3 | Devilkin | Pit Level 1 | Act 5 (H) H2H C | 0.000006945381784806415
+fallen5 | WarpedFallen |  | Act 5 (H) H2H B | 0.000006945381784806415
+brute5 | WailingBeast | Ruined Temple | Act 5 (H) H2H B | 0.000006945381784806415
+sandraider5 | Assailant |  | Act 5 (H) H2H B | 0.000006945381784806415
+corruptrogue5 | FleshHunter | Ruined Temple | Act 5 (H) H2H B | 0.000006945381784806415
+baboon2 | RockDweller |  | Act 5 (H) H2H B | 0.000006945381784806415
+fallenshaman5 | WarpedShaman |  | Act 5 (H) Cast B | 0.000006945381784806415
+sandmaggot2 | RockWorm | Maggot Lair Level 1 | Act 5 (H) H2H B | 0.000006945381784806415
+sandmaggot5 | WorldKiller | River of Flame | Act 5 (H) H2H C | 0.000006945381784806415
+clawviper4 | PitViper |  | Act 5 (H) H2H A | 0.000006945381784806415
+clawviper5 | SerpentMagus | Forgotten Temple | Act 5 (H) H2H C | 0.000006945381784806415
+sandleaper5 | RazorPitDemon | Outer Steppes | Act 5 (H) H2H A | 0.000006945381784806415
+scarab3 | Scarab | Maggot Lair Level 1 | Act 5 (H) H2H B | 0.000006945381784806415
+scarab5 | AlbinoRoach | Forgotten Temple | Act 5 (H) H2H C | 0.000006945381784806415
+mummy5 | Cadaver | Durance of Hate Level 1 | Act 5 (H) H2H B | 0.000006945381784806415
+unraveler4 | Horadrim Ancient | Sewers Level 1 | Act 5 (H) Cast B | 0.000006945381784806415
+unraveler5 | Baal Subject Mummy |  | Act 5 (H) Cast C | 0.000006945381784806415
+arach5 | SpiderMagus | Ruined Temple | Act 5 (H) H2H B | 0.000006945381784806415
+thornhulk4 | Spikefist |  | Act 5 (H) H2H B | 0.000006945381784806415
+vampire2 | NightLord | Travincal | Act 5 (H) Cast A | 0.000006945381784806415
+vampire3 | DarkLord | Durance of Hate Level 1 | Act 5 (H) Cast B | 0.000006945381784806415
+vampire4 | BloodLord | Durance of Hate Level 3 | Act 5 (H) Cast B | 0.000006945381784806415
+batdemon4 | BloodDiver | Forgotten Temple | Act 5 (H) H2H C | 0.000006945381784806415
+batdemon5 | DarkFamiliar | City of the Damned | Act 5 (H) H2H B | 0.000006945381784806415
+fetish5 | StygianDoll |  | Act 5 (H) H2H B | 0.000006945381784806415
+cr_lancer5 | FleshLancer |  | Act 5 (H) H2H B | 0.000006945381784806415
+blunderbore3 | Mauler | Durance of Hate Level 1 | Act 5 (H) H2H B | 0.000006945381784806415
+blunderbore4 | Urdar | River of Flame | Act 5 (H) H2H C | 0.000006945381784806415
+bonefetish4 | Undead SoulKiller | Swampy Pit Level 1 | Act 5 (H) H2H A | 0.000006945381784806415
+bonefetish5 | Undead StygianDoll | Swampy Pit Level 1 | Act 5 (H) H2H B | 0.000006945381784806415
+zealot3 | Zealot | Upper Kurast | Act 5 (H) H2H A | 0.000006945381784806415
+cantor2 | Cantor | Upper Kurast | Act 5 (H) Cast A | 0.000006945381784806415
+cantor3 | Heirophant | Kurast Causeway | Act 5 (H) Cast A | 0.000006945381784806415
+cantor4 | Heirophant |  | Act 5 (H) Cast B | 0.000006945381784806415
+fetishshaman3 | FlayerShaman | Flayer Jungle | Act 5 (H) Cast A | 0.000006945381784806415
+fetishshaman4 | SoulKillerShaman | Flayer Jungle | Act 5 (H) Cast A | 0.000006945381784806415
+fetishshaman5 | StygianDollShaman |  | Act 5 (H) Cast B | 0.000006945381784806415
+maggotqueen2 | RockWormQueen |  | Act 5 (H) H2H A | 0.000006945381784806415
+maggotqueen3 | DevourerQueen |  | Act 5 (H) H2H B | 0.000006945381784806415
+maggotqueen4 | GiantLampreyQueen |  | Act 5 (H) H2H B | 0.000006945381784806415
+maggotqueen5 | WorldKillerQueen |  | Act 5 (H) H2H C | 0.000006945381784806415
+baboon6 | NightMarauder |  | Act 5 (H) H2H C | 0.000006945381784806415
+vilemother1 | FleshSpawner | Outer Steppes | Act 5 (H) Cast A | 0.000006945381784806415
+vilemother2 | StygianHag | City of the Damned | Act 5 (H) Cast B | 0.000006945381784806415
+vilemother3 | Grotesque | River of Flame | Act 5 (H) Cast C | 0.000006945381784806415
+vilechild1 | FleshBeast |  | Act 5 (H) Cast A | 0.000006945381784806415
+vilechild2 | StygianDog |  | Act 5 (H) Cast B | 0.000006945381784806415
+vilechild3 | GrotesqueWyrm |  | Act 5 (H) Cast C | 0.000006945381784806415
+regurgitator1 | Corpulent | Outer Steppes | Act 5 (H) H2H A | 0.000006945381784806415
+regurgitator2 | CorpseSpitter | City of the Damned | Act 5 (H) H2H B | 0.000006945381784806415
+regurgitator3 | MawFiend | River of Flame | Act 5 (H) H2H C | 0.000006945381784806415
+doomknight1 | DoomKnight | Outer Steppes | Act 5 (H) H2H A | 0.000006945381784806415
+doomknight2 | AbyssKnight | City of the Damned | Act 5 (H) H2H B | 0.000006945381784806415
+doomknight3 | OblivionKnight | Chaos Sanctum | Act 5 (H) H2H C | 0.000006945381784806415
+megademon1 | Balrog |  | Act 5 (H) H2H A | 0.000006945381784806415
+megademon2 | PitLord | City of the Damned | Act 5 (H) H2H B | 0.000006945381784806415
+megademon3 | VenomLord | Outer Steppes | Act 5 (H) H2H B | 0.000006945381784806415
+spiritmummy | Dummy |  | Act 5 (H) H2H C | 0.000006945381784806415
+fetishblow4 | SoulKiller |  | Act 5 (H) H2H A | 0.000006945381784806415
+fetishblow5 | StygianDoll |  | Act 5 (H) H2H B | 0.000006945381784806415
+reanimatedhorde2 | ReanimatedHorde | Crystalized Cavern Level 2 | Act 5 (H) H2H A | 0.000006945381784806415
+reanimatedhorde3 | ProwlingDead | Glacial Caves Level 2 | Act 5 (H) H2H B | 0.000006945381784806415
+reanimatedhorde4 | UnholyCorpse | Halls of Death's Calling | Act 5 (H) H2H B | 0.000006945381784806415
+reanimatedhorde5 | DefiledWarrior | The Worldstone Keep Level 1 | Act 5 (H) H2H C | 0.000006945381784806415
+siegebeast4 | GoreBearer |  | Act 5 (H) H2H B | 0.000006945381784806415
+siegebeast5 | DeamonSteed |  | Act 5 (H) H2H C | 0.000006945381784806415
+snowyeti1 | SnowYeti1 | Echo Chamber | Act 5 (H) H2H A | 0.000006945381784806415
+snowyeti2 | SnowYeti2 | Cellar of Pity | Act 5 (H) H2H B | 0.000006945381784806415
+snowyeti3 | SnowYeti3 |  | Act 5 (H) H2H B | 0.000006945381784806415
+snowyeti4 | SnowYeti4 | Glacial Caves Level 2 | Act 5 (H) H2H C | 0.000006945381784806415
+minion7 | GreaterHellSpawn | The Worldstone Keep Level 2 | Act 5 (H) H2H A | 0.000006945381784806415
+minion8 | GreaterIceSpawn |  | Act 5 (H) H2H A | 0.000006945381784806415
+succubus1 | Succubusexp |  | Act 5 (H) H2H A | 0.000006945381784806415
+succubus2 | VileTemptress | Echo Chamber | Act 5 (H) H2H A | 0.000006945381784806415
+succubus3 | StygianHarlot | Crystalized Cavern Level 1 | Act 5 (H) H2H B | 0.000006945381784806415
+succubus4 | Hell Temptress | Halls of Vaught | Act 5 (H) H2H B | 0.000006945381784806415
+succubus5 | Blood Temptress | Cellar of Pity | Act 5 (H) H2H C | 0.000006945381784806415
+succubuswitch1 | Dominus |  | Act 5 (H) Cast A | 0.000006945381784806415
+succubuswitch2 | VileWitch | The Worldstone Keep Level 1 | Act 5 (H) Cast A | 0.000006945381784806415
+succubuswitch3 | StygianFury | Throne of Destruction | Act 5 (H) Cast B | 0.000006945381784806415
+succubuswitch4 | Blood Witch |  | Act 5 (H) Cast B | 0.000006945381784806415
+succubuswitch5 | Hell Witch |  | Act 5 (H) Cast C | 0.000006945381784806415
+overseer3 | OverLord | Hell2 | Act 5 (H) H2H A | 0.000006945381784806415
+overseer4 | BloodBoss | Hell3 | Act 5 (H) H2H B | 0.000006945381784806415
+minionspawner7 | MinionIce/fireBoarSpawner |  | Act 5 (H) H2H A | 0.000006945381784806415
+minionspawner8 | Minionice/hellSpawnSpawner |  | Act 5 (H) H2H A | 0.000006945381784806415
+imp2 | Imp2 | Hell1 | Act 5 (H) Cast B | 0.000006945381784806415
+imp3 | Imp3 |  | Act 5 (H) Cast A | 0.000006945381784806415
+imp4 | Imp4 | Tundra Wastelands | Act 5 (H) Cast B | 0.000006945381784806415
+imp5 | Imp5 | The Worldstone Keep Level 3 | Act 5 (H) Cast C | 0.000006945381784806415
+frozenhorror1 | Frozen Horror1 | Crystalized Cavern Level 1 | Act 5 (H) H2H A | 0.000006945381784806415
+frozenhorror2 | Frozen Horror2 | Crystalized Cavern Level 2 | Act 5 (H) H2H B | 0.000006945381784806415
+frozenhorror3 | Frozen Horror3 | Glacial Caves Level 1 | Act 5 (H) H2H B | 0.000006945381784806415
+frozenhorror4 | Frozen Horror4 |  | Act 5 (H) H2H B | 0.000006945381784806415
+frozenhorror5 | Frozen Horror5 |  | Act 5 (H) H2H C | 0.000006945381784806415
+bloodlord1 | Blood Lord1 | Crystalized Cavern Level 1 | Act 5 (H) H2H A | 0.000006945381784806415
+bloodlord2 | Blood Lord2 | Halls of Anguish | Act 5 (H) H2H A | 0.000006945381784806415
+bloodlord3 | Blood Lord3 | Hell1 | Act 5 (H) H2H A | 0.000006945381784806415
+bloodlord4 | Blood Lord4 |  | Act 5 (H) H2H B | 0.000006945381784806415
+bloodlord5 | Blood Lord5 | The Worldstone Keep Level 3 | Act 5 (H) H2H C | 0.000006945381784806415
+deathmauler4 | Death Mauler4 |  | Act 5 (H) H2H A | 0.000006945381784806415
+deathmauler5 | Death Mauler5 |  | Act 5 (H) H2H B | 0.000006945381784806415
+putriddefiler2 | Putrid Defiler2 | Halls of Vaught | Act 5 (H) Cast A | 0.000006945381784806415
+putriddefiler3 | Putrid Defiler3 | The Worldstone Keep Level 1 | Act 5 (H) Cast A | 0.000006945381784806415
+putriddefiler4 | Putrid Defiler4 | The Worldstone Keep Level 3 | Act 5 (H) Cast B | 0.000006945381784806415
+putriddefiler5 | Putrid Defiler5 |  | Act 5 (H) Cast B | 0.000006945381784806415
+baalhighpriest | Council Member |  | Act 5 (H) H2H C | 0.000006945381784806415
+venomlord | VenomLord |  | Act 5 (H) H2H C | 0.000006945381784806415
+baalminion1 | Baals Minion |  | Act 5 (H) H2H C | 0.000006945381784806415
+baalminion2 | Baals Minion |  | Act 5 (H) H2H C | 0.000006945381784806415
+baalminion3 | Baals Minion |  | Act 5 (H) H2H C | 0.000006945381784806415
+sk_archer9 | ReturnedArcher |  | Act 5 (H) H2H B | 0.000006945381784806415
+sk_archer10 | HorrorArcher |  | Act 5 (H) H2H C | 0.000006945381784806415
+bighead9 | Disfigured |  | Act 5 (H) H2H B | 0.000006945381784806415
+bighead10 | Damned |  | Act 5 (H) H2H C | 0.000006945381784806415
+goatman7 | NightClan |  | Act 5 (H) H2H B | 0.000006945381784806415
+goatman8 | HellClan |  | Act 5 (H) H2H B | 0.000006945381784806415
+goatman10 | DeathClan |  | Act 5 (H) H2H B | 0.000006945381784806415
+foulcrow8 | CloudStalker |  | Act 5 (H) H2H A | 0.000006945381784806415
+clawviper6 | ClawViper |  | Act 5 (H) H2H A | 0.000006945381784806415
+clawviper7 | PitViper | DjinnsDomainBossMap | Act 5 (H) H2H B | 0.000006945381784806415
+clawviper10 | SerpentMagus |  | Act 5 (H) H2H C | 0.000006945381784806415
+sandraider9 | Invader |  | Act 5 (H) H2H A | 0.000006945381784806415
+sandraider10 | Assailant |  | Act 5 (H) H2H B | 0.000006945381784806415
+cr_archer7 | DarkArcher |  | Act 5 (H) H2H A | 0.000006945381784806415
+skmage_fire5 | ReturnedMage |  | Act 5 (H) Cast A | 0.000006945381784806415
+skmage_fire6 | BurningDeadMage |  | Act 5 (H) Cast A | 0.000006945381784806415
+skmage_ltng5 | ReturnedMage |  | Act 5 (H) Cast A | 0.000006945381784806415
+skmage_ltng6 | HorrorMage |  | Act 5 (H) Cast A | 0.000006945381784806415
+skmage_cold5 | BoneMage |  | Act 5 (H) Cast A | 0.000006945381784806415
+sandleaper6 | CaveLeaper |  | Act 5 (H) H2H A | 0.000006945381784806415
+sandleaper7 | TombCreeper |  | Act 5 (H) H2H A | 0.000006945381784806415
+succubus6 | Succubusexp |  | Act 5 (H) H2H B | 0.000006945381784806415
+succubus7 | Hell Temptress |  | Act 5 (H) H2H B | 0.000006945381784806415
+succubuswitch6 | Dominus |  | Act 5 (H) Cast B | 0.000006945381784806415
+succubuswitch7 | Hell Witch |  | Act 5 (H) Cast B | 0.000006945381784806415
+succubuswitch8 | VileWitch |  | Act 5 (H) Cast B | 0.000006945381784806415
+fallen6 | Carver |  | Act 5 (H) H2H B | 0.000006945381784806415
+fallen7 | Devilkin |  | Act 5 (H) H2H B | 0.000006945381784806415
+fallen8 | DarkOne |  | Act 5 (H) H2H B | 0.000006945381784806415
+fallenshaman6 | CarverShaman |  | Act 5 (H) Cast B | 0.000006945381784806415
+fallenshaman7 | DevilkinShaman |  | Act 5 (H) Cast B | 0.000006945381784806415
+fallenshaman8 | DarkShaman |  | Act 5 (H) Cast B | 0.000006945381784806415
+skeleton6 | BoneWarrior |  | Act 5 (H) H2H B | 0.000006945381784806415
+skeleton7 | Returned |  | Act 5 (H) H2H B | 0.000006945381784806415
+batdemon6 | Gloombat |  | Act 5 (H) H2H B | 0.000006945381784806415
+batdemon7 | Fiend |  | Act 5 (H) H2H B | 0.000006945381784806415
+bloodlord6 | Blood Lord1 |  | Act 5 (H) H2H A | 0.000006945381784806415
+bloodlord7 | Blood Lord4 |  | Act 5 (H) H2H A | 0.000006945381784806415
+scarab6 | Scarab |  | Act 5 (H) H2H C | 0.000006945381784806415
+scarab7 | SteelWeevil |  | Act 5 (H) H2H C | 0.000006945381784806415
+fetish6 | Flayer |  | Act 5 (H) H2H B | 0.000006945381784806415
+fetish7 | StygianDoll |  | Act 5 (H) H2H B | 0.000006945381784806415
+fetish8 | SoulKiller |  | Act 5 (H) H2H B | 0.000006945381784806415
+fetishblow6 | Flayer |  | Act 5 (H) H2H B | 0.000006945381784806415
+fetishblow7 | StygianDoll |  | Act 5 (H) H2H B | 0.000006945381784806415
+fetishblow8 | SoulKiller |  | Act 5 (H) H2H B | 0.000006945381784806415
+fetishshaman6 | FlayerShaman |  | Act 5 (H) Cast B | 0.000006945381784806415
+fetishshaman7 | StygianDollShaman |  | Act 5 (H) Cast B | 0.000006945381784806415
+fetishshaman8 | SoulKillerShaman |  | Act 5 (H) Cast B | 0.000006945381784806415
+unraveler6 | Guardian |  | Act 5 (H) Cast C | 0.000006945381784806415
+unraveler7 | Unraveler |  | Act 5 (H) Cast C | 0.000006945381784806415
+unraveler8 | Horadrim Ancient |  | Act 5 (H) Cast C | 0.000006945381784806415
+unraveler9 | Horadrim Ancient |  | Act 5 (H) Cast C | 0.000006945381784806415
+zealot4 | Zealot |  | Act 5 (H) H2H A | 0.000006945381784806415
+zealot5 | Zealot |  | Act 5 (H) H2H A | 0.000006945381784806415
+cantor5 | Heirophant |  | Act 5 (H) Cast B | 0.000006945381784806415
+cantor6 | Heirophant |  | Act 5 (H) Cast B | 0.000006945381784806415
+vilemother4 | Grotesque |  | Act 5 (H) Cast C | 0.000006945381784806415
+vilemother5 | FleshSpawner |  | Act 5 (H) Cast C | 0.000006945381784806415
+vilechild4 | GrotesqueWyrm |  | Act 5 (H) Cast C | 0.000006945381784806415
+vilechild5 | FleshBeast |  | Act 5 (H) Cast C | 0.000006945381784806415
+sandmaggot6 | WorldKiller |  | Act 5 (H) H2H C | 0.000006945381784806415
+minion9 | Slayerexp |  | Act 5 (H) H2H A | 0.000006945381784806415
+minion10 | HellSpawn |  | Act 5 (H) H2H A | 0.000006945381784806415
+minion11 | GreaterHellSpawn |  | Act 5 (H) H2H A | 0.000006945381784806415
+arach6 | Arach |  | Act 5 (H) H2H B | 0.000006945381784806415
+megademon4 | Balrog |  | Act 5 (H) H2H B | 0.000006945381784806415
+megademon5 | PitLord |  | Act 5 (H) H2H B | 0.000006945381784806415
+imp6 | Imp1 |  | Act 5 (H) Cast C | 0.000006945381784806415
+imp7 | Imp4 |  | Act 5 (H) Cast C | 0.000006945381784806415
+bonefetish6 | Undead StygianDoll |  | Act 5 (H) H2H B | 0.000006945381784806415
+bonefetish7 | Undead SoulKiller |  | Act 5 (H) H2H B | 0.000006945381784806415
+regurgitator4 | MawFiend |  | Act 5 (H) H2H C | 0.000006945381784806415
+vampire6 | BloodLord |  | Act 5 (H) Cast B | 0.000006945381784806415
+vampire7 | GhoulLord |  | Act 5 (H) Cast B | 0.000006945381784806415
+vampire8 | DarkLord |  | Act 5 (H) Cast B | 0.000006945381784806415
+reanimatedhorde6 | UnholyCorpse |  | Act 5 (H) H2H C | 0.000006945381784806415
+dkfig1 | DoomKnight |  | Act 5 (H) H2H A | 0.000006945381784806415
+dkfig2 | DoomKnight |  | Act 5 (H) H2H A | 0.000006945381784806415
+dkmag1 | OblivionKnight |  | Act 5 (H) H2H C | 0.000006945381784806415
+dkmag2 | OblivionKnight |  | Act 5 (H) H2H C | 0.000006945381784806415
+mummy6 | Cadaver |  | Act 5 (H) H2H B | 0.000006945381784806415
+dkmag3 | OblivionKnight | Pandemonium Run 3 | Act 5 (H) H2H C | 0.000006945381784806415
+imp8 | Imp4 | Pandemonium Run 3 | Act 5 (H) Cast C | 0.000006945381784806415
+sandmaggot7 | WorldKiller | Pandemonium Run 2 | Act 5 (H) H2H C | 0.000006945381784806415
+arach7 | Arach | Pandemonium Run 2 | Act 5 (H) H2H B | 0.000006945381784806415
+scarab8 | SteelWeevil | Pandemonium Run 2 | Act 5 (H) H2H C | 0.000006945381784806415
+succubus8 | Hell Temptress | Pandemonium Run 1 | Act 5 (H) H2H B | 0.000006945381784806415
+succubuswitch9 | VileWitch | Pandemonium Run 1 | Act 5 (H) Cast B | 0.000006945381784806415
+corruptrogue6 | FleshHunter | Pandemonium Run 1 | Act 5 (H) H2H B | 0.000006945381784806415
+cr_archer8 | DarkArcher | Pandemonium Run 1 | Act 5 (H) H2H A | 0.000006945381784806415
+bloodravenzombie | BloodRavenZombie |  | Act 5 (H) H2H C | 0.000006945381784806415
+abysshorde_lod_4 | StrLsAbyssThrall |  | Horde Act 4 (H) H2H | 0.000006896813708578975
+abysshorde_lod_5 | StrLsAbyssThrall |  | Horde Act 5 (H) H2H | 0.000006890150120453242
+abysshordelesser_t1 | StrLsAbyssThrall |  | LS Horde T1 H2H | 0.0000068754670542459095
+abysshorde_t1_greater | StrLsAbyssThrall |  | LS Horde T1 H2H | 0.0000068754670542459095
+unravelerbossskeleton | BurningDead |  | Map Miss t1 | 0.0000068211923410776976
+unravelerbossarcher | BurningDeadArcher |  | Map Miss t1 | 0.0000068211923410776976
+slingermap | HellSlinger | Lava | Map Miss t1 | 0.0000068211923410776976
+cr_archerThrone | FleshArcher | Throne Map | Map Miss t1 | 0.0000068211923410776976
+frogdemonThrone | Swamp Dweller | Throne Map | Map Miss t1 | 0.0000068211923410776976
+fetishblowSewer | Flayer | Sewers | Map Miss t1 | 0.0000068211923410776976
+quillrat4Tomb | RazorSpine | Tomb Map | Map Miss t1 | 0.0000068211923410776976
+slinger1Caldeum | Slinger | Fall of Caldeum | Map Miss t1 | 0.0000068211923410776976
+bighead5Pandemonium | Damned | Pandemonium Citadel | Map Miss t1 | 0.0000068211923410776976
+succubuswitch3Pandemonium | StygianFury | Pandemonium Citadel | Map Miss t1 | 0.0000068211923410776976
+fetishblow4Frozen | SoulKiller | Canyon Map | Map Miss t1 | 0.0000068211923410776976
+firetowerMarket | FireTower | Desert Map | Map Miss t1 | 0.0000068211923410776976
+cr_archer2Market | VileArcher | Desert Map | Map Miss t1 | 0.0000068211923410776976
+slinger1Westmarch | Slinger | WestmarchMap | Map Miss t1 | 0.0000068211923410776976
+succubus1Westmarch | Succubusexp | WestmarchMap | Map Miss t1 | 0.0000068211923410776976
+cr_archer2Cistern | VileArcher | Ruined Cistern | Map Miss t1 | 0.0000068211923410776976
+slinger2Ash | SpearCat | Ashen Plains | Map Miss t1 | 0.0000068211923410776976
+fetishblowSpider | Flayer | Lost Temple | Map Miss t1 | 0.0000068211923410776976
+voidWatcherUniqueMap | VoidWatcher | OuterVoidMap | Map Miss t1 | 0.0000068211923410776976
+voidWatcherLimbUniqueMap | VoidWatcher |  | Map Miss t1 | 0.0000068211923410776976
+UrehRanger | HorrorArcher |  | Map Miss t1 | 0.0000068211923410776976
+cr_archer5DjinnDark | FleshArcher | DjinnsDomainRedMap | Map Miss t1 | 0.0000068211923410776976
+griswoldgolem | BloodGolem |  | Map H2H t1 | 0.000006787018030696146
+cr_lancermap | BlackLancer | Kurast | Map H2H t1 | 0.000006787018030696146
+goatmanmap | MoonClan | Kurast | Map H2H t1 | 0.000006787018030696146
+cr_archermap | DarkRanger | Kurast | Map H2H t1 | 0.000006787018030696146
+bigheadmap | Disfigured | Kurast | Map H2H t1 | 0.000006787018030696146
+succubuswitchmap | VileWitch |  | Map Cast t1 | 0.000006787018030696146
+unravelermap | HollowOne | Kurast | Map Cast t1 | 0.000006787018030696146
+arachmap | SpiderMagus | Kurast | Map H2H t1 | 0.000006787018030696146
+thornhulkmap | ThornedHulk | Kurast | Map H2H t1 | 0.000006787018030696146
+sandleapermap | TreeLurker | Kurast | Map H2H t1 | 0.000006787018030696146
+fetishshamanmap | FetishShaman |  | Map Cast t1 | 0.000006787018030696146
+cantormap | Heirophant | Kurast | Map Cast t1 | 0.000006787018030696146
+minionmap | HellSpawn | Lava | Map H2H t1 | 0.000006787018030696146
+pantherwomanmap | HellCat | Lava | Map H2H t1 | 0.000006787018030696146
+fallenmap | Fallen | Lava | Map H2H t1 | 0.000006787018030696146
+siegebeastmap | Siege Beast | Lava | Map H2H t1 | 0.000006787018030696146
+bloodlordmap | Blood Lord1 | Lava | Map H2H t1 | 0.000006787018030696146
+councilmembermap | Council Member | Lava | Map Cast t1 | 0.000006787018030696146
+reanimatedhordemap | UnholyCorpse | Lava | Map H2H t1 | 0.000006787018030696146
+fallenshamanmap | FallenShaman | Lava | Map Cast t1 | 0.000006787018030696146
+doomknightmap | DoomKnight | River Of Blood | Map H2H t1 | 0.000006787018030696146
+vilemothermap | FleshSpawner | River Of Blood | Map Cast t1 | 0.000006787018030696146
+zealotmap | Zealot | River Of Blood | Map H2H t1 | 0.000006787018030696146
+oblivionknightmap | OblivionKnight | River Of Blood | Map Cast t1 | 0.000006787018030696146
+deathmaulermap | Death Mauler1 | River Of Blood | Map H2H t1 | 0.000006787018030696146
+sk_archermap | SkeletonArcher | River Of Blood | Map H2H t1 | 0.000006787018030696146
+baalminionmap | Baals Minion | River Of Blood | Map H2H t1 | 0.000006787018030696146
+regurgitatormap | Corpulent | River Of Blood | Map H2H t1 | 0.000006787018030696146
+fetishmap | Fetish | Lava | Map H2H t1 | 0.000006787018030696146
+flyingscimitarArcane | FlyingScimitar | ArcaneMap | Map H2H t1 | 0.000006787018030696146
+zealotArcane | Zakarumite | ArcaneMap | Map H2H t1 | 0.000006787018030696146
+painwormArcane | Pain Worm4 | ArcaneMap | Map H2H t1 | 0.000006787018030696146
+cantorArcane | Cantor | ArcaneMap | Map Cast t1 | 0.000006787018030696146
+doomknightArcane | OblivionKnight | ArcaneMap | Map H2H t1 | 0.000006787018030696146
+snowyetiArcane | SnowYeti4 | ArcaneMap | Map H2H t1 | 0.000006787018030696146
+frozenhorrorArcane | Frozen Horror5 | ArcaneMap | Map H2H t1 | 0.000006787018030696146
+fallenBastion | Devilkin | Fortress Map | Map H2H t1 | 0.000006787018030696146
+goatmanBastion | MoonClan | Fortress Map | Map H2H t1 | 0.000006787018030696146
+sandmaggotBastion | GiantLamprey | Fortress Map | Map H2H t1 | 0.000006787018030696146
+fallenshamanBastion | DevilkinShaman | Fortress Map | Map Cast t1 | 0.000006787018030696146
+siegebeastBastion | DeamonSteed | Fortress Map | Map H2H t1 | 0.000006787018030696146
+sandraiderBastion | SandRaider | Fortress Map | Map H2H t1 | 0.000006787018030696146
+batdemonBastion | DesertWing | Fortress Map | Map H2H t1 | 0.000006787018030696146
+succubusBastion | Hell Temptress | Fortress Map | Map H2H t1 | 0.000006787018030696146
+corruptrogueThrone | FleshHunter | Throne Map | Map H2H t1 | 0.000006787018030696146
+cr_lancerThrone | FleshLancer | Throne Map | Map H2H t1 | 0.000006787018030696146
+impThrone | Imp2 | Throne Map | Map Cast t1 | 0.000006787018030696146
+overseerThrone | HellWhip | Throne Map | Map H2H t1 | 0.000006787018030696146
+megademonThrone | Balrog | Throne Map | Map H2H t1 | 0.000006787018030696146
+hellbovineMap | Hell Bovine | Graveyard Map | Map H2H t1 | 0.000006787018030696146
+hellbovineMage | Hell Bovine |  | Map H2H t1 | 0.000006787018030696146
+foulcrowJungle | FoulCrow | Jungle Map | Map Cast t1 | 0.000006787018030696146
+sandleaperJungle | TreeLurker | Jungle Map | Map H2H t1 | 0.000006787018030696146
+deathmaulerJungle | Death Mauler2 | Jungle Map | Map H2H t1 | 0.000006787018030696146
+bruteJungle | Crusher | Jungle Map | Map H2H t1 | 0.000006787018030696146
+baboonJungle | DuneBeast | Jungle Map | Map H2H t1 | 0.000006787018030696146
+scarabJungle | SandWarrior | Jungle Map | Map H2H t1 | 0.000006787018030696146
+councilmemberJungle | Council Member | Jungle Map | Map Cast t1 | 0.000006787018030696146
+zombieSiege | Zombie | Siege Map | Map H2H t1 | 0.000006787018030696146
+goatmanSiege | NightClan | Siege Map | Map H2H t1 | 0.000006787018030696146
+bigheadSiege | Afflicted | Siege Map | Map Cast t1 | 0.000006787018030696146
+reanimatedSiege | UnholyCorpse | Siege Map | Map H2H t1 | 0.000006787018030696146
+thornhulkSiege | BrambleHulk | Siege Map | Map H2H t1 | 0.000006787018030696146
+overseerMaus | BloodBoss |  | Map H2H t1 | 0.000006787018030696146
+fetish2Sewer | Fetish | Sewers | Map H2H t1 | 0.000006787018030696146
+minionSewer | Minionexp | Sewers | Map H2H t1 | 0.000006787018030696146
+vilechildSewer | GrotesqueWyrm | Sewers | Map H2H t1 | 0.000006787018030696146
+vampireSewer | GhoulLord | Sewers | Map Cast t1 | 0.000006787018030696146
+sandmaggotSewer | SandMaggot | Sewers | Map Cast t1 | 0.000006787018030696146
+sandraiderSewer | Marauder | Sewers | Map H2H t1 | 0.000006787018030696146
+mummyIce | PreservedDead | Ice Map | Map H2H t1 | 0.000006787018030696146
+skeletonIce | BoneWarrior | Ice Map | Map H2H t1 | 0.000006787018030696146
+skmage_coldIce | BoneMage | Ice Map | Map Cast t1 | 0.000006787018030696146
+arach5Ice | SpiderMagus | Ice Map | Map H2H t1 | 0.000006787018030696146
+megademon2Ice | PitLord | Ice Map | Map H2H t1 | 0.000006787018030696146
+baalminion3Ice | Baals Minion | Ice Map | Map H2H t1 | 0.000006787018030696146
+scarabTomb | Scarab | Tomb Map | Map H2H t1 | 0.000006787018030696146
+painworm1Tomb | Pain Worm1 | Tomb Map | Map H2H t1 | 0.000006787018030696146
+skmage_ltng5Tomb | ReturnedMage | Tomb Map | Map Cast t1 | 0.000006787018030696146
+baboon1Tomb | DuneBeast | Tomb Map | Map H2H t1 | 0.000006787018030696146
+batdemon5Tomb | DarkFamiliar | Tomb Map | Map H2H t1 | 0.000006787018030696146
+arach1Tomb | Arach | Tomb Map | Map H2H t1 | 0.000006787018030696146
+baalminionTomb | Baals Minion | Tomb Map | Map H2H t1 | 0.000006787018030696146
+succubusMod | Hell Temptress |  | Map H2H t1 | 0.000006787018030696146
+zombieCaldeum | Zombie | Fall of Caldeum | Map H2H t1 | 0.000006787018030696146
+pantherwoman1Caldeum | Huntress | Fall of Caldeum | Map H2H t1 | 0.000006787018030696146
+flyingscimitarCaldeum | FlyingScimitar | Fall of Caldeum | Map H2H t1 | 0.000006787018030696146
+swarm4Caldeum | HellSwarm | Fall of Caldeum | Map H2H t1 | 0.000006787018030696146
+cantor3Caldeum | Heirophant | Fall of Caldeum | Map Cast t1 | 0.000006787018030696146
+vampire3Pandemonium | DarkLord | Pandemonium Citadel | Map Cast t1 | 0.000006787018030696146
+reanimatedhorde3Pandemonium | ProwlingDead | Pandemonium Citadel | Map H2H t1 | 0.000006787018030696146
+fetish3Pandemonium | Flayer | Pandemonium Citadel | Map H2H t1 | 0.000006787018030696146
+baboon5Pandemonium | TempleGuard | Pandemonium Citadel | Map H2H t1 | 0.000006787018030696146
+siegebeast3Pandemonium | BloodBringer | Pandemonium Citadel | Map H2H t1 | 0.000006787018030696146
+minionSpider | Minionexp | Lost Temple | Map H2H t1 | 0.000006787018030696146
+mosquito4Spider | BloodWing | Lost Temple | Map H2H t1 | 0.000006787018030696146
+batdemon6Spider | Gloombat | Lost Temple | Map H2H t1 | 0.000006787018030696146
+unraveler3Spider | Unraveler | Lost Temple | Map Cast t1 | 0.000006787018030696146
+blunderbore2Spider | Gorbelly | Lost Temple | Map H2H t1 | 0.000006787018030696146
+arach3Spider | PoisonSpinner | Lost Temple | Map H2H t1 | 0.000006787018030696146
+summonerMapMinion | HellSpawn |  | Map H2H t1 | 0.000006787018030696146
+snowyeti4Frozen | SnowYeti4 | Canyon Map | Map H2H t1 | 0.000006787018030696146
+sandleaper5Frozen | RazorPitDemon | Canyon Map | Map H2H t1 | 0.000006787018030696146
+doomknight1Frozen | DoomKnight | Canyon Map | Map H2H t1 | 0.000006787018030696146
+doomknight3Frozen | OblivionKnight | Canyon Map | Map Cast t1 | 0.000006787018030696146
+clawviper5Frozen | SerpentMagus | Canyon Map | Map H2H t1 | 0.000006787018030696146
+overseer3Frozen | OverLord | Canyon Map | Map H2H t1 | 0.000006787018030696146
+fetish4Frozen | SoulKiller | Canyon Map | Map H2H t1 | 0.000006787018030696146
+sandraider3Market | Invader | Desert Map | Map H2H t1 | 0.000006787018030696146
+flyingscimitarMarket | FlyingScimitar | Desert Map | Map H2H t1 | 0.000006787018030696146
+corruptrogue2Market | VileHunter | Desert Map | Map H2H t1 | 0.000006787018030696146
+mosquito2Market | Feeder | Desert Map | Map H2H t1 | 0.000006787018030696146
+vampire1Market | GhoulLord | Desert Map | Map Cast t1 | 0.000006787018030696146
+unraveler3Market | Unraveler | Desert Map | Map Cast t1 | 0.000006787018030696146
+fallenMarketBoss | DevilkinSlave |  | Map H2H t1 | 0.000006787018030696146
+doomknight1Arcane | DoomKnight |  | Map H2H t1 | 0.000006787018030696146
+bloodlord5Library | Blood Lord5 | LibraryMap | Map H2H t1 | 0.000006787018030696146
+skeleton3Crypt | BoneWarrior | CryptsMap | Map H2H t1 | 0.000006787018030696146
+flyingscimitarCrypt | FlyingScimitar | CryptsMap | Map H2H t1 | 0.000006787018030696146
+minion4Westmarch | FireBoar | WestmarchMap | Map H2H t1 | 0.000006787018030696146
+goatmanBastionWestmarch | MoonClan | WestmarchMap | Map H2H t1 | 0.000006787018030696146
+zombie1Westmarch | Zombie | WestmarchMap | Map H2H t1 | 0.000006787018030696146
+siegebeast1Westmarch | Siege Beast | WestmarchMap | Map H2H t1 | 0.000006787018030696146
+overseer1Westmarch | OverSeer | WestmarchMap | Map H2H t1 | 0.000006787018030696146
+blunderbore2Cistern | Gorbelly | Ruined Cistern | Map H2H t1 | 0.000006787018030696146
+clawviper3Cistern | Salamander | Ruined Cistern | Map H2H t1 | 0.000006787018030696146
+corruptrogue2Cistern | VileHunter | Ruined Cistern | Map H2H t1 | 0.000006787018030696146
+mummy1Cistern | DriedCorpse | Ruined Cistern | Map H2H t1 | 0.000006787018030696146
+skmage_ltng1Cistern | ReturnedMage | Ruined Cistern | Map Cast t1 | 0.000006787018030696146
+frogdemon2Cistern | Bog Creature | Ruined Cistern | Map H2H t1 | 0.000006787018030696146
+baboon4Ash | DoomApe | Ashen Plains | Map H2H t1 | 0.000006787018030696146
+thornhulk3Ash | Thrasher | Ashen Plains | Map H2H t1 | 0.000006787018030696146
+pantherwoman6Ash | SaberCat | Ashen Plains | Map H2H t1 | 0.000006787018030696146
+foulcrow3Ash | BlackRaptor | Ashen Plains | Map Cast t1 | 0.000006787018030696146
+fetish3Ash | Flayer | Ashen Plains | Map H2H t1 | 0.000006787018030696146
+deathmauler4Ash | Death Mauler4 | Ashen Plains | Map H2H t1 | 0.000006787018030696146
+batdemon3mapmod | ShriekingTerror |  | Map H2H t1 | 0.000006787018030696146
+imp5bastion | Imp5 |  | Map Cast t1 | 0.000006787018030696146
+blunderbore4Zhar1 | Urdar | ZharRiversMap | Map H2H t1 | 0.000006787018030696146
+vilemother3Warlord | Grotesque | HellcavesMap | Map Cast t1 | 0.000006787018030696146
+vilechild3Warlord | GrotesqueWyrm |  | Map Cast t1 | 0.000006787018030696146
+imp5Warlord | Imp5 | HellcavesMap | Map Cast t1 | 0.000006787018030696146
+doomknight3Warlord2 | OblivionKnight | HellcavesFortressMap | Map Cast t1 | 0.000006787018030696146
+thornhulk4FallenGardens | Thrasher | FallenGardensMap | Map H2H t1 | 0.000006787018030696146
+mosquito4FallenGardens | BloodWing | FallenGardensMap | Map H2H t1 | 0.000006787018030696146
+councilmemberFallenGardens | Bog Creature | FallenGardensMap | Map Cast t1 | 0.000006787018030696146
+imp5FallenGardens | Imp5 | FallenGardensMap | Map Cast t1 | 0.000006787018030696146
+reanimatedhorde3FallenGardens | ProwlingDead | FallenGardensMap | Map H2H t1 | 0.000006787018030696146
+skeleton2ruins | Returned |  | Map H2H t1 | 0.000006787018030696146
+painworm1DemonRoadBoss | Pain Worm1 |  | Map H2H t1 | 0.000006787018030696146
+zealot2SkovosBoss | Faithful |  | Map H2H t1 | 0.000006787018030696146
+voidBeastUniqueMap | VoidBeast | OuterVoidMap | Map Cast t1 | 0.000006787018030696146
+voidlingUniqueMap | Voidling | OuterVoidMap | Map H2H t1 | 0.000006787018030696146
+voidKnightCorridorUniqueMap | VoidKnight | OuterVoidMap | Map Cast t1 | 0.000006787018030696146
+baalminion3Imperial | Baals Minion | ImperialPalaceMap | Map H2H t1 | 0.000006787018030696146
+councilmember3TortureHalls | Council Member | HallsOfTortureMap | Map Cast t1 | 0.000006787018030696146
+baalminion3MapMod | Baals Minion |  | Map H2H t1 | 0.000006787018030696146
+fallen1Nakrul | Devilkinbrute | NaKrulAbyssMap | Map H2H t1 | 0.000006787018030696146
+goatman4Nakrul | Satyrlord | NaKrulAbyssMap | Map H2H t1 | 0.000006787018030696146
+batdemon4Nakrul | Hellbat | NaKrulAbyssMap | Map H2H t1 | 0.000006787018030696146
+megademon1Nakrul | Reaper | NaKrulAbyssMap | Map H2H t1 | 0.000006787018030696146
+brute3Nakrul | Cryptdemon | NaKrulAbyssMap | Map H2H t1 | 0.000006787018030696146
+regurgitator3Nakrul | Fleshthing | NaKrulAbyssMap | Map H2H t1 | 0.000006787018030696146
+vampire2Nakrul | Lich | NaKrulAbyssMap | Map Cast t1 | 0.000006787018030696146
+succubus3Nakrul | Skullwing | NaKrulAbyssMap | Map H2H t1 | 0.000006787018030696146
+reanimatedhorde5Kyovoshad | DefiledWarrior | KyovashadMap | Map H2H t1 | 0.000006787018030696146
+vilemother3Kyovoshad | Grotesque | KyovashadMap | Map Cast t1 | 0.000006787018030696146
+vilechild3Kyovoshad | GrotesqueWyrm | KyovashadMap | Map Cast t1 | 0.000006787018030696146
+flyingscimitarDjinnLight | FlyingScimitar | DjinnsDomainMap | Map H2H t1 | 0.000006787018030696146
+councilmemberBlood | Council Member | River Of Blood | Map Cast t1 | 0.000006787018030696146
+fetish2ruins | Fetish |  | Map H2H t1 | 0.000006787018030696146
+fetishblow2ruins | Fetish |  | Map H2H t1 | 0.000006787018030696146
+imp1phlegethon | Imp1 |  | Map Cast t1 | 0.000006787018030696146
+glyphhorde | ProwlingDead |  | Map H2H t1 | 0.000006787018030696146
+abysshordelesser_t2 | StrLsAbyssFiend |  | LS Horde T2 H2H | 0.000006694276108221153
+abysshorde_t2_greater | StrLsAbyssFiend |  | LS Horde T2 H2H | 0.000006694276108221153
+cr_archer2Library | VileArcher | LibraryMap | Map Miss t2 | 0.000006647955710148423
+deathmauler3Library | Death Mauler3 | LibraryMap | Map Miss t2 | 0.000006647955710148423
+sk_archer2TortureHalls | ReturnedArcher | HallsOfTortureMap | Map Miss t2 | 0.000006647955710148423
+corruptrogue2Library | VileHunter | LibraryMap | Map H2H t2 | 0.000006614649318836818
+cr_lancer2Library | VileLancer | LibraryMap | Map H2H t2 | 0.000006614649318836818
+vampire1Library | GhoulLord | LibraryMap | Map Cast t2 | 0.000006614649318836818
+sandleaper3TortureHalls | TombCreeper | HallsOfTortureMap | Map H2H t2 | 0.000006614649318836818
+zealot1TortureHalls | Zakarumite | HallsOfTortureMap | Map H2H t2 | 0.000006614649318836818
+blunderbore1TortureHalls | Blunderbore | HallsOfTortureMap | Map H2H t2 | 0.000006614649318836818
+vampire3TortureHalls | DarkLord | HallsOfTortureMap | Map Cast t2 | 0.000006614649318836818
+regurgitator1TortureHalls | Corpulent | HallsOfTortureMap | Map H2H t2 | 0.000006614649318836818
+thornhulk2Ureh | BrambleHulk | UrehCityMap | Map H2H t2 | 0.000006614649318836818
+corruptrogue1DjinnLight | DarkHunter | DjinnsDomainMap | Map H2H t2 | 0.000006614649318836818
+cr_lancer1DjinnLight | DarkSpearwoman | DjinnsDomainMap | Map H2H t2 | 0.000006614649318836818
+imp1DjinnLight | Imp1 | DjinnsDomainMap | Map Cast t2 | 0.000006614649318836818
+sandraider3DjinnLight | Invader | DjinnsDomainMap | Map H2H t2 | 0.000006614649318836818
+succubuswitch3DjinnLight | StygianFury | DjinnsDomainMap | Map Cast t2 | 0.000006614649318836818
+clawviper7DjinnLight | PitViper | DjinnsDomainMap | Map H2H t2 | 0.000006614649318836818
+scarab1DjinnLight | DungSoldier | DjinnsDomainMap | Map H2H t2 | 0.000006614649318836818
+clawviper3DjinnDark | Salamander | DjinnsDomainRedMap | Map H2H t2 | 0.000006614649318836818
+arach4DjinnDark | FlameSpider | DjinnsDomainRedMap | Map H2H t2 | 0.000006614649318836818
+imp2DjinnDark | Imp2 | DjinnsDomainRedMap | Map Cast t2 | 0.000006614649318836818
+vampire3DjinnDark | DarkLord | DjinnsDomainRedMap | Map Cast t2 | 0.000006614649318836818
+bloodlord3DjinnDark | Blood Lord3 | DjinnsDomainRedMap | Map H2H t2 | 0.000006614649318836818
+corruptrogue5DjinnDark | FleshHunter | DjinnsDomainRedMap | Map H2H t2 | 0.000006614649318836818
+cr_lancer5DjinnDark | FleshLancer | DjinnsDomainRedMap | Map H2H t2 | 0.000006614649318836818
+abysshordelesser_t3 | StrLsAbyssReaver |  | LS Horde T3 H2H | 0.0000065019432842206015
+abysshorde_t3_greater | StrLsAbyssReaver |  | LS Horde T3 H2H | 0.0000065019432842206015
+sk_archer3Crypt | BoneArcher | CryptsMap | Map Miss t3 | 0.000006463290273761579
+bighead1Crypt | Afflicted | CryptsMap | Map Miss t3 | 0.000006463290273761579
+slinger2Zhar1 | SpearCat | ZharRiversMap | Map Miss t3 | 0.000006463290273761579
+cr_archer2Skovos | VileArcher | Skovos Stronghold | Map Miss t3 | 0.000006463290273761579
+deathmauler3Skovos | Death Mauler3 | Skovos Stronghold | Map Miss t3 | 0.000006463290273761579
+fetishblow3Imperial | Flayer | ImperialPalaceMap | Map Miss t3 | 0.000006463290273761579
+cantor2Ureh | CantorUreh | UrehCityMap | Map Miss t3 | 0.000006463290273761579
+sk_archer2Ureh | ReturnedArcher | UrehCityMap | Map Miss t3 | 0.000006463290273761579
+scarab3Crypt | Scarab | CryptsMap | Map H2H t3 | 0.000006430909060051171
+batdemon3Crypt | Gloombat | CryptsMap | Map H2H t3 | 0.000006430909060051171
+baboon1Crypt | DuneBeast | CryptsMap | Map H2H t3 | 0.000006430909060051171
+clawviper2Crypt | ClawViper | CryptsMap | Map H2H t3 | 0.000006430909060051171
+minion5throne | HellSpawn |  | Map H2H t3 | 0.000006430909060051171
+pantherwoman1Zhar1 | Huntress | ZharRiversMap | Map H2H t3 | 0.000006430909060051171
+cantor4Zhar1 | Heirophant | ZharRiversMap | Map Cast t3 | 0.000006430909060051171
+baboon3Zhar2 | JungleHunter | ZharKurastMap | Map H2H t3 | 0.000006430909060051171
+skeleton2Zhar2 | Returned | ZharKurastMap | Map H2H t3 | 0.000006430909060051171
+unraveler2Zhar2 | Guardian | ZharKurastMap | Map Cast t3 | 0.000006430909060051171
+frogdemon2Zhar2 | Bog Creature | ZharKurastMap | Map H2H t3 | 0.000006430909060051171
+succubus4Zhar2 | Hell Temptress | ZharKurastMap | Map H2H t3 | 0.000006430909060051171
+fallenshaman2Zhar3 | CarverShaman | ZharIceMap | Map Cast t3 | 0.000006430909060051171
+vampire2Zhar3 | NightLord | ZharIceMap | Map Cast t3 | 0.000006430909060051171
+fallen2Zhar3 | Carver | ZharIceMap | Map H2H t3 | 0.000006430909060051171
+reanimatedhorde2Zhar3 | ReanimatedHorde | ZharIceMap | Map H2H t3 | 0.000006430909060051171
+siegebeast2Zhar3 | CrushBiest | ZharIceMap | Map H2H t3 | 0.000006430909060051171
+suicideminion3Warlord | ConsumedIceBoar | HellcavesMap | Map H2H t3 | 0.000006430909060051171
+deathmauler1Warlord | Death Mauler1 | HellcavesMap | Map H2H t3 | 0.000006430909060051171
+skeleton5Warlord | Horror | HellcavesMap | Map H2H t3 | 0.000006430909060051171
+doomknight1Warlord2 | DoomKnight | HellcavesFortressMap | Map H2H t3 | 0.000006430909060051171
+regurgitator2Warlord2 | CorpseSpitter | HellcavesFortressMap | Map H2H t3 | 0.000006430909060051171
+reanimatedhorde1Warlord2 | RotWalker | HellcavesFortressMap | Map H2H t3 | 0.000006430909060051171
+bloodlord1Warlord2 | Blood Lord1 | HellcavesFortressMap | Map H2H t3 | 0.000006430909060051171
+succubus4DemonRoad | Hell Temptress | Demon Road | Map H2H t3 | 0.000006430909060051171
+blunderbore2DemonRoad | Gorbelly | Demon Road | Map H2H t3 | 0.000006430909060051171
+clawviper1DemonRoad | TombViper | Demon Road | Map H2H t3 | 0.000006430909060051171
+unraveler1DemonRoad | HollowOne | Demon Road | Map Cast t3 | 0.000006430909060051171
+skmage_fire1DemonRoad | ReturnedMage | Demon Road | Map Cast t3 | 0.000006430909060051171
+skeleton2DemonRoad | Returned | Demon Road | Map H2H t3 | 0.000006430909060051171
+goatman3DemonRoad | NightClan | Demon Road | Map H2H t3 | 0.000006430909060051171
+mummy1Skovos | DriedCorpse | Skovos Stronghold | Map H2H t3 | 0.000006430909060051171
+corruptrogue2Skovos | VileHunter | Skovos Stronghold | Map H2H t3 | 0.000006430909060051171
+cr_lancer2Skovos | VileLancer | Skovos Stronghold | Map H2H t3 | 0.000006430909060051171
+thornhulk2Skovos | BrambleHulk | Skovos Stronghold | Map H2H t3 | 0.000006430909060051171
+bighead6Skovos | Afflicted | Skovos Stronghold | Map H2H t3 | 0.000006430909060051171
+voidFrogUniqueMap | VoidFrog | OuterVoidMap | Map H2H t3 | 0.000006430909060051171
+fetish3Imperial | Flayer | ImperialPalaceMap | Map H2H t3 | 0.000006430909060051171
+succubus1Imperial | Succubusexp | ImperialPalaceMap | Map H2H t3 | 0.000006430909060051171
+mummy2Imperial | Decayed | ImperialPalaceMap | Map H2H t3 | 0.000006430909060051171
+vampire8MapMod | DarkLord |  | Map Cast t3 | 0.000006430909060051171
+UrehHydra | RiverStalkerHead |  | Map H2H t3 | 0.000006430909060051171
+zealot5Ureh | ZealotUreh | UrehCityMap | Map H2H t3 | 0.000006430909060051171
+unusedSOE1 | Returned |  | Map H2H t3 | 0.000006430909060051171
+unusedSOE2 | Guardian |  | Map Cast t3 | 0.000006430909060051171
+zealot1Kyovoshad | Zakarumite | KyovashadMap | Map H2H t3 | 0.000006430909060051171
+bloodlord2Kyovoshad | Blood Lord2 | KyovashadMap | Map H2H t3 | 0.000006430909060051171
+deathmauler4Kyovoshad | Death Mauler4 | KyovashadMap | Map H2H t3 | 0.000006430909060051171
+skmage_ltng1Kyovoshad | ReturnedMage | KyovashadMap | Map Cast t3 | 0.000006430909060051171
+skeleton2Ureh | Returned | UrehCityMap | Map H2H t3 | 0.000006430909060051171
+unraveler2Ureh | Guardian | UrehCityMap | Map Cast t3 | 0.000006430909060051171
+frogdemon2Ureh | Bog Creature | UrehCityMap | Map H2H t3 | 0.000006430909060051171
+succubus4Ureh | Hell Temptress | UrehCityMap | Map H2H t3 | 0.000006430909060051171
+swarm1 | Itchies | Far Oasis | Swarm 2 (H) | 0.000005339848436536343
+swarm2 | BlackLocusts | Maggot Lair Level 1 | Swarm 2 (H) | 0.000005339848436536343
+swarm3 | PlagueBugs |  | Swarm 2 (H) | 0.000005339848436536343
+swarm4 | HellSwarm | Kurast Bazaar | Swarm 2 (H) | 0.000005339848436536343
+vulture1 | CarrionBird | Rocky Waste | Swarm 2 (H) | 0.000005339848436536343
+vulture2 | UndeadScavenger | Dry Hills | Swarm 2 (H) | 0.000005339848436536343
+vulture3 | HellBuzzard | Lower Kurast | Swarm 2 (H) | 0.000005339848436536343
+vulture4 | WingedNightmare | Flayer Jungle | Swarm 2 (H) | 0.000005339848436536343
+mosquito1 | Sucker | Spider Forest | Swarm 2 (H) | 0.000005339848436536343
+mosquito2 | Feeder | Sewers Level 1 | Swarm 2 (H) | 0.000005339848436536343
+mosquito3 | BloodHook |  | Swarm 2 (H) | 0.000005339848436536343
+mosquito4 | BloodWing | Sewers Level 2 | Swarm 2 (H) | 0.000005339848436536343
+vulture5 | CarrionBird |  | Swarm 2 (H) | 0.000005339848436536343
+swarm5 | HellSwarm | Pandemonium Run 2 | Swarm 2 (H) | 0.000005339848436536343
+mosquitomap | Sucker | Kurast | Map Swarm t1 | 0.000005111194615436965
+vultureSiege | CarrionBird | Siege Map | Map Swarm t1 | 0.000005111194615436965
+mosquitoSiege | BloodWing | Siege Map | Map Swarm t1 | 0.000005111194615436965
+mosquitoSewer | BloodWing | Sewers | Map Swarm t1 | 0.000005111194615436965
+swarm4Zhar1 | HellSwarm | ZharRiversMap | Map Swarm t1 | 0.000005111194615436965
 
 ## damnation unique "Tyrael's Might" difficulty="H" players=1 mf="" -> 250 rows
 horrorofresplendencet4 | HorrorOfResplendence |  | Resplendence Terror T4 | 0.00010482216862894855

@@ -19,7 +19,7 @@ export const DROP_CALC_COLUMNS = {
         ...numbered("Item"), ...numbered("Prob")]},
     Weapons: {required: [...BASE_ITEM_COLUMNS, "type2"]},
     Armor: {required: BASE_ITEM_COLUMNS},
-    Misc: {required: ["code", "level", "normcode", "ubercode", "ultracode"]},
+    Misc: {required: ["code", "level", "normcode", "ubercode", "ultracode", "stackable"]},
     UniqueItems: {required: ["index", "code", "lvl", "rarity", "enabled"], optional: ["item"]},
     SetItems: {required: ["index", "item", "lvl", "rarity"], optional: ["code", "enabled"]},
     ItemRatio: {all: true},
