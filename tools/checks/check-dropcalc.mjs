@@ -105,6 +105,17 @@ await run(async (page) => {
     c.ok(fetched(/\/damnation\/DropCalculator\.json/) === 1, "desktop: damnation/DropCalculator.json fetched once");
     c.ok(fetched(/\/standard\/DropCalculator\.json/) === 1, "desktop: standard/DropCalculator.json still fetched once");
 
+    // --- Desktop: "View drop rates" on a unique card whose display name differs from its index
+    await page.goto(`${BASE}#/uniques`);
+    await page.waitFor(`!!document.querySelector('input[placeholder="Search item name…"]')`);
+    await page.type(`input[placeholder="Search item name…"]`, "Skull Splitter");
+    await sleep(500);
+    await page.click(".tooltip-link", {text: "View drop rates"});
+    await page.waitFor(`location.hash === "#/dropcalc"`);
+    const linked = await page.eval(`document.querySelector(${JSON.stringify(QUERY_INPUT)}).value`);
+    c.ok(linked === "Mindrend", "link: View drop rates on Skull Splitter sends its index", linked);
+    await waitTotal(page, expected("standard", "Mindrend", "H"), "link: the calculator shows Mindrend's Hell rows");
+
     // --- Race (Review Focus 2): a run waiting for Standard's data must not overwrite Damnation's rows
     const held = [];
     page.on("Fetch.requestPaused", (p) => held.push(p.requestId));

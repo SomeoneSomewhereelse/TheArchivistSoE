@@ -59,3 +59,9 @@ export function loadDropCalcTables(mode) {
 export function loadDropCalcModel(mode) {
     return prepareModel(loadDropCalcTables(mode));
 }
+
+// The wiki's unique cards (Uniques.json) of one mode.
+export function readUniquesJson(mode) {
+    const file = mode === "damnation" ? "damnation/Uniques.json" : "Uniques.json";
+    return JSON.parse(readFileSync(new URL(file, DATA), "utf8"));
+}

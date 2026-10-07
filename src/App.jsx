@@ -2463,7 +2463,7 @@ function UniqueTooltip({u, openDropCalculator, onLink}) {
         {!u?.hellforged ? (<>
             <div
                 className="tooltip-link"
-                onClick={() => openDropCalculator(n(u?.displayName) || n(u?.index))}
+                onClick={() => openDropCalculator(n(u?.index) || n(u?.displayName))}
             >
                 View drop rates
             </div>

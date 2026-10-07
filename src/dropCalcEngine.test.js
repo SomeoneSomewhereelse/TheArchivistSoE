@@ -1,7 +1,7 @@
 import {describe, expect, it} from "vitest";
 import {DROP_CALC_COLUMNS} from "./dropCalcData.js";
 import {calculateDrops, prepareModel} from "./dropCalcEngine.js";
-import {formatGolden, GOLDEN_QUERIES, loadDropCalcModel, loadDropCalcTables} from "./dropCalcFixtures.js";
+import {formatGolden, GOLDEN_QUERIES, loadDropCalcModel, loadDropCalcTables, readUniquesJson} from "./dropCalcFixtures.js";
 
 const EMPTY = {MonStats: [], TreasureClassEx: [], Weapons: [], Armor: [], Misc: [], UniqueItems: [], SetItems: [],
     ItemRatio: [], ItemTypes: [], Levels: []};
@@ -123,4 +123,20 @@ describe("calculateDrops on the real tables", () => {
             }
         }
     }, 60000);
+});
+
+// The unique card's "View drop rates" link sends u.index; the calculator matches it exactly against
+// UniqueItems.txt's index. The display name often differs ("Skull Splitter" is "Mindrend").
+describe("View drop rates link targets", () => {
+    const shown = (u) => ![true, 1, "1", "true"].includes(typeof u.dontDisplay === "string" ? u.dontDisplay.toLowerCase() : u.dontDisplay);
+
+    for (const mode of ["standard", "damnation"]) {
+        it(`resolves every linkable ${mode} unique exactly by its index`, () => {
+            const indexes = new Set(loadDropCalcModel(mode).uniqueItems.map((r) => String(r.index ?? "").trim().toLowerCase()));
+            const linkable = readUniquesJson(mode).filter((u) => shown(u) && !u.hellforged);
+            expect(linkable.length).toBeGreaterThan(500);
+            const missing = linkable.filter((u) => !indexes.has(String(u.index ?? "").trim().toLowerCase()));
+            expect(missing.map((u) => `${u.displayName} [${u.index}]`)).toEqual([]);
+        });
+    }
 });
