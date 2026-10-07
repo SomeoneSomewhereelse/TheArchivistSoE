@@ -1,0 +1,6 @@
+# What the check scripts produce: screenshot sets, single screenshots, logs, and the temporary
+# Chrome profiles cdp.mjs creates (and deletes) beside itself.
+shots/
+*.png
+*.log
+chrome-profile-*/

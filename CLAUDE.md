@@ -180,3 +180,17 @@ back, so run desktop hover checks before any mobile emulation in the same browse
 
 Desktop must keep working. After layout work, compare screenshots of every tab at desktop
 width before and after the change.
+
+The harness is committed in `tools/checks/` (Node ≥ 22, no dependencies; outputs such as `shots/`,
+`*.png`, `*.log` and the temporary Chrome profiles are gitignored there):
+
+- `cdp.mjs`: launches headless Chromium (desktop hover flags included) and drives it; `page` helpers
+  (`goto`, `eval`, `waitFor`, `desktop()`, `mobile()`, `click`, `tap`/`tapAt`, `type`, `screenshot`, raw
+  `send`), `checker()` for PASS/FAIL lines, `OVERFLOW_CHECK` for horizontal overflow.
+- `compare-desktop.mjs <label> <url>` takes full-page 1500px screenshots of all 19 tabs into
+  `shots/desktop-<label>/`; `diff-shots.mjs <labelA> <labelB>` pixel-diffs two sets.
+- Feature checks: `check-sticky.mjs` (floating table header), `check-multisort.mjs` (Affixes multi-sort).
+
+Run them from `tools/checks/` against a dev server:
+`APP_URL=http://localhost:<port>/TheArchivistSoE/ node check-sticky.mjs <screenshot dir>`. The `.mjs`
+files sit outside the app's `**/*.{js,jsx}` ESLint block, so the browser and React rules don't apply.
