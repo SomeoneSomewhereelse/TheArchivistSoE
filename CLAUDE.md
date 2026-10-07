@@ -120,11 +120,19 @@ the value. No `eslint-disable`.
     be null or empty.
 - `displayExcludedItemTypeNames` sometimes repeats an entry ("Staff Class" three times).
   That's a data quirk, displayed as-is.
-- Sorting goes through `compareAffixes` in `src/sortCompare.js`. **Every sortable column needs
-  an entry in `AFFIX_SORT_KEYS` and a case in `affixSortValue`.** A unit test fails for a listed
-  key with no case, and an unlisted key with no case throws on first sort rather than silently
-  tying every row (the old Affix level bug). Missing values sort lowest, except Max lvl, where
-  null (no cap) sorts highest.
+- The sort is an ordered list of `{key, dir}` held in `App` (`affixSort`) and saved to `localStorage`
+  (`"the-archivist-affix-sort"`, cleaned by `parseStoredSort` on load). An **empty list** is the starting
+  state and sorts by the default, Attributes ▲, without listing it (`effectiveSort`). Header clicks go
+  through `clickSort`: with the Multi-sort switch off they replace the sort (or flip the sole key); with it
+  on they append a column or flip one in place. The sort bar (`src/AffixSortBar.jsx`) shows the order as
+  chips (flip, ×) with Reset. Any sort change returns to page 1 and to the table's top.
+- Rows compare through `compareAffixesBy` (each key in turn) and `compareAffixes` in `src/sortCompare.js`.
+  **Every sortable column needs an entry in `AFFIX_SORT_KEYS`, a case in `affixSortValue` and a label in
+  `AFFIX_SORT_LABELS`**, and a place in `AFFIX_COLUMNS` in `App.jsx`. A unit test fails for a listed key
+  with no case or no label, and an unlisted key with no case throws on first sort rather than silently tying
+  every row (the old Affix level bug). Missing values sort lowest, except Max lvl, where null (no cap) sorts
+  highest. Rows tied on every key keep the incoming order (`filtered` pre-sorts Affixes by item types, then
+  name).
 - Affixes, Corruptions and the Drop calculator results all render through `StickyHeadTable` and share the
   `.affixTable` / `.affixTableScroll` classes. A CSS change to one affects all three. The floating header
   copy (`.floatingHead`) carries the same table classes, so `.affixTable th` rules style it too; its header
