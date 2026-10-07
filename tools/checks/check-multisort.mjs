@@ -221,6 +221,25 @@ await run(async (page) => {
     s = await state(page);
     c.ok(s.def === "Attributes ▲ (default)" && s.multi === false && !s.failed && s.rows > 1, "corrupt stored values → default sort, switch off, table renders", JSON.stringify(s));
 
+    // Keyboard focus: removing a chip or pressing Reset unmounts the focused button; focus must stay in the bar.
+    await page.eval(CLEAR_SAVED);
+    await freshAffixes(page);
+    await page.click(".multiSortToggle input");
+    await clickHeader(page, "Grp");
+    await clickHeader(page, "Lvl");
+    const focusInfo = `(() => { const a = document.activeElement; return {inBar: !!a?.closest?.(".affixSortBar"), label: a?.getAttribute?.("aria-label") ?? a?.className ?? a?.tagName}; })()`;
+    const pressFrom = (selector) => page.eval(`(() => { const b = document.querySelector(${JSON.stringify(selector)}); b.focus(); b.click(); return new Promise((r) => setTimeout(r, 200)); })()`);
+    await pressFrom('.affixSortBar [aria-label="Remove Grp"]');
+    let f = await page.eval(focusInfo);
+    c.ok(f.inBar && f.label === "Lvl ascending, reverse", "focus: removing a chip moves focus to a neighbouring chip", JSON.stringify(f));
+    await pressFrom('.affixSortBar [aria-label="Remove Lvl"]');
+    f = await page.eval(focusInfo);
+    c.ok(f.inBar, "focus: removing the last chip keeps focus in the bar", JSON.stringify(f));
+    await clickHeader(page, "Grp");
+    await pressFrom(".affixSortBar .sortReset");
+    f = await page.eval(focusInfo);
+    c.ok(f.inBar, "focus: Reset keeps focus in the bar", JSON.stringify(f));
+
     // ---------------- Phone, 390x844 ----------------
     await page.mobile();
     await page.eval(CLEAR_SAVED);
