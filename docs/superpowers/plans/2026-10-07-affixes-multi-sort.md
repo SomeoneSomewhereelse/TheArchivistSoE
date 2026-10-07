@@ -17,7 +17,7 @@
 - React Compiler rules are active: no `setState` in effects, no ref reads during render. Ref reads in event handlers are fine.
 - Test files import `describe`/`it`/`expect` from `"vitest"` explicitly. The existing `sortCompare.test.js` tests stay as they are (only its import line grows).
 - Pure logic in `src/sortCompare.js`; the new UI in `src/AffixSortBar.jsx`, not inline in `App.jsx`.
-- `localStorage` key: `"the-archivist-affix-sort"`; default sort `[{key: "attrs", dir: "asc"}]`, used only as the fallback for an empty list.
+- `localStorage` keys: `"the-archivist-affix-sort"` (the list) and, from Task 5, `"the-archivist-affix-multi"` (the Multi-sort switch, JSON `true`/`false`); default sort `[{key: "attrs", dir: "asc"}]`, used only as the fallback for an empty list.
 - No header `th` may get a `style` prop (the floating sticky header writes inline widths to its copies).
 - Desktop at rest: every tab except Affixes pixel-identical to `main` (1500px full-page screenshots, fresh profile).
 - Work in a manual worktree: `git worktree add .worktrees/affixes-multi-sort -b affixes-multi-sort main`. **Never use the EnterWorktree tool.** Commit on the branch; don't push, open PRs or merge.
@@ -520,7 +520,8 @@ const AFFIX_COLUMNS = [
 function AffixesPanel({data, loading, error, sort, onChangeSort}) {
     const wrapperRef = React.useRef(null);
 
-    // Multi-sort switch: header clicks append columns instead of replacing the sort. Not saved.
+    // Multi-sort switch: header clicks append columns instead of replacing the sort. (Task 2 shipped this as
+    // local state; Task 5 moved it to App, saved, and passes it in as `multi` / `onChangeMulti`.)
     const [multi] = React.useState(false);
 
     // Normalised data coming from global filters/search
@@ -954,9 +955,28 @@ nohup env npm_package_version=1.2.1 node node_modules/vite/bin/vite.js --host 10
 echo $! > "$SCRATCH/vite-5179.pid"
 ```
 
-Ask the user to open `http://100.91.245.9:5179/TheArchivistSoE/#/affixes` on their phone and try: the default label; a plain tap on a header; the Multi-sort switch, then taps on two or three headers (numbers in the headers, chips in order); flipping and removing chips; Reset; sorting from the floating header deep in the table; a reload (the sort is kept, the switch is off). Wait for their verdict; fix anything they report (re-running Steps 1–4 after a fix). Then stop the server: `kill "$(cat "$SCRATCH/vite-5179.pid")"`.
+Ask the user to open `http://100.91.245.9:5179/TheArchivistSoE/#/affixes` on their phone and try: the default label; a plain tap on a header; the Multi-sort switch, then taps on two or three headers (numbers in the headers, chips in order); flipping and removing chips; Reset; sorting from the floating header deep in the table; a reload (the sort and the switch are both kept; Task 5). Wait for their verdict; fix anything they report (re-running Steps 1–4 after a fix). Then stop the server: `kill "$(cat "$SCRATCH/vite-5179.pid")"`.
 
 - [ ] **Step 7: Report**
 
 Report: the commits on `affixes-multi-sort`, the `check-multisort.log` and `check-sticky.log` summaries, the diff results (Task 2's 19 zeros and Task 4's 18 zeros), lint/test/build output, and the user's phone verdict. Don't push, open a PR or merge.
 
+---
+
+### Task 5: Persist the Multi-sort switch (follow-up after the phone check)
+
+The phone check showed that restoring a multi-key sort while the switch reset to off is confusing, so the
+spec's "Saving the checkbox state" out-of-scope item was dropped and the switch is saved like the sort.
+
+**Files:**
+- Modify: `src/sortCompare.js`, `src/sortCompare.test.js` (`parseStoredFlag`)
+- Modify: `src/App.jsx` (`affixMulti` state + `changeAffixMulti` in `App`; `AffixesPanel` takes `multi` / `onChangeMulti` props instead of local state)
+- Modify: `tools/checks/check-multisort.mjs` (reload keeps the switch; clear both keys for "at rest"/phone starts), `tools/checks/check-sticky.mjs` (clear the multi key too)
+- Modify: `CLAUDE.md`
+
+- [ ] **Step 1: Failing tests** for `parseStoredFlag`: `"true"` → `true`; `null`, `undefined`, `""`, `"false"`, `"nope"`, `"1"`, `"\"true\""`, `"[]"` → `false`, never throws. Run `npx vitest run src/sortCompare.test.js`; expect the new tests to fail (`parseStoredFlag` not exported).
+- [ ] **Step 2: Implement** `parseStoredFlag(raw)` in `src/sortCompare.js`: `try { return JSON.parse(raw) === true } catch { return false }`. Run the tests: pass.
+- [ ] **Step 3: Wire it.** In `App`, beside `affixSort`: `AFFIX_MULTI_STORAGE_KEY = "the-archivist-affix-multi"`, `affixMulti` initialised from `parseStoredFlag(localStorage.getItem(...))` in try/catch (→ `false`), and `changeAffixMulti(next)` that calls `setAffixMulti(next)` and saves `JSON.stringify(next)` in try/catch (handler only, no effect). Pass `multi={affixMulti}` and `onChangeMulti={changeAffixMulti}` to `AffixesPanel`; in the panel delete the local `useState` and pass `onMultiChange={onChangeMulti}` to `AffixSortBar`.
+- [ ] **Step 4: Checks.** In `check-multisort.mjs` clear both keys wherever the sort key is cleared; change the reload check to assert the switch is restored on; add a corrupt-switch value check (`"{nope"` → off, no console errors) and a leave-the-tab-and-return check. In `check-sticky.mjs`'s `openTable` also remove `the-archivist-affix-multi`. Run both checks, the 19-tab diff against `main` (18 zeros plus Affixes by eye), lint, tests, build.
+- [ ] **Step 5: `CLAUDE.md`**: the Affixes sort bullet says the switch is saved too (`"the-archivist-affix-multi"`, `parseStoredFlag`).
+- [ ] **Step 6: Commit** the docs, then the code, then re-run Task 4 Step 6 (phone check).

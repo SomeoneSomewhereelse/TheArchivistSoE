@@ -40,7 +40,6 @@ sort bar.
 - Putting the sort in the URL hash (it stays `#/<tab>`).
 - Presets or saved sorts (persistence covers the "my usual sort" case).
 - Shift-click or any other modifier gesture: the checkbox is the only way into multi-sort.
-- Saving the checkbox state.
 - Keyboard access to header sorting: the header `th`s have `onClick` but aren't focusable today
   (pre-existing). The sort bar is keyboard-usable; adding columns from the keyboard is not. If header
   focus is ever added, the floating copy (`aria-hidden`) would need `inert`.
@@ -113,7 +112,8 @@ Sorted by: [Grp ▲ ×] › [Lvl ▲ ×] › [Max lvl ▼ ×]   Reset        ☐
 - **Multi-sort** switch: the app's existing toggle-switch pattern used by the boolean filters
   (`<label className="toggleWrap">` + `.toggleLabel` + `.toggle` > `<input type="checkbox">` +
   `.toggleSlider`, as the Uber boss toggle in `App.jsx` does), so it is still a real checkbox input.
-  Unchecked on every visit (not saved), reset when leaving the Affixes tab (the panel unmounts).
+  Its state is saved with the sort (see Persistence), so a reload or a visit to another tab keeps it:
+  a multi-key list is never shown with the switch off just because the page was reloaded.
 - Phone: the row wraps (chips and Reset first, the checkbox right-aligned on its own line if
   needed); chips, Reset and the checkbox's label are at least 32px tall.
 
@@ -143,7 +143,10 @@ Sorted by: [Grp ▲ ×] › [Lvl ▲ ×] › [Max lvl ▼ ×]   Reset        ☐
   dropped; duplicate keys keep the first; entries are rebuilt as `{key, dir}` (extra fields dropped).
   If nothing valid remains, the list is empty. A key later removed from `AFFIX_SORT_KEYS` is dropped
   this way, so it never reaches `affixSortValue`'s throw.
-- Storage that throws (blocked, private mode) is ignored: the sort still works for the session.
+- The Multi-sort switch is saved under `"the-archivist-affix-multi"` as JSON `true` / `false` on every
+  change and restored on load. `parseStoredFlag` returns `true` only for the JSON value `true`; anything
+  else (missing, corrupt, other types) is `false`.
+- Storage that throws (blocked, private mode) is ignored: the sort and the switch still work for the session.
 
 ## Structure
 
@@ -172,6 +175,7 @@ export function flipSortKey(list, key)              // flip one key in place; sa
 export function removeSortKey(list, key)            // drop one key; may return []; same list if absent
 export function parseStoredSort(raw)                // localStorage string (or null) -> clean list, [] if nothing valid;
                                                     // catches JSON.parse errors itself
+export function parseStoredFlag(raw)                // localStorage string (or null) -> true only for JSON `true`
 ```
 
 `compareAffixesBy` is called with `effectiveSort(list)`, so it never sees an empty list; given one,
@@ -184,12 +188,15 @@ it returns 0 (stable). An unknown key inside the list still throws through `affi
 - `changeAffixSort(next)`: `setAffixSort(next)` and, in the same handler, a try/catch
   `localStorage.setItem(...)`. No effect, and nothing inside a state updater (StrictMode runs
   updaters twice).
-- `AffixesPanel` gets `sort={affixSort}` and `onChangeSort={changeAffixSort}` (now taking the next
-  list, not an updater function).
+- `affixMulti` (the Multi-sort switch) is `useState(() => parseStoredFlag(localStorage.getItem("the-archivist-affix-multi")))`
+  in the same try/catch shape, saved by `changeAffixMulti(next)` in the same handler-only way. It lives in
+  `App`, not `AffixesPanel`, so it also survives leaving the tab.
+- `AffixesPanel` gets `sort={affixSort}`, `onChangeSort={changeAffixSort}` (now taking the next list, not
+  an updater function), `multi={affixMulti}` and `onChangeMulti={changeAffixMulti}`.
 
 ### `AffixesPanel` (`src/App.jsx`)
 
-- `const [multi, setMulti] = React.useState(false)` above the early returns.
+- `multi` and `onChangeMulti` come in as props (no local state for the switch).
 - `const active = effectiveSort(sort)` (same reference as `sort`, or the frozen default), and
   `sorted = React.useMemo(() => [...all].sort((a, b) => compareAffixesBy(a, b, active)), [all, active])`:
   deps `[all, active]`, so `react-hooks/exhaustive-deps` is satisfied (lint must stay at 0).
@@ -219,7 +226,7 @@ it returns 0 (stable). An unknown key inside the list still throws through `affi
   `<span className="thLabel">{tip ? <Tip text={String(TOOLTIPS_TEXT_MAP[tip])}>{label}</Tip> :
   label} {marker}</span>`, `label = AFFIX_SORT_LABELS[key]`. Same column order, same text, same
   Tips as today. No `style` prop on any `th` (the floating header writes inline widths).
-- `<AffixSortBar sort={sort} onChange={changeSort} multi={multi} onMultiChange={setMulti}/>` between
+- `<AffixSortBar sort={sort} onChange={changeSort} multi={multi} onMultiChange={onChangeMulti}/>` between
   the top `.affixPager` and `<StickyHeadTable>`.
 
 ### `src/AffixSortBar.jsx` (new)
@@ -272,6 +279,7 @@ in `affixSortValue`" gains "and a label in `AFFIX_SORT_LABELS`".
 - `parseStoredSort`: `null`, `""`, `"nope"` (invalid JSON, no throw), `"{}"`, `"[]"` → `[]`;
   `[null, 1, "attrs"]` → `[]`; an entry with a missing `dir` or `dir: "up"` dropped; unknown keys
   dropped; duplicates keep the first; extra fields dropped; a valid list round-trips equal.
+- `parseStoredFlag`: `"true"` → `true`; `null`, `""`, `"false"`, `"nope"`, `"1"`, `"\"true\""`, `"[]"` → `false`, without throwing.
 - `AFFIX_SORT_LABELS`: a non-empty string for every key in `AFFIX_SORT_KEYS`, and no extra keys.
 
 ### Browser (headless Chromium over CDP; a new `check-multisort.mjs` in the scratchpad)
@@ -297,8 +305,9 @@ in `affixSortValue`" gains "and a label in `AFFIX_SORT_LABELS`".
      made while the real header is visible (no floating copy) doesn't scroll the page;
    - the header texts, in order, are exactly today's (Name, Attributes, Lvl, Grp, Rares, Freq,
      Max lvl, Item types, Excluded item types, Class, Req lvl);
-   - reload: the list is restored, the checkbox is off; a corrupt stored value loads the default
-     with no console errors.
+   - reload: the list and the switch are both restored (on stays on, off stays off); a corrupt stored
+     list or switch value loads the default / off with no console errors.
+   - leaving the Affixes tab and coming back keeps the switch.
 2. **Phone 390×844:**
    - the sort bar wraps with no horizontal page overflow; chips, Reset and checkbox label ≥ 32px
      tall;
