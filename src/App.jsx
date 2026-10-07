@@ -1439,6 +1439,8 @@ function DropCalculatorPanel({request, clearRequest, damnationMode}) {
         let result;
         try {
             const model = await loadModel(damnationMode);
+            // Several runs can be waiting on the same download: only the live one pays for a calculation.
+            if (isCancelled()) return;
             result = {rows: calculateDrops(model, {dropMode, query, difficulty, players, mf})};
         } catch (e) {
             result = {error: e instanceof Error ? e.message : String(e)};
