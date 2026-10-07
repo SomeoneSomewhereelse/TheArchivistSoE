@@ -42,7 +42,7 @@ import OrnateCharmIcon from "./icons/cm4.svg";
 import RuneIcon from "./icons/rune.svg";
 import SacredIcon from "./icons/sacred.svg";
 import FateCardIcon from "./icons/fatecard.svg";
-import {AFFIX_SORT_LABELS, clickSort, compareAffixesBy, effectiveSort, parseStoredSort} from "./sortCompare.js";
+import {AFFIX_SORT_LABELS, clickSort, compareAffixesBy, effectiveSort, parseStoredFlag, parseStoredSort} from "./sortCompare.js";
 import {useHashTab} from "./hashTab.js";
 
 const APP_VERSION = import.meta.env.VITE_APP_VERSION;
@@ -2829,11 +2829,8 @@ const AFFIX_COLUMNS = [
     {key: "reqLevel", tip: "affixRequiredLevel"},
 ];
 
-function AffixesPanel({data, loading, error, sort, onChangeSort}) {
+function AffixesPanel({data, loading, error, sort, onChangeSort, multi, onChangeMulti}) {
     const wrapperRef = React.useRef(null);
-
-    // Multi-sort switch: header clicks append columns instead of replacing the sort. Not saved.
-    const [multi, setMulti] = React.useState(false);
 
     // Normalised data coming from global filters/search
     const all = React.useMemo(() => (Array.isArray(data) ? data : []), [data]);
@@ -2937,7 +2934,7 @@ function AffixesPanel({data, loading, error, sort, onChangeSort}) {
                 <PagerButtons {...pager.pagerProps}/>
             </div>
 
-            <AffixSortBar sort={sort} onChange={changeSort} multi={multi} onMultiChange={setMulti}/>
+            <AffixSortBar sort={sort} onChange={changeSort} multi={multi} onMultiChange={onChangeMulti}/>
 
             {/* Scrollable table; its header row also floats while the page scrolls */}
             <StickyHeadTable
@@ -3374,6 +3371,26 @@ export default function App() {
             return [];
         }
     });
+
+    // The Multi-sort switch is kept too, so a restored multi-key sort comes back with it on.
+    const AFFIX_MULTI_STORAGE_KEY = "the-archivist-affix-multi";
+    const [affixMulti, setAffixMulti] = useState(() => {
+        try {
+            return parseStoredFlag(window.localStorage.getItem(AFFIX_MULTI_STORAGE_KEY));
+        } catch (e) {
+            console.warn("Failed to read the Multi-sort switch from storage", e);
+            return false;
+        }
+    });
+
+    const changeAffixMulti = (next) => {
+        setAffixMulti(next);
+        try {
+            window.localStorage.setItem(AFFIX_MULTI_STORAGE_KEY, JSON.stringify(next));
+        } catch (e) {
+            console.warn("Failed to save the Multi-sort switch", e);
+        }
+    };
 
     // Saved in the handler, not an effect or a state updater (StrictMode runs updaters twice).
     const changeAffixSort = (next) => {
@@ -4195,6 +4212,8 @@ export default function App() {
                     error={affixes.error}
                     sort={affixSort}
                     onChangeSort={changeAffixSort}
+                    multi={affixMulti}
+                    onChangeMulti={changeAffixMulti}
                 />
             </>) : tab === "damnation" ? (<>
                 <StaticDataPanel

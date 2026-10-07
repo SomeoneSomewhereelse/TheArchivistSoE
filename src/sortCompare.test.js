@@ -12,6 +12,7 @@ import {
     effectiveSort,
     flipSortKey,
     isMissing,
+    parseStoredFlag,
     parseStoredSort,
     removeSortKey,
 } from "./sortCompare.js";
@@ -404,5 +405,17 @@ describe("AFFIX_SORT_LABELS", () => {
     it("has a non-empty label for every sortable column, and nothing else", () => {
         expect(Object.keys(AFFIX_SORT_LABELS).sort()).toEqual([...AFFIX_SORT_KEYS].sort());
         for (const key of AFFIX_SORT_KEYS) expect(AFFIX_SORT_LABELS[key], key).toMatch(/\S/);
+    });
+});
+
+describe("parseStoredFlag", () => {
+    it("is true only for the JSON value true", () => {
+        expect(parseStoredFlag("true")).toBe(true);
+    });
+
+    it("is false for nothing, false, invalid JSON and other types, without throwing", () => {
+        for (const raw of [null, undefined, "", "false", "nope", "{nope", "1", '"true"', "[]", "null"]) {
+            expect(parseStoredFlag(raw), String(raw)).toBe(false);
+        }
     });
 });

@@ -196,3 +196,13 @@ export function parseStoredSort(raw) {
     }
     return out;
 }
+
+// A stored on/off switch (a localStorage string, or null): true only for the JSON value true. Anything
+// else, unreadable included, is false. Never throws.
+export function parseStoredFlag(raw) {
+    try {
+        return JSON.parse(raw) === true;
+    } catch {
+        return false;
+    }
+}

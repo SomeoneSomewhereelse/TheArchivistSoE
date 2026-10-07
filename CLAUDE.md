@@ -121,7 +121,8 @@ the value. No `eslint-disable`.
 - `displayExcludedItemTypeNames` sometimes repeats an entry ("Staff Class" three times).
   That's a data quirk, displayed as-is.
 - The sort is an ordered list of `{key, dir}` held in `App` (`affixSort`) and saved to `localStorage`
-  (`"the-archivist-affix-sort"`, cleaned by `parseStoredSort` on load). An **empty list** is the starting
+  (`"the-archivist-affix-sort"`, cleaned by `parseStoredSort` on load); the Multi-sort switch is saved too
+  (`"the-archivist-affix-multi"`, `parseStoredFlag`), so a restored multi-key sort comes back with it on. An **empty list** is the starting
   state and sorts by the default, Attributes ▲, without listing it (`effectiveSort`). Header clicks go
   through `clickSort`: with the Multi-sort switch off they replace the sort (or flip the sole key); with it
   on they append a column or flip one in place. The sort bar (`src/AffixSortBar.jsx`) shows the order as
