@@ -1114,6 +1114,92 @@ button.btn {
     backdrop-filter: none;
 }
 
+/* Affixes sort bar (AffixSortBar): the sort order as chips, Reset, and the Multi-sort switch. Base rules
+   wrap, so phones need nothing extra; touch sizes are under (hover: none) below. */
+.affixSortBar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 16px;
+    font-size: 13px;
+    color: var(--muted);
+}
+
+.sortOrder {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+}
+
+/* Chips share the active tab's gold look. */
+.sortChip {
+    display: inline-flex;
+    align-items: stretch;
+    border-radius: 8px;
+    border: 1px solid rgba(202, 161, 74, 0.55);
+    background: linear-gradient(180deg, rgba(202, 161, 74, 0.3), rgba(107, 75, 22, 0.25));
+    color: var(--c-white);
+    overflow: hidden;
+}
+
+.sortChip button,
+.sortReset {
+    appearance: none;
+    -webkit-appearance: none;
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    padding: 4px 8px;
+}
+
+.sortChip button:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.sortChipRemove {
+    border-left: 1px solid rgba(202, 161, 74, 0.35);
+    opacity: 0.8;
+}
+
+.sortChipRemove:hover {
+    opacity: 1;
+}
+
+.sortReset {
+    padding: 4px 6px;
+    color: var(--c-gold);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+/* The switch sits at the row's end, and on its own line's end once the row wraps. */
+.multiSortToggle {
+    margin-left: auto;
+}
+
+/* The key's position in a multi-column sort, before its arrow: 1▲ 2▼. */
+.affixTable th .sortIndex {
+    font-weight: 700;
+    margin-right: 1px;
+}
+
+@media (hover: none) {
+    /* Touch targets: at least 32px tall, on phones and on wide touch tablets alike. */
+    .sortChip button,
+    .sortReset,
+    .multiSortToggle {
+        min-height: 32px;
+    }
+
+    .sortChip button {
+        padding: 6px 10px;
+    }
+}
+
 /* -------------------------------------------------------------------------- */
 /* Searchable select                                                          */
 /* -------------------------------------------------------------------------- */

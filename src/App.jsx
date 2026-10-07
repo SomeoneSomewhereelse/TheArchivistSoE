@@ -3,6 +3,7 @@ import {useIsMobile} from "./useIsMobile.js";
 import ErrorBoundary from "./ErrorBoundary.jsx";
 import PagerButtons from "./PagerButtons.jsx";
 import StickyHeadTable from "./StickyHeadTable.jsx";
+import AffixSortBar from "./AffixSortBar.jsx";
 import {MobileTabsBar, TabsBar, TabTitle} from "./tabs.jsx";
 import {VALID_TAB_KEYS} from "./tabList.js";
 import {usePager} from "./pager.js";
@@ -2832,7 +2833,7 @@ function AffixesPanel({data, loading, error, sort, onChangeSort}) {
     const wrapperRef = React.useRef(null);
 
     // Multi-sort switch: header clicks append columns instead of replacing the sort. Not saved.
-    const [multi] = React.useState(false);
+    const [multi, setMulti] = React.useState(false);
 
     // Normalised data coming from global filters/search
     const all = React.useMemo(() => (Array.isArray(data) ? data : []), [data]);
@@ -2935,6 +2936,8 @@ function AffixesPanel({data, loading, error, sort, onChangeSort}) {
                 </div>
                 <PagerButtons {...pager.pagerProps}/>
             </div>
+
+            <AffixSortBar sort={sort} onChange={changeSort} multi={multi} onMultiChange={setMulti}/>
 
             {/* Scrollable table; its header row also floats while the page scrolls */}
             <StickyHeadTable
