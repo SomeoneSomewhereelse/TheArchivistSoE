@@ -1,11 +1,19 @@
 import {describe, expect, it} from "vitest";
 import {
     AFFIX_SORT_KEYS,
+    AFFIX_SORT_LABELS,
+    DEFAULT_AFFIX_SORT,
     affixPrimaryPropertyAndMax,
     affixSortValue,
+    clickSort,
     compareAffixes,
+    compareAffixesBy,
     compareValues,
+    effectiveSort,
+    flipSortKey,
     isMissing,
+    parseStoredSort,
+    removeSortKey,
 } from "./sortCompare.js";
 
 // Minimal rows shaped like public/data/Affixes.json entries.
@@ -203,5 +211,198 @@ describe("affixPrimaryPropertyAndMax", () => {
     it("returns an empty property for missing or empty displayProperties", () => {
         expect(affixPrimaryPropertyAndMax(affix("a", {displayProperties: []}))).toEqual({property: "", max: 0});
         expect(affixPrimaryPropertyAndMax(affix("a", {displayProperties: null}))).toEqual({property: "", max: 0});
+    });
+});
+
+// ---- Multi-column sort ----------------------------------------------------------------------------
+
+const asc = (key) => ({key, dir: "asc"});
+const desc = (key) => ({key, dir: "desc"});
+
+// A frozen list of frozen entries: any helper that mutates its input throws (ES modules are strict).
+const frozen = (...entries) => Object.freeze(entries.map((e) => Object.freeze({...e})));
+
+function sortIdsBy(rows, list) {
+    return [...rows].sort((a, b) => compareAffixesBy(a, b, list)).map((r) => r.id);
+}
+
+describe("compareAffixesBy", () => {
+    const rows = [
+        affix("a", {group: 2, level: 10, maxLevel: null, requiredLevel: 5}),
+        affix("b", {group: 1, level: 20, maxLevel: 40, requiredLevel: null}),
+        affix("c", {group: 2, level: 30, maxLevel: 60, requiredLevel: null}),
+        affix("d", {group: 1, level: 20, maxLevel: null, requiredLevel: 9}),
+        affix("e", {group: 2, level: 10, maxLevel: 50, requiredLevel: 1}),
+    ];
+
+    it("with one key, matches compareAffixes for every column in both directions", () => {
+        const sample = [
+            ...rows,
+            affix("f", {
+                name: "Bronze", rare: "", frequency: 3, classDisplayName: "Amazon",
+                displayItemTypeNames: ["Amulets"], displayExcludedItemTypeNames: ["Wand"],
+                displayProperties: [{property: "dex", max: 3}],
+            }),
+        ];
+        for (const key of AFFIX_SORT_KEYS) {
+            for (const dir of ["asc", "desc"]) {
+                for (const x of sample) {
+                    for (const y of sample) {
+                        expect(compareAffixesBy(x, y, [{key, dir}]), `${key} ${dir} ${x.id} ${y.id}`)
+                            .toBe(compareAffixes(x, y, key, dir));
+                    }
+                }
+            }
+        }
+    });
+
+    it("uses a later key only to break the ties left by earlier ones", () => {
+        expect(sortIdsBy(rows, [asc("group"), desc("level")])).toEqual(["b", "d", "c", "a", "e"]);
+        expect(sortIdsBy(rows, [desc("level"), asc("group")])).toEqual(["c", "b", "d", "a", "e"]);
+    });
+
+    it("keeps each key's missing-value rule inside a list", () => {
+        // Max lvl: null is "no cap", so it sorts last ascending within each group.
+        expect(sortIdsBy(rows, [asc("group"), asc("maxLevel")])).toEqual(["b", "d", "e", "c", "a"]);
+        // Req lvl: null is missing, so it sorts first ascending within each group.
+        expect(sortIdsBy(rows, [asc("group"), asc("reqLevel")])).toEqual(["b", "d", "c", "e", "a"]);
+    });
+
+    it("keeps rows tied on every key in their incoming order", () => {
+        expect(sortIdsBy(rows, [asc("rare"), desc("freq")])).toEqual(["a", "b", "c", "d", "e"]);
+    });
+
+    it("returns 0 for an empty list", () => {
+        expect(compareAffixesBy(rows[0], rows[1], [])).toBe(0);
+    });
+
+    it("throws for an unknown key in the list, once it is reached", () => {
+        expect(() => compareAffixesBy(rows[0], rows[1], [asc("bogus")])).toThrow(/bogus/);
+        // b and d tie on Grp, so the second key is reached.
+        expect(() => compareAffixesBy(rows[1], rows[3], [asc("group"), asc("bogus")])).toThrow(/bogus/);
+    });
+});
+
+describe("effectiveSort", () => {
+    it("falls back to the frozen default for an empty list", () => {
+        expect(effectiveSort([])).toBe(DEFAULT_AFFIX_SORT);
+        expect(DEFAULT_AFFIX_SORT).toEqual([{key: "attrs", dir: "asc"}]);
+        expect(Object.isFrozen(DEFAULT_AFFIX_SORT)).toBe(true);
+        expect(Object.isFrozen(DEFAULT_AFFIX_SORT[0])).toBe(true);
+    });
+
+    it("returns a non-empty list itself, not a copy", () => {
+        const list = [asc("group")];
+        expect(effectiveSort(list)).toBe(list);
+    });
+});
+
+describe("clickSort", () => {
+    describe("plain click (Multi-sort off)", () => {
+        it("on an empty list, Attributes flips the default", () => {
+            expect(clickSort(frozen(), "attrs", {multi: false})).toEqual([desc("attrs")]);
+        });
+
+        it("on an empty list, another column sorts ascending without Attributes", () => {
+            expect(clickSort(frozen(), "group", {multi: false})).toEqual([asc("group")]);
+        });
+
+        it("flips the sole key when it is clicked again", () => {
+            expect(clickSort(frozen(asc("group")), "group", {multi: false})).toEqual([desc("group")]);
+            expect(clickSort(frozen(desc("group")), "group", {multi: false})).toEqual([asc("group")]);
+        });
+
+        it("replaces any other list with the clicked column ascending", () => {
+            expect(clickSort(frozen(asc("group")), "level", {multi: false})).toEqual([asc("level")]);
+            const list = frozen(asc("group"), desc("level"));
+            expect(clickSort(list, "level", {multi: false})).toEqual([asc("level")]);
+            expect(clickSort(list, "name", {multi: false})).toEqual([asc("name")]);
+        });
+    });
+
+    describe("multi click (Multi-sort on)", () => {
+        it("on an empty list, starts the list with the clicked column, without the default", () => {
+            expect(clickSort(frozen(), "group", {multi: true})).toEqual([asc("group")]);
+            expect(clickSort(frozen(), "attrs", {multi: true})).toEqual([asc("attrs")]);
+        });
+
+        it("appends a new column ascending at the end", () => {
+            expect(clickSort(frozen(asc("group"), desc("level")), "maxLevel", {multi: true}))
+                .toEqual([asc("group"), desc("level"), asc("maxLevel")]);
+        });
+
+        it("flips a column already in the list in place", () => {
+            expect(clickSort(frozen(asc("group"), desc("level"), asc("name")), "level", {multi: true}))
+                .toEqual([asc("group"), asc("level"), asc("name")]);
+        });
+    });
+
+    it("never mutates its input and always returns a new array", () => {
+        const list = frozen(asc("group"));
+        for (const [key, multi] of [["group", false], ["level", false], ["group", true], ["level", true]]) {
+            expect(clickSort(list, key, {multi})).not.toBe(list);
+        }
+        expect(list).toEqual([asc("group")]);
+    });
+});
+
+describe("flipSortKey", () => {
+    it("flips only its key, in place", () => {
+        expect(flipSortKey(frozen(asc("group"), desc("level")), "level")).toEqual([asc("group"), asc("level")]);
+        expect(flipSortKey(frozen(asc("group"), desc("level")), "group")).toEqual([desc("group"), desc("level")]);
+    });
+
+    it("returns the same list for a key that isn't in it", () => {
+        const list = frozen(asc("group"));
+        expect(flipSortKey(list, "level")).toBe(list);
+    });
+});
+
+describe("removeSortKey", () => {
+    it("removes only its key, keeping the others in order", () => {
+        expect(removeSortKey(frozen(asc("group"), desc("level"), asc("name")), "level"))
+            .toEqual([asc("group"), asc("name")]);
+    });
+
+    it("returns an empty list when the last key is removed", () => {
+        expect(removeSortKey(frozen(asc("group")), "group")).toEqual([]);
+    });
+
+    it("returns the same list for a key that isn't in it", () => {
+        const list = frozen(asc("group"));
+        expect(removeSortKey(list, "level")).toBe(list);
+    });
+});
+
+describe("parseStoredSort", () => {
+    it("returns an empty list for nothing, invalid JSON and non-arrays, without throwing", () => {
+        for (const raw of [null, undefined, "", "nope", "{nope", "{}", "42", "null", "[]"]) {
+            expect(parseStoredSort(raw), String(raw)).toEqual([]);
+        }
+    });
+
+    it("drops entries that aren't {key, dir} objects with a known key and asc or desc", () => {
+        const raw = JSON.stringify([
+            null, 1, "attrs", ["group", "asc"], {key: "bogus", dir: "asc"},
+            {key: "group"}, {key: "level", dir: "up"}, {key: "name", dir: "desc"},
+        ]);
+        expect(parseStoredSort(raw)).toEqual([desc("name")]);
+    });
+
+    it("keeps the first of duplicate keys and drops extra fields", () => {
+        const raw = JSON.stringify([{key: "group", dir: "desc", extra: 1}, {key: "group", dir: "asc"}, asc("level")]);
+        expect(parseStoredSort(raw)).toEqual([desc("group"), asc("level")]);
+    });
+
+    it("round-trips a valid list", () => {
+        const list = [asc("types"), asc("attrs"), desc("maxLevel")];
+        expect(parseStoredSort(JSON.stringify(list))).toEqual(list);
+    });
+});
+
+describe("AFFIX_SORT_LABELS", () => {
+    it("has a non-empty label for every sortable column, and nothing else", () => {
+        expect(Object.keys(AFFIX_SORT_LABELS).sort()).toEqual([...AFFIX_SORT_KEYS].sort());
+        for (const key of AFFIX_SORT_KEYS) expect(AFFIX_SORT_LABELS[key], key).toMatch(/\S/);
     });
 });
