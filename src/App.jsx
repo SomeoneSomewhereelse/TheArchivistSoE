@@ -9,6 +9,7 @@ import {VALID_TAB_KEYS} from "./tabList.js";
 import {usePager} from "./pager.js";
 import {calculateDrops} from "./dropCalcEngine.js";
 import {loadModel} from "./dropCalcLoad.js";
+import {sortTiers} from "./tiers.js";
 
 import SwordIcon from "./icons/sword.svg";
 import StaffIcon from "./icons/staff.svg";
@@ -2873,14 +2874,10 @@ export default function App() {
         return Array.from(new Set(all)).sort();
     }, [items, tab]);
 
-    const tierOptions = useMemo(() => {
-        const tiers = Array.from(new Set(items.map((it) => n(it?.itemTier)).filter(Boolean)));
-        return tiers.sort((a, b) => {
-            const an = Number(a), bn = Number(b);
-            if (!Number.isNaN(an) && !Number.isNaN(bn)) return an - bn;
-            return a.localeCompare(b);
-        });
-    }, [items]);
+    const tierOptions = useMemo(
+        () => sortTiers(Array.from(new Set(items.map((it) => n(it?.itemTier)).filter(Boolean)))),
+        [items]
+    );
 
     const filtered = useMemo(() => {
         const {phrases, terms} = parseSearchQuery(search);
