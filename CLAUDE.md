@@ -50,7 +50,8 @@ the value. No `eslint-disable`.
 - The Drop calculator: `src/dropCalcData.js` (the columns read from each `.txt` table, `parseTxt`, the
   `DropCalculator.json` format), `src/dropCalcEngine.js` (`prepareModel` builds indexes once per mode;
   `calculateDrops` walks each root treasure class once per query), `src/dropCalcLoad.js` (`loadModel`:
-  fetched once per mode, cached, retried after a failure). `DropCalculatorPanel` in `App.jsx` keeps only
+  fetched once per mode, cached, retried after a failure), `src/dropCalcSort.js` (the result table's
+  clickable column sort: one key, chance highest first by default). `DropCalculatorPanel` in `App.jsx` keeps only
   UI state; a run whose inputs changed while it waited for data sets no state. `src/dropCalcFixtures.js`
   is Node-only (tests and `tools/checks/`), never imported by the app.
 - `src/styles.css`: all real styling, about 2,400 lines (`src/App.css` is an unused template leftover; nothing imports it).

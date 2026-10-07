@@ -9,6 +9,7 @@ import {VALID_TAB_KEYS} from "./tabList.js";
 import {usePager} from "./pager.js";
 import {calculateDrops} from "./dropCalcEngine.js";
 import {loadModel} from "./dropCalcLoad.js";
+import {DEFAULT_DROP_SORT, nextDropSort, sortDropRows} from "./dropCalcSort.js";
 import {sortTiers} from "./tiers.js";
 
 import SwordIcon from "./icons/sword.svg";
@@ -1411,7 +1412,11 @@ function DropCalculatorPanel({request, clearRequest, damnationMode}) {
     const [dropMode, setDropMode] = React.useState("unique");
     const [query, setQuery] = React.useState("");
     const [rows, setRows] = React.useState([]);
-    const pager = usePager(rows.length, {resetKey: rows});
+    const [sort, setSort] = React.useState(DEFAULT_DROP_SORT);
+    // The engine's rows are by chance; the clicked header re-orders them. A new array per sort or result set,
+    // so the pager returns to page 1.
+    const sortedRows = React.useMemo(() => sortDropRows(rows, sort), [rows, sort]);
+    const pager = usePager(rows.length, {resetKey: sortedRows});
     const [loading, setLoading] = React.useState(false);
     const [error, setError] = React.useState("");
     const [difficulty, setDifficulty] = React.useState("");
@@ -1487,7 +1492,17 @@ function DropCalculatorPanel({request, clearRequest, damnationMode}) {
         };
     }, [dropMode, query, difficulty, players, mf, damnationMode]);
 
-    const pageRows = rows.slice(pager.start, pager.end);
+    const pageRows = sortedRows.slice(pager.start, pager.end);
+
+    const sortHeader = (key, label, withAria = true) => (<th
+        className="sortable"
+        aria-sort={withAria && sort.key === key ? (sort.dir === "asc" ? "ascending" : "descending") : undefined}
+        onClick={() => setSort(nextDropSort(sort, key))}
+    >
+        <span className="thLabel">
+            {label} {sort.key === key && <span className="sortArrow">{sort.dir === "asc" ? "▲" : "▼"}</span>}
+        </span>
+    </th>);
 
     return (
         <>
@@ -1568,11 +1583,11 @@ function DropCalculatorPanel({request, clearRequest, damnationMode}) {
                     <StickyHeadTable
                         className="affixTable"
                         head={<tr>
-                            <th>Monster</th>
-                            <th>Treasure Class</th>
-                            <th>Level</th>
-                            <th>Drop chance</th>
-                            <th>Drop chance %</th>
+                            {sortHeader("monster", "Monster")}
+                            {sortHeader("treasureClass", "Treasure Class")}
+                            {sortHeader("level", "Level")}
+                            {sortHeader("chance", "Drop chance")}
+                            {sortHeader("chance", "Drop chance %", false)}
                         </tr>}
                     >
                         {loading && (

@@ -5,6 +5,7 @@
 // Desktop checks run first: touch emulation can't be switched back to hover: hover in one browser.
 import {run, checker, BASE, sleep} from "./cdp.mjs";
 import {calculateDrops} from "../../src/dropCalcEngine.js";
+import {sortDropRows} from "../../src/dropCalcSort.js";
 import {loadDropCalcModel} from "../../src/dropCalcFixtures.js";
 
 const c = checker();
@@ -91,6 +92,29 @@ await run(async (page) => {
         String(fetched(/\/standard\/DropCalculator\.json/)));
     c.ok(fetched(/\/data\/.*\.txt(\?|$)/) === 0, "desktop: no .txt table is fetched", String(fetched(/\/data\/.*\.txt(\?|$)/)));
     reportTask("desktop, three queries", await page.eval(LONGEST_TASK), DESKTOP_MS);
+
+    // --- Desktop: sortable columns (Nagelring, Normal, is still showing)
+    const engineRows = run_("standard", "Nagelring");
+    const firstRow = () => page.eval(`[...(document.querySelector(".affixTable tbody tr")?.children ?? [])].map((td) => td.textContent.trim())`);
+    const expectFirst = (rows) => [rows[0].monsterName, rows[0].treasureClass, rows[0].levelName, `1:${rows[0].oneIn}`,
+        `${rows[0].percent.toFixed(6)}%`];
+    c.ok(JSON.stringify(await firstRow()) === JSON.stringify(expectFirst(engineRows)), "sort: the default is chance, highest first",
+        JSON.stringify(await firstRow()));
+    for (const [header, sort, label] of [
+        ["Monster", {key: "monster", dir: "asc"}, "Monster once: A-Z"],
+        ["Monster", {key: "monster", dir: "desc"}, "Monster twice: Z-A"],
+        ["Treasure Class", {key: "treasureClass", dir: "asc"}, "Treasure Class: A-Z"],
+        ["Level", {key: "level", dir: "asc"}, "Level: A-Z"],
+        ["Drop chance %", {key: "chance", dir: "desc"}, "Drop chance %: highest first"],
+        ["Drop chance %", {key: "chance", dir: "asc"}, "Drop chance % again: lowest first"],
+        ["Drop chance", {key: "chance", dir: "desc"}, "Drop chance (1:N): highest first"],
+    ]) {
+        await page.click(".affixTable th.sortable", {text: header});
+        const got = await firstRow();
+        c.ok(JSON.stringify(got) === JSON.stringify(expectFirst(sortDropRows(engineRows, sort))), `sort: ${label}`, JSON.stringify(got));
+    }
+    c.ok(await page.eval(`document.querySelector(".affixTable th[aria-sort]")?.textContent.trim().startsWith("Drop chance")`),
+        "sort: the sorted header carries aria-sort");
 
     // --- Desktop: the Damnation toggle fetches its own file once
     c.ok(!!modeQuery, "precondition: found a unique whose top row differs between the modes", modeQuery);
