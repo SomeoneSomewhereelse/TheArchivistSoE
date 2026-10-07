@@ -47,14 +47,24 @@ the value. No `eslint-disable`.
   a fixed, `aria-hidden` floating copy of the header row that shows once the real header scrolls away
   (`attachFloatingHead` syncs it by direct DOM writes; the show/hide rule is `floatingHeadVisible` in
   `src/stickyHead.js`, tested beside it).
+- The Drop calculator: `src/dropCalcData.js` (the columns read from each `.txt` table, `parseTxt`, the
+  `DropCalculator.json` format), `src/dropCalcEngine.js` (`prepareModel` builds indexes once per mode;
+  `calculateDrops` walks each root treasure class once per query), `src/dropCalcLoad.js` (`loadModel`:
+  fetched once per mode, cached, retried after a failure). `DropCalculatorPanel` in `App.jsx` keeps only
+  UI state; a run whose inputs changed while it waited for data sets no state. `src/dropCalcFixtures.js`
+  is Node-only (tests and `tools/checks/`), never imported by the app.
 - `src/styles.css`: all real styling, about 2,400 lines (`src/App.css` is an unused template leftover; nothing imports it).
 - `src/sortCompare.js` (Affixes sort rules), `src/hashTab.js` (tab ↔ URL hash), `src/pager.js`,
-  `src/tabList.js` and `useIsMobile`'s `mobileQuery`: pure helpers, with their tests beside them.
+  `src/tabList.js`, `src/tiers.js` (the tier filter's Normal → Exceptional → Elite order) and
+  `useIsMobile`'s `mobileQuery`: pure helpers, with their tests beside them.
 - `src/main.jsx`: renders `<App/>` inside `React.StrictMode`, so effects double-fire in dev.
 - `src/icons/*.svg`: item-type icons, imported as URLs.
 - `public/data/*.json`: game data, fetched at runtime (see Data).
 - `public/data/standard/*.txt`, `public/data/damnation/*.txt`: raw game tables
-  (MonStats, TreasureClassEx, Weapons, …) used by the Drop calculator.
+  (MonStats, TreasureClassEx, Weapons, …), the source of the Drop calculator's data. The `drop-calc-data`
+  plugin in `vite.config.js` turns them into `public/data/<mode>/DropCalculator.json` (gitignored) when
+  Vite starts (dev, build) and again in dev when a `.txt` file changes. A missing required column fails
+  the build. The plugin imports `src/dropCalcData.js`, so editing that file restarts the dev server.
 - `.github/workflows/ci.yml`: unit tests, a lint gate and the build, on pull requests and pushes
   to other branches. `.github/workflows/deploy.yml` runs it on every push to `main` and deploys
   to GitHub Pages only if it passes.
@@ -104,7 +114,12 @@ the value. No `eslint-disable`.
 - `useJson(fileName, damnationMode)` fetches `${BASE_URL}data/<file>` with
   `cache: "no-store"` and drops hidden entries via `filterVisible`.
 - Damnation mode (the header toggle, persisted in `localStorage`) swaps only `Uniques.json`
-  (to `data/damnation/`) and the Drop calculator's `.txt` folder. Everything else is shared.
+  (to `data/damnation/`) and the Drop calculator's `DropCalculator.json`. Everything else is shared.
+- The Drop calculator's results are pinned by a golden snapshot (`src/__snapshots__/dropCalc.golden.txt`,
+  captured from the pre-refactor code by `tools/checks/golden-dropcalc-legacy.mjs`). An upstream data drop
+  or a deliberate formula change shows up as a snapshot diff: review it, then accept with `npx vitest -u`.
+- The unique card's "View drop rates" link sends the unique's internal `index` (e.g. "Mindrend"), not
+  its display name ("Skull Splitter"): the calculator matches `UniqueItems.txt`'s `index`.
 - Item list tabs (Weapons, Armors, Uniques, Runewords, Sacreds, Fate Cards) use `ListPanel`
   plus a `*Tooltip` component inside `TooltipShell`. The tooltips depend on App-level
   callbacks (`jumpToCode`, `jumpToUnique`, `jumpToSacred`, `handleMarkdownAppLink`,
@@ -199,6 +214,10 @@ The harness is committed in `tools/checks/` (Node ≥ 22, no dependencies; outpu
 - `compare-desktop.mjs <label> <url>` takes full-page 1500px screenshots of all 19 tabs into
   `shots/desktop-<label>/`; `diff-shots.mjs <labelA> <labelB>` pixel-diffs two sets.
 - Feature checks: `check-sticky.mjs` (floating table header), `check-multisort.mjs` (Affixes multi-sort).
+- Drop calculator: `check-dropcalc.mjs` (browser: rows, one fetch per mode, no `.txt`, stale runs, the
+  View drop rates link; WARN-only timing budgets `DROPCALC_DESKTOP_TASK_MS`, `DROPCALC_PHONE_TASK_MS`) and
+  `bench-dropcalc.mjs` (Node: every target, every difficulty, both modes; FAIL over the work ceilings,
+  WARN over `DROPCALC_BUDGET_MS`). Tier filter: `check-tier-order.mjs`.
 
 Run them from `tools/checks/` against a dev server:
 `APP_URL=http://localhost:<port>/TheArchivistSoE/ node check-sticky.mjs <screenshot dir>`. The `.mjs`
