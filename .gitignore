@@ -23,3 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 /TheArchivistPage.iml
+
+# Generated from public/data/<mode>/*.txt by the drop-calc-data plugin (vite.config.js)
+public/data/*/DropCalculator.json
