@@ -41,7 +41,7 @@ import OrnateCharmIcon from "./icons/cm4.svg";
 import RuneIcon from "./icons/rune.svg";
 import SacredIcon from "./icons/sacred.svg";
 import FateCardIcon from "./icons/fatecard.svg";
-import {compareAffixes} from "./sortCompare.js";
+import {AFFIX_SORT_LABELS, clickSort, compareAffixesBy, effectiveSort, parseStoredSort} from "./sortCompare.js";
 import {useHashTab} from "./hashTab.js";
 
 const APP_VERSION = import.meta.env.VITE_APP_VERSION;
@@ -2812,38 +2812,75 @@ function CorruptionsTable({items}) {
     );
 }
 
+// The Affixes columns in display order (the order of AFFIX_SORT_KEYS); `tip` names a TOOLTIPS_TEXT_MAP
+// entry. Header texts come from AFFIX_SORT_LABELS.
+const AFFIX_COLUMNS = [
+    {key: "name"},
+    {key: "attrs"},
+    {key: "level", tip: "affixLevel"},
+    {key: "group", tip: "affixGroup"},
+    {key: "rare", tip: "affixRares"},
+    {key: "freq", tip: "affixFrequency"},
+    {key: "maxLevel", tip: "affixMaxLevel"},
+    {key: "types"},
+    {key: "excluded"},
+    {key: "class"},
+    {key: "reqLevel", tip: "affixRequiredLevel"},
+];
+
 function AffixesPanel({data, loading, error, sort, onChangeSort}) {
     const wrapperRef = React.useRef(null);
 
-    // Local state
+    // Multi-sort switch: header clicks append columns instead of replacing the sort. Not saved.
+    const [multi] = React.useState(false);
 
     // Normalised data coming from global filters/search
     const all = React.useMemo(() => (Array.isArray(data) ? data : []), [data]);
 
-    const sortKey = sort?.key || "attrs";
-    const sortDir = sort?.dir || "asc";
+    // An empty sort list sorts by the default (Attributes ▲) without listing it. Same reference as
+    // `sort` (or the shared default), so the memo below only re-sorts when something changed.
+    const active = effectiveSort(sort);
 
-    const sorted = React.useMemo(() => {
-        const arr = [...all];
-        arr.sort((a, b) => compareAffixes(a, b, sortKey, sortDir));
-        return arr;
-    }, [all, sortKey, sortDir]);
+    const sorted = React.useMemo(
+        () => [...all].sort((a, b) => compareAffixesBy(a, b, active)),
+        [all, active],
+    );
 
-    // Pagination runs on the *sorted* data and goes back to page 1 whenever the filtered data changes.
-    const pager = usePager(sorted.length, {resetKey: data, ghost: true});
+    // Pagination runs on the *sorted* rows and goes back to page 1 whenever they change: new filtered
+    // data or a new sort.
+    const pager = usePager(sorted.length, {resetKey: sorted, ghost: true});
 
-    const handleSort = (key) => {
-        onChangeSort((prev) => {
-            if (prev && prev.key === key) {
-                return {key, dir: prev.dir === "asc" ? "desc" : "asc"};
-            }
-            return {key, dir: "asc"};
-        });
+    // Every sort change shows row 1. The desktop box scrolls back to its top (scrollLeft is kept, so a
+    // phone's sideways position survives); if the floating header was showing (the change came from deep
+    // in the table), the page scrolls back to the table the way the bottom pager does.
+    const changeSort = (next) => {
+        onChangeSort(next);
+        const wrapper = wrapperRef.current;
+        if (!wrapper) return;
+        const scroller = wrapper.querySelector(".affixTableScroll");
+        if (scroller) scroller.scrollTop = 0;
+        if (wrapper.querySelector(".floatingHead")?.classList.contains("on")) {
+            wrapper.scrollIntoView({block: "start"});
+        }
     };
 
-    const sortArrowFor = (key) => {
-        if (sortKey !== key) return null;
-        return <span className="sortArrow">{sortDir === "asc" ? "▲" : "▼"}</span>;
+    const handleSort = (key) => changeSort(clickSort(sort, key, {multi}));
+
+    // A lone arrow for a one-key sort (as before); with several keys each sorted column also shows its
+    // position: 1▲ 2▼.
+    const sortMarkerFor = (key) => {
+        const index = active.findIndex((s) => s.key === key);
+        if (index < 0) return null;
+        return (<span className="sortArrow">
+            {active.length > 1 && <span className="sortIndex">{index + 1}</span>}
+            {active[index].dir === "asc" ? "▲" : "▼"}
+        </span>);
+    };
+
+    // ARIA allows aria-sort on one column: the first key.
+    const ariaSortFor = (key) => {
+        if (active[0].key !== key) return undefined;
+        return active[0].dir === "asc" ? "ascending" : "descending";
     };
 
     // --- Loading / empty ----------------------------------------------------
@@ -2903,106 +2940,20 @@ function AffixesPanel({data, loading, error, sort, onChangeSort}) {
             <StickyHeadTable
                 className="affixTable affixesTable"
                 head={<tr>
-                        <th
+                    {AFFIX_COLUMNS.map(({key, tip}) => {
+                        const label = AFFIX_SORT_LABELS[key];
+                        return (<th
+                            key={key}
                             className="sortable"
-                            onClick={() => handleSort("name")}
+                            aria-sort={ariaSortFor(key)}
+                            onClick={() => handleSort(key)}
                         >
-                  <span className="thLabel">
-                    Name {sortArrowFor("name")}
-                  </span>
-                        </th>
-
-                        <th
-                            className="sortable"
-                            onClick={() => handleSort("attrs")}
-                        >
-                  <span className="thLabel">
-                    Attributes {sortArrowFor("attrs")}
-                  </span>
-                        </th>
-
-                        <th
-                            className="sortable"
-                            onClick={() => handleSort("level")}
-                        >
-                  <span className="thLabel">
-                      <Tip text={String(TOOLTIPS_TEXT_MAP["affixLevel"])}>Lvl</Tip> {sortArrowFor("level")}
-                  </span>
-                        </th>
-
-                        <th
-                            className="sortable"
-                            onClick={() => handleSort("group")}
-                        >
-                  <span className="thLabel">
-                      <Tip text={String(TOOLTIPS_TEXT_MAP["affixGroup"])}>Grp</Tip> {sortArrowFor("group")}
-                  </span>
-                        </th>
-
-                        <th
-                            className="sortable"
-                            onClick={() => handleSort("rare")}
-                        >
-                  <span className="thLabel">
-                      <Tip text={String(TOOLTIPS_TEXT_MAP["affixRares"])}>Rares</Tip> {sortArrowFor("rare")}
-                  </span>
-
-                        </th>
-
-                        <th
-                            className="sortable"
-                            onClick={() => handleSort("freq")}
-                        >
-                  <span className="thLabel">
-                      <Tip text={String(TOOLTIPS_TEXT_MAP["affixFrequency"])}>Freq</Tip> {sortArrowFor("freq")}
-                  </span>
-                        </th>
-
-                        <th
-                            className="sortable"
-                            onClick={() => handleSort("maxLevel")}
-                        >
-                  <span className="thLabel">
-                      <Tip text={String(TOOLTIPS_TEXT_MAP["affixMaxLevel"])}>Max lvl</Tip> {sortArrowFor("maxLevel")}
-                  </span>
-                        </th>
-
-                        <th
-                            className="sortable"
-                            onClick={() => handleSort("types")}
-                        >
-                  <span className="thLabel">
-                    Item types {sortArrowFor("types")}
-                  </span>
-                        </th>
-
-                        <th
-                            className="sortable"
-                            onClick={() => handleSort("excluded")}
-                        >
-                  <span className="thLabel">
-                    Excluded item types {sortArrowFor("excluded")}
-                  </span>
-                        </th>
-
-                        <th
-                            className="sortable"
-                            onClick={() => handleSort("class")}
-                        >
-                  <span className="thLabel">
-                    Class {sortArrowFor("class")}
-                  </span>
-                        </th>
-
-                        <th
-                            className="sortable"
-                            onClick={() => handleSort("reqLevel")}
-                        >
-                  <span className="thLabel">
-                      <Tip text={String(TOOLTIPS_TEXT_MAP["affixRequiredLevel"])}>Req lvl</Tip> {sortArrowFor("reqLevel")}
-                  </span>
-                        </th>
-                    </tr>}
+                            <span className="thLabel">
+                                {tip ? <Tip text={String(TOOLTIPS_TEXT_MAP[tip])}>{label}</Tip> : label} {sortMarkerFor(key)}
+                            </span>
+                        </th>);
+                    })}
+                </tr>}
             >
                 {current.map((it, idx) => (<tr key={`${pager.page}-${idx}-${it.id || it.name}`}>
                     <td>{n(it?.name)}</td>
@@ -3410,10 +3361,26 @@ export default function App() {
         localStorage.setItem("damnation", checked ? "true" : "false");
     };
 
-    const [affixSort, setAffixSort] = useState({
-        key: "attrs",   // default column
-        dir: "asc",     // or "desc" if you prefer
+    // The Affixes sort list (empty = the implicit Attributes ▲, see effectiveSort), kept across visits.
+    const AFFIX_SORT_STORAGE_KEY = "the-archivist-affix-sort";
+    const [affixSort, setAffixSort] = useState(() => {
+        try {
+            return parseStoredSort(window.localStorage.getItem(AFFIX_SORT_STORAGE_KEY));
+        } catch (e) {
+            console.warn("Failed to read the Affixes sort from storage", e);
+            return [];
+        }
     });
+
+    // Saved in the handler, not an effect or a state updater (StrictMode runs updaters twice).
+    const changeAffixSort = (next) => {
+        setAffixSort(next);
+        try {
+            window.localStorage.setItem(AFFIX_SORT_STORAGE_KEY, JSON.stringify(next));
+        } catch (e) {
+            console.warn("Failed to save the Affixes sort", e);
+        }
+    };
 
     const [infoOpenByTab, setInfoOpenByTab] = useState(() => {
         const defaults = {weapons: true, armors: true, uniques: true, runewords: true, sacreds: true};
@@ -4224,7 +4191,7 @@ export default function App() {
                     loading={affixes.loading}
                     error={affixes.error}
                     sort={affixSort}
-                    onChangeSort={setAffixSort}
+                    onChangeSort={changeAffixSort}
                 />
             </>) : tab === "damnation" ? (<>
                 <StaticDataPanel
