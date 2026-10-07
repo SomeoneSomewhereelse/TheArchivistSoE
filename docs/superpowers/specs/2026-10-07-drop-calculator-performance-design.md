@@ -2,7 +2,7 @@
 
 **Date:** 2026-10-07
 **Branch:** to be created from `main` when implementation starts (manual worktree, `.worktrees/<name>`, suggested name `dropcalc-perf`)
-**Status:** approved (2026-10-07), after an independent review; the "View drop rates" link fix was added at approval
+**Status:** approved (2026-10-07), after an independent review; the "View drop rates" link fix was added at approval, and the tier filter order after it
 
 ## Intent
 
@@ -44,6 +44,7 @@ nothing cancels a superseded run, so a slower older run can overwrite newer rows
 - No visual change on any tab.
 - Every unique card's "View drop rates" link opens the calculator on that exact unique: all 550
   linkable uniques in both modes (see "The View drop rates link").
+- The tier filter always lists Normal, Exceptional, Elite in that order (see "Tier filter order").
 
 ### Constraints
 
@@ -264,6 +265,21 @@ src/App.jsx             DropCalculatorPanel: UI state, inputs, table; no calcula
   name (for example "Mindrend" for Skull Splitter).
 - The engine and the golden snapshot are unaffected: this changes only what the link sends.
 
+### Tier filter order (also in this change)
+
+- **Today:** the tier filter (`FiltersBar`'s "All tiers" `SearchableSelect`, used on Weapons, Armors and
+  Uniques) gets its options from one `tierOptions` memo in `App`. That memo sorts the distinct
+  `itemTier` values with `localeCompare`, so it lists Elite, Exceptional, Normal. The data holds exactly
+  those three values on all three tabs, in both modes.
+- **Fix:** a pure helper in a new module, `src/tiers.js`:
+  - `TIER_ORDER = ["Normal", "Exceptional", "Elite"]`;
+  - `sortTiers(tiers)` returns a new array: the known tiers in `TIER_ORDER`, then any other value after
+    them, ordered by today's rule (numbers ascending, otherwise `localeCompare`). It never mutates its
+    input.
+- The `tierOptions` memo calls `sortTiers` instead of its own comparator. The "All tiers" option stays
+  first, as today.
+- No visual change at rest: the dropdown is closed in the desktop screenshots.
+
 ## Testing and verification
 
 ### 1. Golden snapshot, captured from the original code before any refactoring
@@ -317,6 +333,11 @@ src/App.jsx             DropCalculatorPanel: UI state, inputs, table; no calcula
   - every non-hidden, non-hellforged unique in `Uniques.json` (the standard and Damnation copies)
     resolves exactly by its `index` against that mode's `UniqueItems.txt`, which guards the link
     against upstream data drift.
+- **`src/tiers.test.js`:**
+  - every input order of the three tiers comes out Normal, Exceptional, Elite;
+  - a subset keeps tier order;
+  - unknown values come after the known ones, numbers ascending, then alphabetical;
+  - the input array is not changed.
 - **`src/dropCalcLoad.test.js`:** with a mocked `fetch`, and a fresh module per test
   (`vi.resetModules()` plus a dynamic `import`, so no test-only export is needed):
   - one fetch per mode across calls;
@@ -351,6 +372,8 @@ src/App.jsx             DropCalculatorPanel: UI state, inputs, table; no calcula
   - Reported, WARN only: the longest main-thread task, against `DROPCALC_DESKTOP_TASK_MS` (default 300).
   - Phone (390×844, touch, CPU throttled 4×): reports the longest task for the slowest target from the
     sweep, WARN above `DROPCALC_PHONE_TASK_MS` (default 1000).
+- **`check-tier-order.mjs`:** in headless Chromium, on desktop. On Weapons, Armors and Uniques it opens
+  the tier filter and fails unless its options read "All tiers", "Normal", "Exceptional", "Elite".
 - **Desktop screenshots:** `compare-desktop.mjs` before and after, then `diff-shots.mjs`. No
   differences are expected on any tab.
 
@@ -363,10 +386,11 @@ src/App.jsx             DropCalculatorPanel: UI state, inputs, table; no calcula
 ## Documentation
 
 - **CLAUDE.md:**
-  - Layout: `src/dropCalcData.js`, `src/dropCalcEngine.js`, `src/dropCalcLoad.js` and their tests.
+  - Layout: `src/dropCalcData.js`, `src/dropCalcEngine.js`, `src/dropCalcLoad.js` and their tests, and
+    `src/tiers.js` among the pure helpers.
   - The Vite plugin, and the generated, gitignored `DropCalculator.json` (generated in
     `configResolved`; editing `src/dropCalcData.js` restarts the dev server).
   - Data: Damnation mode swaps the Drop calculator's `DropCalculator.json`, not its `.txt` folder.
-  - The new checks, `bench-dropcalc.mjs`, `check-dropcalc.mjs` and `golden-dropcalc-legacy.mjs`, with
-    their environment variables.
+  - The new checks, `bench-dropcalc.mjs`, `check-dropcalc.mjs`, `golden-dropcalc-legacy.mjs` and
+    `check-tier-order.mjs`, with their environment variables.
 - **Memory notes:** update `drop-calculator-slow` and `preexisting-app-bugs` at the end.

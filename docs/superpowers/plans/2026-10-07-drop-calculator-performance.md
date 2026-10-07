@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Make the Drop calculator answer in well under a second on a phone (today: 14–55 s of frozen page), with exactly the same results, and make the unique cards' "View drop rates" link open the right unique.
+**Goal:** Make the Drop calculator answer in well under a second on a phone (today: 14–55 s of frozen page), with exactly the same results. Also make the unique cards' "View drop rates" link open the right unique, and list the tier filter as Normal, Exceptional, Elite.
 
 **Architecture:**
 - The calculator's maths moves out of `App.jsx` into pure modules: `src/dropCalcData.js` (table parsing and column lists) and `src/dropCalcEngine.js` (indexed lookups, one tree walk per root treasure class per query).
@@ -69,10 +69,12 @@ Five inputs or conditions the spec implies that its listed tests don't exercise,
 | `src/__snapshots__/dropCalc.golden.txt` | Create | Golden snapshot, captured from the legacy code |
 | `vite.config.js` | Modify | The `drop-calc-data` plugin |
 | `.gitignore` | Modify | `public/data/*/DropCalculator.json` |
-| `src/App.jsx` | Modify | `DropCalculatorPanel` (~lines 1407–2160) and the `UniqueTooltip` link (~line 3141) |
+| `src/App.jsx` | Modify | `DropCalculatorPanel` (~lines 1407–2160), the `UniqueTooltip` link (~line 3141), the `tierOptions` memo (~line 3551) |
 | `tools/checks/golden-dropcalc-legacy.mjs` | Create | Captures the golden snapshot from a legacy `App.jsx` |
 | `tools/checks/check-dropcalc.mjs` | Create | Browser check |
 | `tools/checks/bench-dropcalc.mjs` | Create | Sweep of every target, with work ceilings |
+| `src/tiers.js`, `src/tiers.test.js` | Create | `TIER_ORDER`, `sortTiers` (pure) and its tests |
+| `tools/checks/check-tier-order.mjs` | Create | Browser check of the tier filter's order |
 | `CLAUDE.md` | Modify | Layout, Data, harness |
 
 Line numbers are from `main` at `868ca33` and drift; search for the quoted code.
@@ -2133,7 +2135,159 @@ git commit -m "tools/checks: bench-dropcalc sweeps every target, failing on work
 
 ---
 
-### Task 9: Docs, desktop screenshots, final verification
+### Task 9: Tier filter order, Normal, Exceptional, Elite
+
+**Files:**
+- Create: `src/tiers.js`
+- Test: `src/tiers.test.js`
+- Create: `tools/checks/check-tier-order.mjs`
+- Modify: `src/App.jsx`, `App`'s `tierOptions` memo (~line 3551 on `main`; search `const tierOptions = useMemo`)
+
+**Interfaces:**
+- Produces, in `src/tiers.js`:
+  - `TIER_ORDER`: the array `["Normal", "Exceptional", "Elite"]`.
+  - `sortTiers(tiers: string[])`: a new array with the known tiers in `TIER_ORDER`, then the others (numbers ascending, otherwise `localeCompare`).
+
+- [ ] **Step 1: Write the failing unit tests, `src/tiers.test.js`**
+
+```js
+import {describe, expect, it} from "vitest";
+import {sortTiers, TIER_ORDER} from "./tiers.js";
+
+describe("sortTiers", () => {
+    it("lists the three tiers Normal, Exceptional, Elite whatever the input order", () => {
+        for (const input of [["Elite", "Exceptional", "Normal"], ["Exceptional", "Normal", "Elite"], ["Normal", "Elite", "Exceptional"]]) {
+            expect(sortTiers(input)).toEqual(TIER_ORDER);
+        }
+    });
+
+    it("keeps a subset in tier order", () => {
+        expect(sortTiers(["Elite", "Normal"])).toEqual(["Normal", "Elite"]);
+    });
+
+    it("puts unknown values after the known tiers, numbers ascending, then alphabetical", () => {
+        expect(sortTiers(["Elite", "10", "Mythic", "2", "Normal"])).toEqual(["Normal", "Elite", "2", "10", "Mythic"]);
+    });
+
+    it("doesn't change its input", () => {
+        const input = ["Elite", "Normal"];
+        sortTiers(input);
+        expect(input).toEqual(["Elite", "Normal"]);
+    });
+});
+```
+
+- [ ] **Step 2: Run them to verify they fail**
+
+Run: `export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && npx vitest run src/tiers.test.js`
+Expected: FAIL. It can't resolve `./tiers.js`.
+
+- [ ] **Step 3: Create `src/tiers.js`**
+
+```js
+// Item tiers in game order. The tier filter lists them in this order, not alphabetically
+// (which would put Elite first).
+export const TIER_ORDER = ["Normal", "Exceptional", "Elite"];
+
+// The known tiers in TIER_ORDER, then any other value after them: numbers ascending, otherwise
+// alphabetical. Returns a new array.
+export function sortTiers(tiers) {
+    const rank = (t) => {
+        const i = TIER_ORDER.indexOf(t);
+        return i < 0 ? TIER_ORDER.length : i;
+    };
+
+    return [...tiers].sort((a, b) => {
+        const byRank = rank(a) - rank(b);
+        if (byRank) return byRank;
+        const an = Number(a), bn = Number(b);
+        if (!Number.isNaN(an) && !Number.isNaN(bn)) return an - bn;
+        return a.localeCompare(b);
+    });
+}
+```
+
+- [ ] **Step 4: Run them to verify they pass**
+
+Run: `export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && npx vitest run src/tiers.test.js`
+Expected: PASS, 4 tests.
+
+- [ ] **Step 5: Write the browser check, `tools/checks/check-tier-order.mjs`**
+
+```js
+// The tier filter lists Normal, Exceptional, Elite in that order on every tab that has it.
+// node check-tier-order.mjs   (APP_URL = a dev server)
+import {run, checker, BASE, openTab} from "./cdp.mjs";
+
+const c = checker();
+const EXPECTED = ["All tiers", "Normal", "Exceptional", "Elite"];
+
+await run(async (page) => {
+    await page.desktop();
+    await page.goto(BASE);
+    await page.waitFor(`!!document.querySelector(".tabs .tab")`);
+    for (const key of ["weapons", "armors", "uniques"]) {
+        await openTab(page, key);
+        await page.click(".selTrigger", {text: "All tiers"});
+        const options = await page.eval(`[...document.querySelectorAll(".selDropdown .selOption")].map((e) => e.textContent.trim())`);
+        c.ok(JSON.stringify(options) === JSON.stringify(EXPECTED), `${key}: the tier filter lists ${EXPECTED.join(", ")}`, options.join(", "));
+        await page.click(".selTrigger", {text: "All tiers"}); // close it again
+    }
+});
+
+c.done();
+```
+
+- [ ] **Step 6: Run the check to see it fail**
+
+Start the dev server (Task 6 Step 2's command), then:
+
+```bash
+cd /home/emanresu/TheArchivistSoE/.worktrees/dropcalc-perf/tools/checks
+export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && APP_URL=http://localhost:5193/TheArchivistSoE/ node check-tier-order.mjs
+```
+
+Expected: three FAIL lines, each with `| All tiers, Elite, Exceptional, Normal`.
+
+- [ ] **Step 7: Use `sortTiers` in `App`**
+
+Add `import {sortTiers} from "./tiers.js";` after the `./dropCalcLoad.js` import in `src/App.jsx`, and replace the memo
+
+```js
+    const tierOptions = useMemo(() => {
+        const tiers = Array.from(new Set(items.map((it) => n(it?.itemTier)).filter(Boolean)));
+        return tiers.sort((a, b) => {
+            const an = Number(a), bn = Number(b);
+            if (!Number.isNaN(an) && !Number.isNaN(bn)) return an - bn;
+            return a.localeCompare(b);
+        });
+    }, [items]);
+```
+
+with
+
+```js
+    const tierOptions = useMemo(
+        () => sortTiers(Array.from(new Set(items.map((it) => n(it?.itemTier)).filter(Boolean)))),
+        [items]
+    );
+```
+
+- [ ] **Step 8: Re-run the check, lint, test, stop, commit**
+
+Run the check again (Step 6's command). Expected: three PASS lines and `all checks passed`. Then:
+
+```bash
+kill "$(cat $SCRATCH/vite-5193.pid)"
+cd /home/emanresu/TheArchivistSoE/.worktrees/dropcalc-perf
+export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && npm run lint && CI=1 npm test
+git add src/tiers.js src/tiers.test.js src/App.jsx tools/checks/check-tier-order.mjs
+git commit -m "Tier filter lists Normal, Exceptional, Elite (sortTiers) instead of alphabetically"
+```
+
+---
+
+### Task 10: Docs, desktop screenshots, final verification
 
 **Files:**
 - Modify: `CLAUDE.md`
@@ -2189,7 +2343,22 @@ with
   its display name ("Skull Splitter"): the calculator matches `UniqueItems.txt`'s `index`.
 ```
 
-**4.** In **Verifying UI changes**, the harness list has the one-line bullet
+**4.** In **Layout**, replace
+
+```markdown
+- `src/sortCompare.js` (Affixes sort rules), `src/hashTab.js` (tab ↔ URL hash), `src/pager.js`,
+  `src/tabList.js` and `useIsMobile`'s `mobileQuery`: pure helpers, with their tests beside them.
+```
+
+with
+
+```markdown
+- `src/sortCompare.js` (Affixes sort rules), `src/hashTab.js` (tab ↔ URL hash), `src/pager.js`,
+  `src/tabList.js`, `src/tiers.js` (the tier filter's Normal → Exceptional → Elite order) and
+  `useIsMobile`'s `mobileQuery`: pure helpers, with their tests beside them.
+```
+
+**5.** In **Verifying UI changes**, the harness list has the one-line bullet
 `- Feature checks: \`check-sticky.mjs\` (floating table header), \`check-multisort.mjs\` (Affixes multi-sort).`
 Insert this new bullet right after it:
 
@@ -2197,7 +2366,7 @@ Insert this new bullet right after it:
 - Drop calculator: `check-dropcalc.mjs` (browser: rows, one fetch per mode, no `.txt`, stale runs, the
   View drop rates link; WARN-only timing budgets `DROPCALC_DESKTOP_TASK_MS`, `DROPCALC_PHONE_TASK_MS`) and
   `bench-dropcalc.mjs` (Node: every target, every difficulty, both modes; FAIL over the work ceilings,
-  WARN over `DROPCALC_BUDGET_MS`).
+  WARN over `DROPCALC_BUDGET_MS`). Tier filter: `check-tier-order.mjs`.
 ```
 
 - [ ] **Step 2: Desktop screenshots, before and after**
