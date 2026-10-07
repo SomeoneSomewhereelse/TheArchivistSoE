@@ -215,7 +215,8 @@ export function checker() {
             if (!cond) failures++;
         },
         done() {
-            console.log(failures ? `${failures} check(s) failed` : "all checks passed");
+            // run() reports an exception as FAIL and sets exitCode; that must not read as a pass.
+            console.log(failures ? `${failures} check(s) failed` : process.exitCode ? "stopped by an exception (see FAIL above)" : "all checks passed");
             if (failures) process.exitCode = 1;
         },
     };
