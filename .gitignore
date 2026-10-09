@@ -26,3 +26,6 @@ dist-ssr
 
 # Generated from public/data/<mode>/*.txt by the drop-calc-data plugin (vite.config.js)
 public/data/*/DropCalculator.json
+
+# Generated from public/data/standard/*.txt and public/data/*.json by the item-builder-data plugin (vite.config.js)
+public/data/standard/ItemBuilder.json
