@@ -24,7 +24,7 @@
 - Every level input is an integer 1–99, default 99.
 - URL: `#/itembuilder?v=<linkVersion>&b=<base>&q=<m|r|c>&il=<ilvl>&cl=<clvl>&gl=<ingredient ilvl>&a=<key>-<key>…`; `v` always written, defaults left out.
 - Old-link notice text, exactly: `This link was made for older game data and can't be opened.`
-- Commits: small and frequent, on the `item-builder` branch in the main checkout (created in Task 1 Step 0; no worktree); do not push.
+- Work and commit in the manual worktree `/home/emanresu/TheArchivistSoE/.worktrees/item-builder` on branch `item-builder` (created in Task 1 Step 0). Every command `cd`s there; never run or commit in the main checkout. Commits small and frequent; do not push.
 - Dev server in a step: start it on its own line with a trailing `&`, save `VITE=$!`, and stop it with `kill $VITE`. Never `pkill -f "vite …"`: the pattern matches the Bash tool's own command line, so it kills the shell running the step. Don't chain the launch with `&&` before the `&` either (then `$!` is a subshell and vite survives the kill).
 
 ## Review Focus
@@ -59,11 +59,15 @@
 
 - [ ] **Step 0: Create the feature branch**
 
+A manual worktree (plain `git worktree add`, never the `EnterWorktree` tool), as the earlier features in this repo used. `.worktrees/` is already in `.git/info/exclude`.
+
 ```bash
-cd /home/emanresu/TheArchivistSoE && git status --short && git switch -c item-builder
+export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH"
+cd /home/emanresu/TheArchivistSoE && git status --short && git worktree add -b item-builder .worktrees/item-builder main
+cd /home/emanresu/TheArchivistSoE/.worktrees/item-builder && npm ci
 ```
 
-Expected: a clean working tree, then `Switched to a new branch 'item-builder'`. Every later step runs in this checkout.
+Expected: a clean main checkout, the worktree created on the new `item-builder` branch, and `npm ci` finishing without errors. Every later step runs in `/home/emanresu/TheArchivistSoE/.worktrees/item-builder`.
 
 - [ ] **Step 1: Take the desktop baseline screenshots (before any code change)**
 
@@ -71,7 +75,7 @@ The regression gate in Task 9 diffs every tab against this set, so it must be ta
 
 ```bash
 export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH"
-cd /home/emanresu/TheArchivistSoE
+cd /home/emanresu/TheArchivistSoE/.worktrees/item-builder
 node node_modules/vite/bin/vite.js --port 5181 --strictPort > /tmp/ib-dev.log 2>&1 &
 VITE=$!; sleep 6
 (cd tools/checks && node compare-desktop.mjs before http://localhost:5181/TheArchivistSoE/)
@@ -83,7 +87,7 @@ Expected: 19 `shot before <tab>` lines; `tools/checks/shots/desktop-before/` hol
 - [ ] **Step 2: Copy the raw affix tables from the mod repo and verify them**
 
 ```bash
-cd /home/emanresu/TheArchivistSoE && for f in MagicPrefix MagicSuffix; do gh api "repos/Lukaszpg/PD2-Sanctuary-of-Exile/contents/standard-mode/data/global/excel/$f.txt" -H 'Accept: application/vnd.github.raw' > public/data/standard/$f.txt; done && git hash-object public/data/standard/MagicPrefix.txt public/data/standard/MagicSuffix.txt
+cd /home/emanresu/TheArchivistSoE/.worktrees/item-builder && for f in MagicPrefix MagicSuffix; do gh api "repos/Lukaszpg/PD2-Sanctuary-of-Exile/contents/standard-mode/data/global/excel/$f.txt" -H 'Accept: application/vnd.github.raw' > public/data/standard/$f.txt; done && git hash-object public/data/standard/MagicPrefix.txt public/data/standard/MagicSuffix.txt
 ```
 
 Expected output (the blob SHAs the spec was written against):
@@ -227,7 +231,7 @@ describe("the real affix tables", () => {
 
 - [ ] **Step 5: Run the tests to verify they fail**
 
-Run: `export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE && npx vitest run src/itemBuilderData.test.js`
+Run: `export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE/.worktrees/item-builder && npx vitest run src/itemBuilderData.test.js`
 Expected: FAIL, because `./itemBuilderData.js` does not exist.
 
 - [ ] **Step 6: Write the implementation**
@@ -353,13 +357,13 @@ export function joinAffixes(texts, affixesJson) {
 
 - [ ] **Step 7: Run the tests to verify they pass**
 
-Run: `export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE && npx vitest run src/itemBuilderData.test.js`
+Run: `export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE/.worktrees/item-builder && npx vitest run src/itemBuilderData.test.js`
 Expected: PASS (all tests).
 
 - [ ] **Step 8: Lint and commit**
 
 ```bash
-export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE && npm run lint && git add public/data/standard/MagicPrefix.txt public/data/standard/MagicSuffix.txt src/itemBuilderData.js src/itemBuilderFixtures.js src/itemBuilderData.test.js && git commit -m "Item Builder: raw affix tables and the row-by-row join with Affixes.json"
+export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE/.worktrees/item-builder && npm run lint && git add public/data/standard/MagicPrefix.txt public/data/standard/MagicSuffix.txt src/itemBuilderData.js src/itemBuilderFixtures.js src/itemBuilderData.test.js && git commit -m "Item Builder: raw affix tables and the row-by-row join with Affixes.json"
 ```
 
 ---
@@ -615,7 +619,7 @@ export function tinyModel() {
 
 - [ ] **Step 2: Run the tests to verify they fail**
 
-Run: `export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE && npx vitest run src/itemBuilderData.test.js`
+Run: `export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE/.worktrees/item-builder && npx vitest run src/itemBuilderData.test.js`
 Expected: FAIL, with `buildTypes` (and the other new exports) not exported.
 
 - [ ] **Step 3: Append the implementation**
@@ -793,13 +797,13 @@ export function resolveLinkVersion({fingerprint, stored, command}) {
 
 - [ ] **Step 4: Run the tests to verify they pass**
 
-Run: `export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE && npx vitest run src/itemBuilderData.test.js`
+Run: `export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE/.worktrees/item-builder && npx vitest run src/itemBuilderData.test.js`
 Expected: PASS. If "the real data" fails on a missing optgroup label, a spawnable base type is not in `GROUP_LABELS`: add it with a plural label, and say so in the commit message.
 
 - [ ] **Step 5: Lint and commit**
 
 ```bash
-export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE && npm run lint && git add src/itemBuilderData.js src/itemBuilderFixtures.js src/itemBuilderData.test.js && git commit -m "Item Builder: item types, bases, ItemBuilder.json format and link-version logic"
+export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE/.worktrees/item-builder && npm run lint && git add src/itemBuilderData.js src/itemBuilderFixtures.js src/itemBuilderData.test.js && git commit -m "Item Builder: item types, bases, ItemBuilder.json format and link-version logic"
 ```
 
 ---
@@ -910,7 +914,7 @@ public/data/standard/ItemBuilder.json
 
 ```bash
 export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH"
-cd /home/emanresu/TheArchivistSoE
+cd /home/emanresu/TheArchivistSoE/.worktrees/item-builder
 rm -f src/itemBuilderVersion.json
 node node_modules/vite/bin/vite.js --port 5182 --strictPort > /tmp/ib-dev.log 2>&1 &
 VITE=$!; sleep 6; kill $VITE
@@ -927,7 +931,7 @@ Expected:
 - [ ] **Step 4: Verify a build passes with the committed version, and fails without it**
 
 ```bash
-export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE && npm run build 2>&1 | tail -3 && cp src/itemBuilderVersion.json /tmp/ib-version.json && echo '{"version": 1, "fingerprint": "00000000"}' > src/itemBuilderVersion.json && (npm run build 2>&1 | grep -o "link data changed.*") ; cp /tmp/ib-version.json src/itemBuilderVersion.json
+export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE/.worktrees/item-builder && npm run build 2>&1 | tail -3 && cp src/itemBuilderVersion.json /tmp/ib-version.json && echo '{"version": 1, "fingerprint": "00000000"}' > src/itemBuilderVersion.json && (npm run build 2>&1 | grep -o "link data changed.*") ; cp /tmp/ib-version.json src/itemBuilderVersion.json
 ```
 
 Expected: the first build succeeds (`built in …`); the second prints `link data changed: run the dev server once and commit src/itemBuilderVersion.json (the link version bump)`; the file is restored.
@@ -935,7 +939,7 @@ Expected: the first build succeeds (`built in …`); the second prints `link dat
 - [ ] **Step 5: Lint and commit**
 
 ```bash
-export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE && npm run lint && npm test && git status --short && git add vite.config.js .gitignore src/itemBuilderVersion.json && git commit -m "Item Builder: item-builder-data Vite plugin and the committed link version"
+export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE/.worktrees/item-builder && npm run lint && npm test && git status --short && git add vite.config.js .gitignore src/itemBuilderVersion.json && git commit -m "Item Builder: item-builder-data Vite plugin and the committed link version"
 ```
 
 Expected: `git status --short` does not list `public/data/standard/ItemBuilder.json` (gitignored).
@@ -1166,7 +1170,7 @@ describe("the rules on the real data", () => {
 
 - [ ] **Step 2: Run the tests to verify they fail**
 
-Run: `export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE && npx vitest run src/itemBuilderRules.test.js`
+Run: `export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE/.worktrees/item-builder && npx vitest run src/itemBuilderRules.test.js`
 Expected: FAIL, because `./itemBuilderRules.js` does not exist.
 
 - [ ] **Step 3: Write the implementation**
@@ -1351,13 +1355,13 @@ Note for the "unknown base" test: `{...EMPTY_BUILD, ...levels, picks: []}` equal
 
 - [ ] **Step 4: Run the tests to verify they pass**
 
-Run: `export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE && npx vitest run src/itemBuilderRules.test.js`
+Run: `export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE/.worktrees/item-builder && npx vitest run src/itemBuilderRules.test.js`
 Expected: PASS.
 
 - [ ] **Step 5: Lint and commit**
 
 ```bash
-export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE && npm run lint && git add src/itemBuilderRules.js src/itemBuilderRules.test.js && git commit -m "Item Builder: rules engine (alvl, eligibility, caps, row state, build resolution)"
+export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE/.worktrees/item-builder && npm run lint && git add src/itemBuilderRules.js src/itemBuilderRules.test.js && git commit -m "Item Builder: rules engine (alvl, eligibility, caps, row state, build resolution)"
 ```
 
 ---
@@ -1488,7 +1492,7 @@ describe("notices", () => {
 
 - [ ] **Step 2: Run the tests to verify they fail**
 
-Run: `export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE && npx vitest run src/itemBuilderHash.test.js`
+Run: `export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE/.worktrees/item-builder && npx vitest run src/itemBuilderHash.test.js`
 Expected: FAIL, because `./itemBuilderHash.js` does not exist.
 
 - [ ] **Step 3: Write the implementation**
@@ -1569,13 +1573,13 @@ export function decodeBuildQuery(model, query) {
 
 - [ ] **Step 4: Run the tests to verify they pass**
 
-Run: `export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE && npx vitest run src/itemBuilderHash.test.js`
+Run: `export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE/.worktrees/item-builder && npx vitest run src/itemBuilderHash.test.js`
 Expected: PASS.
 
 - [ ] **Step 5: Lint and commit**
 
 ```bash
-export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE && npm run lint && git add src/itemBuilderHash.js src/itemBuilderHash.test.js && git commit -m "Item Builder: URL format (versioned links, decoding with cleanup and notices)"
+export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE/.worktrees/item-builder && npm run lint && git add src/itemBuilderHash.js src/itemBuilderHash.test.js && git commit -m "Item Builder: URL format (versioned links, decoding with cleanup and notices)"
 ```
 
 ---
@@ -1638,7 +1642,7 @@ describe("targetHash and hashWriteAction with a query", () => {
 
 - [ ] **Step 2: Run the tests to verify they fail**
 
-Run: `export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE && npx vitest run src/hashTab.test.js`
+Run: `export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE/.worktrees/item-builder && npx vitest run src/hashTab.test.js`
 Expected: FAIL (`parseHash` and `targetHash` are not exported).
 
 - [ ] **Step 3: Replace `src/hashTab.js`**
@@ -1719,13 +1723,13 @@ export function useHashTab(validKeys, fallback, queryTabs = NO_QUERY_TABS) {
 
 - [ ] **Step 4: Run all tests to verify they pass**
 
-Run: `export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE && npm test`
+Run: `export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE/.worktrees/item-builder && npm test`
 Expected: PASS, including the unchanged existing `hashTab` tests (`#/affixes?x=1` is still malformed without query tabs).
 
 - [ ] **Step 5: Lint and commit**
 
 ```bash
-export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE && npm run lint && git add src/hashTab.js src/hashTab.test.js && git commit -m "useHashTab: listed tabs carry a query in the hash (replace on query change, kept across tabs)"
+export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE/.worktrees/item-builder && npm run lint && git add src/hashTab.js src/hashTab.test.js && git commit -m "useHashTab: listed tabs carry a query in the hash (replace on query change, kept across tabs)"
 ```
 
 ---
@@ -1796,7 +1800,7 @@ describe("loadItemBuilder", () => {
 
 - [ ] **Step 2: Run them to verify they fail**
 
-Run: `export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE && npx vitest run src/itemBuilderLoad.test.js`
+Run: `export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE/.worktrees/item-builder && npx vitest run src/itemBuilderLoad.test.js`
 Expected: FAIL, because `./itemBuilderLoad.js` does not exist.
 
 - [ ] **Step 3: Write the loader**
@@ -1868,13 +1872,13 @@ In `tools/checks/cdp.mjs`, add `"itembuilder"` to `TAB_KEYS` right after `"dropc
 
 - [ ] **Step 5: Run all tests**
 
-Run: `export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE && npm test`
+Run: `export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE/.worktrees/item-builder && npm test`
 Expected: PASS.
 
 - [ ] **Step 6: Lint and commit**
 
 ```bash
-export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE && npm run lint && git add src/itemBuilderLoad.js src/itemBuilderLoad.test.js src/tabList.js src/tabList.test.js src/tabs.jsx tools/checks/cdp.mjs && git commit -m "Item Builder: data loader and tab registration (More menu, Tools sheet group)"
+export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE/.worktrees/item-builder && npm run lint && git add src/itemBuilderLoad.js src/itemBuilderLoad.test.js src/tabList.js src/tabList.test.js src/tabs.jsx tools/checks/cdp.mjs && git commit -m "Item Builder: data loader and tab registration (More menu, Tools sheet group)"
 ```
 
 ---
@@ -2604,14 +2608,14 @@ Append to the end of `src/styles.css`:
 
 - [ ] **Step 5: Lint, test, build**
 
-Run: `export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE && npm run lint && npm test && npm run build`
+Run: `export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE/.worktrees/item-builder && npm run lint && npm test && npm run build`
 Expected: lint 0 problems, tests pass, build succeeds. If lint flags the render-time `setQuery`/`setNotice` in `useItemBuilder`, do not add `eslint-disable`: guard it with a `prevQuery` state (`if (decoded && query !== prevQuery) { setPrevQuery(query); … }`, the same pattern as `prevTab`) and re-run.
 
 - [ ] **Step 6: Smoke-check in a browser**
 
 ```bash
 export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH"
-cd /home/emanresu/TheArchivistSoE
+cd /home/emanresu/TheArchivistSoE/.worktrees/item-builder
 node node_modules/vite/bin/vite.js --port 5181 --strictPort > /tmp/ib-dev.log 2>&1 &
 VITE=$!; sleep 6
 (cd tools/checks && node -e '
@@ -2634,7 +2638,7 @@ Expected: `{"hash":"#/itembuilder?v=1&b=cst&q=r&a=p352","slots":1,"cobalt":"ibRo
 - [ ] **Step 7: Commit**
 
 ```bash
-cd /home/emanresu/TheArchivistSoE && git add src/useItemBuilder.js src/ItemBuilderPanel.jsx src/App.jsx src/styles.css && git commit -m "Item Builder: the tab (useItemBuilder hook, panel, styles, App hookup)"
+cd /home/emanresu/TheArchivistSoE/.worktrees/item-builder && git add src/useItemBuilder.js src/ItemBuilderPanel.jsx src/App.jsx src/styles.css && git commit -m "Item Builder: the tab (useItemBuilder hook, panel, styles, App hookup)"
 ```
 
 ---
@@ -2821,7 +2825,7 @@ c.done();
 
 ```bash
 export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH"
-cd /home/emanresu/TheArchivistSoE
+cd /home/emanresu/TheArchivistSoE/.worktrees/item-builder
 node node_modules/vite/bin/vite.js --port 5181 --strictPort > /tmp/ib-dev.log 2>&1 &
 VITE=$!; sleep 6
 (cd tools/checks && APP_URL=http://localhost:5181/TheArchivistSoE/ node check-itembuilder.mjs)
@@ -2834,7 +2838,7 @@ Expected: every line PASS, ending with the checker's all-passed line. A FAIL is 
 
 ```bash
 export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH"
-cd /home/emanresu/TheArchivistSoE
+cd /home/emanresu/TheArchivistSoE/.worktrees/item-builder
 node node_modules/vite/bin/vite.js --port 5181 --strictPort > /tmp/ib-dev.log 2>&1 &
 VITE=$!; sleep 6
 (cd tools/checks && node compare-desktop.mjs after http://localhost:5181/TheArchivistSoE/ && node diff-shots.mjs before after)
@@ -2876,7 +2880,7 @@ In "Verifying UI changes", in the harness list, add `check-itembuilder.mjs` (Ite
 - [ ] **Step 5: Final gates and commit**
 
 ```bash
-export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE && npm run lint && npm test && npm run build && git add tools/checks/check-itembuilder.mjs CLAUDE.md && git commit -m "Item Builder: browser check, CLAUDE.md"
+export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE/.worktrees/item-builder && npm run lint && npm test && npm run build && git add tools/checks/check-itembuilder.mjs CLAUDE.md && git commit -m "Item Builder: browser check, CLAUDE.md"
 ```
 
 Expected: lint 0 problems, all tests pass (including the Drop calculator golden snapshot), build succeeds.
