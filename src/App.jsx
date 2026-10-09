@@ -5,7 +5,9 @@ import PagerButtons from "./PagerButtons.jsx";
 import StickyHeadTable from "./StickyHeadTable.jsx";
 import AffixSortBar from "./AffixSortBar.jsx";
 import {MobileTabsBar, TabsBar, TabTitle} from "./tabs.jsx";
-import {VALID_TAB_KEYS} from "./tabList.js";
+import {QUERY_TABS, VALID_TAB_KEYS} from "./tabList.js";
+import ItemBuilderPanel from "./ItemBuilderPanel.jsx";
+import {useItemBuilder} from "./useItemBuilder.js";
 import {usePager} from "./pager.js";
 import {calculateDrops} from "./dropCalcEngine.js";
 import {loadModel} from "./dropCalcLoad.js";
@@ -2620,7 +2622,8 @@ export default function App() {
     const [pendingLinkTarget, setPendingLinkTarget] = useState(null);
     const [showTopButton, setShowTopButton] = useState(false);
 
-    const [tab, setTab] = useHashTab(VALID_TAB_KEYS, "weapons");
+    const [tab, setTab, builderQuery, setBuilderQuery] = useHashTab(VALID_TAB_KEYS, "weapons", QUERY_TABS);
+    const itemBuilder = useItemBuilder({tab, query: builderQuery, setQuery: setBuilderQuery});
     const isMobile = useIsMobile();
     const [dropCalculatorRequest, setDropCalculatorRequest] = useState(null);
 
@@ -3357,6 +3360,8 @@ export default function App() {
                         </div>
                     </div>
                 </>
+            ) : tab === "itembuilder" ? (
+                <ItemBuilderPanel {...itemBuilder} searchRef={searchInputRef}/>
             ) : tab === "dropcalc" ? (
                 <DropCalculatorPanel
                     request={dropCalculatorRequest}
