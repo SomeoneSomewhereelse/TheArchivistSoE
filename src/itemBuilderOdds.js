@@ -59,7 +59,9 @@ function sideSplits(caps, groupCounts, total, max) {
 }
 
 // {p, min, max}: p is the chance (0 when the picks can't all roll together), min..max the affix count range,
-// taken as uniform. null when nothing is picked.
+// taken as uniform. null when there is nothing to show: no picks, or a pool where some group can roll as both a
+// prefix and a suffix (the sides are then not independent and the calculation below would be wrong; no builder
+// base has one today, see the real-data test).
 export function rollOdds(model, ctx, picks) {
     if (!picks.length) return null;
     const {min, max} = affixCountRange(ctx);
@@ -75,6 +77,7 @@ export function rollOdds(model, ctx, picks) {
         const map = groupWeight[sideOf(a)];
         map.set(a.group, (map.get(a.group) ?? 0) + affixWeight(a, ctx));
     }
+    if ([...groupWeight[0].keys()].some((g) => groupWeight[1].has(g))) return null;
     const poolKeys = new Set(pool.map((a) => a.key));
     if (picks.some((a) => !poolKeys.has(a.key))) return none;
 
@@ -98,12 +101,14 @@ export function rollOdds(model, ctx, picks) {
 }
 
 const twoDigits = new Intl.NumberFormat("en-US", {maximumSignificantDigits: 2});
+const UNITS = [[1e12, "trillion"], [1e9, "billion"], [1e6, "million"]];
 
-// "1 in 2,100", "1 in 3.4 million": 1/p to 2 significant digits. p must be > 0.
+// "1 in 2,100", "1 in 3.4 million": 1/p to 2 significant digits; from 1,000 trillion on, "less than 1 in 1,000
+// trillion". p must be > 0.
 export function formatOdds(p) {
     const x = Number((1 / p).toPrecision(2));
     if (x < 1.05) return "1 in 1";
-    if (x >= 1e9) return `1 in ${twoDigits.format(x / 1e9)} billion`;
-    if (x >= 1e6) return `1 in ${twoDigits.format(x / 1e6)} million`;
-    return `1 in ${twoDigits.format(x)}`;
+    if (x >= 1e15) return "less than 1 in 1,000 trillion";
+    const [size, word] = UNITS.find(([u]) => x >= u) ?? [1, ""];
+    return `1 in ${twoDigits.format(x / size)}${word ? ` ${word}` : ""}`;
 }

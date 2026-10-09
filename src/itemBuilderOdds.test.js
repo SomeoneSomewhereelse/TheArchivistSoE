@@ -1,6 +1,6 @@
 import {describe, expect, it} from "vitest";
 import {prepareItemBuilder, ITEM_BUILDER_VERSION} from "./itemBuilderData.js";
-import {affixCountRange, eligibleAffixes, EMPTY_BUILD, rollContext} from "./itemBuilderRules.js";
+import {affixCountRange, allowedQualities, eligibleAffixes, EMPTY_BUILD, rollContext} from "./itemBuilderRules.js";
 import {affixWeight, formatOdds, rollOdds} from "./itemBuilderOdds.js";
 import {realItemBuilderModel} from "./itemBuilderFixtures.js";
 
@@ -92,6 +92,105 @@ describe("rollOdds on hand-computed cases", () => {
         expect(odds(shared, {base: "axe", quality: "rare"}, ["p0", "s0"]).p).toBe(0);
         const many = oddsModel(["p0", "p1", "p2"].map((k, i) => affix(k, {group: i + 1})));
         expect(odds(many, {base: "axe", quality: "magic"}, ["p0", "p1"]).p).toBe(0);
+    });
+});
+
+describe("rollOdds guard: a group on both sides", () => {
+    it("is null (nothing to show), not a number, when the pool has a group that rolls as a prefix and a suffix", () => {
+        const shared = oddsModel([affix("p0", {group: 1}), affix("p1", {group: 2}), affix("s0", {group: 2}), affix("s1", {group: 10})]);
+        expect(odds(shared, {base: "axe", quality: "rare"}, ["p0"])).toBeNull();
+        expect(odds(shared, {base: "axe", quality: "rare"}, ["p0", "s1"])).toBeNull();
+    });
+
+    it("never triggers on the real data: no eligible group is on both sides, for any base, quality and alvl", () => {
+        const real = realItemBuilderModel();
+        // The pool depends on the base's types (chain and class), on rare vs magic, and on alvl only: one base per
+        // distinct type list stands for the rest, and every alvl 1-99 covers every level band.
+        const seen = new Set();
+        const offenders = [];
+        let combos = 0;
+        for (const base of real.bases) {
+            for (const quality of allowedQualities(real, base)) {
+                const key = `${base.types.join("+")}/${quality === "magic" ? "magic" : "rare"}`;
+                if (seen.has(key)) continue;
+                seen.add(key);
+                const ctx = rollContext(real, {...EMPTY_BUILD, base: base.code, quality});
+                for (let alvl = 1; alvl <= 99; alvl++) {
+                    combos++;
+                    const sides = [new Set(), new Set()];
+                    for (const a of eligibleAffixes(real, {...ctx, alvl})) sides[a.suffix ? 1 : 0].add(a.group);
+                    for (const g of sides[0]) if (sides[1].has(g)) offenders.push(`${base.code} ${quality} alvl ${alvl}: group ${g}`);
+                }
+            }
+        }
+        expect(combos).toBeGreaterThan(1000);
+        expect(offenders).toEqual([]);
+    });
+});
+
+// ---- Brute-force cross-check ---------------------------------------------------------------------
+
+// The exact chance by walking every draw of the roll one by one, independently of rollOdds' method: N over its
+// range; per draw, the open sides (under their cap and caps.total, with a free-group row left), 50/50 between
+// two; then every free-group row of that side by weight, which takes its group.
+function bruteForce(model, ctx, picks) {
+    const {min, max} = affixCountRange(ctx);
+    const caps = [ctx.caps.prefix, ctx.caps.suffix];
+    const pool = eligibleAffixes(model, ctx);
+    const wanted = new Set(picks.map((a) => a.key));
+    const walk = (left, held, count, got) => {
+        if (got === wanted.size) return 1;
+        if (left === 0) return 0;
+        const free = [0, 1].map((s) => pool.filter((a) => (a.suffix ? 1 : 0) === s && !held.has(a.group)));
+        const open = [0, 1].filter((s) => count[0] + count[1] < ctx.caps.total && count[s] < caps[s] && free[s].length > 0);
+        let p = 0;
+        for (const s of open) {
+            const total = free[s].reduce((sum, a) => sum + affixWeight(a, ctx), 0);
+            for (const a of free[s]) {
+                const next = s === 0 ? [count[0] + 1, count[1]] : [count[0], count[1] + 1];
+                p += (affixWeight(a, ctx) / total / open.length) * walk(left - 1, new Set([...held, a.group]), next, got + (wanted.has(a.key) ? 1 : 0));
+            }
+        }
+        return p;
+    };
+    let sum = 0;
+    for (let n = min; n <= max; n++) sum += walk(n, new Set(), [0, 0], 0);
+    return sum / (max - min + 1);
+}
+
+describe("rollOdds against a brute-force walk of every draw (toy models)", () => {
+    // Small random pools: 1-4 rows a side, some sharing a group with the row before (siblings), weights 1-5
+    // and levels 1-3 (so the wand's magic-lvl weights differ). Every base and quality, several levels, 1-3 picks.
+    const rand = mulberry32(42);
+    const int = (lo, hi) => lo + Math.floor(rand() * (hi - lo + 1));
+    const builds = [
+        {base: "axe", quality: "magic", ilvl: 10}, {base: "axe", quality: "magic", ilvl: 99},
+        {base: "axe", quality: "rare", ilvl: 30}, {base: "axe", quality: "rare", ilvl: 99},
+        {base: "axe", quality: "crafted", clvl: 99, gilvl: 1}, {base: "axe", quality: "crafted", clvl: 99, gilvl: 99},
+        {base: "wnd", quality: "magic", ilvl: 99}, {base: "wnd", quality: "rare", ilvl: 50},
+        {base: "jew", quality: "magic", ilvl: 50}, {base: "jew", quality: "rare", ilvl: 99},
+    ];
+    it.each(builds.map((b) => [`${b.base} ${b.quality} ${b.ilvl ?? `${b.clvl}/${b.gilvl}`}`, b]))("%s", (name, build) => {
+        let checked = 0;
+        for (let round = 0; round < 12; round++) {
+            const rows = [];
+            let group = 1;
+            for (const side of ["p", "s"]) {
+                for (let i = int(1, 4); i > 0; i--) {
+                    const sibling = rows.length && rows.at(-1).key[0] === side && rand() < 0.3;
+                    rows.push(affix(`${side}${rows.length}`, {group: sibling ? rows.at(-1).group : group++, frequency: int(1, 5), level: int(1, 3), itypes: ["weap", "jewl"]}));
+                }
+            }
+            const model = oddsModel(rows);
+            const ctx = rollContext(model, {...EMPTY_BUILD, ...build});
+            const picks = [];
+            for (const a of eligibleAffixes(model, ctx)) if (picks.length < 3 && rand() < 0.5 && !picks.some((p) => p.group === a.group)) picks.push(a);
+            const result = rollOdds(model, ctx, picks);
+            if (!result) continue;
+            expect(Math.abs(result.p - bruteForce(model, ctx, picks)), `${name}, round ${round}: ${picks.map((a) => a.key)}`).toBeLessThan(1e-12);
+            checked++;
+        }
+        expect(checked).toBeGreaterThan(6);
     });
 });
 
@@ -211,11 +310,22 @@ describe("formatOdds", () => {
         expect(formatOdds(1 / 1.04)).toBe("1 in 1");
     });
 
-    it("names millions and billions", () => {
+    it("names millions, billions and trillions, rolling over after rounding", () => {
         expect(formatOdds(1 / 3.44e6)).toBe("1 in 3.4 million");
         expect(formatOdds(1 / 999999)).toBe("1 in 1 million");
         expect(formatOdds(1 / 12e6)).toBe("1 in 12 million");
+        expect(formatOdds(1 / 994e6)).toBe("1 in 990 million");
+        expect(formatOdds(1 / 999.5e6)).toBe("1 in 1 billion");
         expect(formatOdds(1 / 2.5e9)).toBe("1 in 2.5 billion");
-        expect(formatOdds(1 / 7.1e12)).toBe("1 in 7,100 billion");
+        expect(formatOdds(1 / 994e9)).toBe("1 in 990 billion");
+        expect(formatOdds(1 / 999.5e9)).toBe("1 in 1 trillion");
+        expect(formatOdds(1 / 7.1e12)).toBe("1 in 7.1 trillion");
+        expect(formatOdds(1 / 840e12)).toBe("1 in 840 trillion");
+    });
+
+    it("has a floor at 1,000 trillion", () => {
+        expect(formatOdds(1 / 994e12)).toBe("1 in 990 trillion");
+        expect(formatOdds(1 / 999.5e12)).toBe("less than 1 in 1,000 trillion");
+        expect(formatOdds(1e-30)).toBe("less than 1 in 1,000 trillion");
     });
 });
