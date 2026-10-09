@@ -1,6 +1,6 @@
 import {describe, expect, it} from "vitest";
 import {
-    affixLevel, allowedQualities, CAPS, canRoll, countHint, craftedItemLevel, EMPTY_BUILD, eligibleAffixes, itemKind,
+    affixCountRange, affixLevel, allowedQualities, CAPS, canRoll, countHint, craftedItemLevel, EMPTY_BUILD, eligibleAffixes, itemKind,
     requiredLevel, resolveBuild, rollContext, rowState,
 } from "./itemBuilderRules.js";
 import {realItemBuilderModel, tinyModel} from "./itemBuilderFixtures.js";
@@ -126,6 +126,27 @@ describe("requiredLevel and countHint", () => {
         expect(countHint(ctxFor({base: "jew"}))).toBe("A rare jewel always rolls 4 affixes");
         expect(countHint(ctxFor({base: "axe", quality: "crafted"}))).toBe("A crafted item at ilvl 98 always rolls 4 random affixes");
         expect(countHint(ctxFor({base: "axe", quality: "crafted", clvl: 80, gilvl: 1}))).toBe("A crafted item at ilvl 40 rolls 2–4 random affixes");
+    });
+
+    it("affixCountRange gives the same ranges as the hint, at each threshold", () => {
+        const range = (fields) => affixCountRange(ctxFor(fields));
+        expect(range({base: "axe", quality: "magic", ilvl: 64})).toEqual({min: 1, max: 2});
+        expect(range({base: "axe", quality: "magic", ilvl: 65})).toEqual({min: 2, max: 2});
+        expect(range({base: "amu", quality: "magic", ilvl: 84})).toEqual({min: 1, max: 2});
+        expect(range({base: "amu", quality: "magic", ilvl: 85})).toEqual({min: 2, max: 2});
+        expect(range({base: "jew", quality: "magic", ilvl: 85})).toEqual({min: 2, max: 2});
+        expect(range({base: "cm3", quality: "magic", ilvl: 89})).toEqual({min: 1, max: 2});
+        expect(range({base: "cm3", quality: "magic", ilvl: 90})).toEqual({min: 2, max: 2});
+        expect(range({base: "axe", ilvl: 44})).toEqual({min: 3, max: 6});
+        expect(range({base: "axe", ilvl: 45})).toEqual({min: 4, max: 6});
+        expect(range({base: "axe", ilvl: 65})).toEqual({min: 5, max: 6});
+        expect(range({base: "axe", ilvl: 85})).toEqual({min: 6, max: 6});
+        expect(range({base: "jew", ilvl: 10})).toEqual({min: 4, max: 4});
+        expect(range({base: "axe", quality: "crafted", clvl: 1, gilvl: 1})).toEqual({min: 1, max: 4}); // crafted ilvl 0
+        expect(range({base: "axe", quality: "crafted", clvl: 60, gilvl: 1})).toEqual({min: 1, max: 4}); // crafted ilvl 30
+        expect(range({base: "axe", quality: "crafted", clvl: 62, gilvl: 1})).toEqual({min: 2, max: 4}); // 31
+        expect(range({base: "axe", quality: "crafted", clvl: 99, gilvl: 4})).toEqual({min: 3, max: 4}); // 51
+        expect(range({base: "axe", quality: "crafted", clvl: 99, gilvl: 44})).toEqual({min: 4, max: 4}); // 71
     });
 });
 

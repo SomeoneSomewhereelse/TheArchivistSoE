@@ -109,21 +109,32 @@ export function requiredLevel(base, picked) {
     return Math.max(base.levelreq, ...picked.map((a) => a.levelreq));
 }
 
+// Spec "Affix count by ilvl": [lowest ilvl, min, max], highest band first. Crafted items use the crafted ilvl.
+const COUNT_BANDS = {
+    rare: [[85, 6, 6], [65, 5, 6], [45, 4, 6], [0, 3, 6]],
+    crafted: [[71, 4, 4], [51, 3, 4], [31, 2, 4], [0, 1, 4]], // crafted ilvl can be 0 (clvl 1, ingredient 1)
+};
+
+// How many affixes a real drop of this quality and ilvl rolls: {min, max}. The hint and the roll odds both read it.
+export function affixCountRange(ctx) {
+    const {quality, ilvl, kind} = ctx;
+    if (quality === "magic") return {min: ilvl >= MAGIC_TWO_AFFIX_ILVL[kind] ? 2 : 1, max: 2};
+    if (quality === "rare" && kind === "jewel") return {min: 4, max: 4};
+    const [, min, max] = COUNT_BANDS[quality].find(([from]) => ilvl >= from);
+    return {min, max};
+}
+
 export function countHint(ctx) {
     const {quality, ilvl, kind} = ctx;
+    const {min, max} = affixCountRange(ctx);
+    const count = min === max ? `always rolls ${max}` : `rolls ${min}–${max}`;
     if (quality === "magic") {
-        const from = MAGIC_TWO_AFFIX_ILVL[kind];
-        return ilvl >= from
-            ? `A magic item at ilvl ${ilvl} always rolls 2 affixes`
-            : `A magic item at ilvl ${ilvl} rolls 1–2 affixes (always 2 from ilvl ${from})`;
+        return min === max
+            ? `A magic item at ilvl ${ilvl} ${count} affixes`
+            : `A magic item at ilvl ${ilvl} ${count} affixes (always 2 from ilvl ${MAGIC_TWO_AFFIX_ILVL[kind]})`;
     }
-    if (quality === "rare") {
-        if (kind === "jewel") return "A rare jewel always rolls 4 affixes";
-        if (ilvl >= 85) return `A rare at ilvl ${ilvl} always rolls 6 affixes`;
-        return `A rare at ilvl ${ilvl} rolls ${ilvl >= 65 ? "5–6" : ilvl >= 45 ? "4–6" : "3–6"} affixes`;
-    }
-    if (ilvl > 70) return `A crafted item at ilvl ${ilvl} always rolls 4 random affixes`;
-    return `A crafted item at ilvl ${ilvl} rolls ${ilvl > 50 ? "3–4" : ilvl > 30 ? "2–4" : "1–4"} random affixes`;
+    if (quality === "rare") return kind === "jewel" ? `A rare jewel ${count} affixes` : `A rare at ilvl ${ilvl} ${count} affixes`;
+    return `A crafted item at ilvl ${ilvl} ${count} random affixes`;
 }
 
 const LEVEL_KEYS = ["ilvl", "clvl", "gilvl"];
