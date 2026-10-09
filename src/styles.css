@@ -2897,3 +2897,36 @@ a.mdLink {
         white-space: nowrap;
     }
 }
+
+/* The card and the roll-odds line under it share the left column (one flex item on phones). */
+.ibCardCol {
+    grid-column: 1;
+    min-width: 0;
+}
+
+.ibOdds {
+    margin-top: 10px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.35));
+    border: 1px solid rgba(202, 161, 74, 0.45);
+    overflow-wrap: anywhere;
+}
+
+.ibOddsLine {
+    margin: 0;
+    color: var(--text);
+    font-size: 15px;
+}
+
+.ibOddsValue {
+    color: var(--ib-rare);
+    font-size: 17px;
+    margin-right: 4px;
+}
+
+.ibOddsNote {
+    margin: 4px 0 0;
+    color: var(--muted);
+    font-size: 12px;
+}

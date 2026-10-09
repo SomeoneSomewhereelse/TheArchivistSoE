@@ -5,6 +5,7 @@ import React, {useEffect, useMemo, useRef, useState} from "react";
 import SearchableSelect from "./SearchableSelect.jsx";
 import {compareAffixes} from "./sortCompare.js";
 import {allowedQualities, countHint, eligibleAffixes, requiredLevel, rollContext, rowState} from "./itemBuilderRules.js";
+import {formatOdds, rollOdds} from "./itemBuilderOdds.js";
 
 const QUALITY_LABELS = {magic: "Magic", rare: "Rare", crafted: "Crafted"};
 const CLASS_NAMES = {ama: "Amazon", ass: "Assassin", bar: "Barbarian", dru: "Druid", nec: "Necromancer", pal: "Paladin", sor: "Sorceress"};
@@ -125,6 +126,7 @@ export default function ItemBuilderPanel({status, error, retry, model, build, no
             .filter((a) => !needle || a.name.toLowerCase().includes(needle) || statText(a).toLowerCase().includes(needle))
             .sort((a, b) => compareAffixes(a, b, "attrs", "desc"));
     }, [eligible, search]);
+    const odds = useMemo(() => (ctx ? rollOdds(model, ctx, picked) : null), [model, ctx, picked]);
 
     if (status === "loading") return <div className="infoPanel ibStatus">Loading item data…</div>;
     if (status === "error") {
@@ -188,32 +190,46 @@ export default function ItemBuilderPanel({status, error, retry, model, build, no
 
             {notice && <div className="ibNotice" role="status">{notice}</div>}
 
-            <section className={`ibCard${build.quality ? ` ib-${build.quality}` : ""}`} ref={cardRef}>
-                {!base ? (
-                    <p className="ibEmpty">Choose a base item to start.</p>
-                ) : (
-                    <>
-                        <h2 className="ibTitle">{QUALITY_LABELS[build.quality]} {base.name}</h2>
-                        <p className="ibSub">{levelText(ctx, build)}</p>
-                        {ctx.cls && <p className="ibSub">{CLASS_NAMES[ctx.cls] ?? ctx.cls} only</p>}
-                        <p className="ibSub">{countHint(ctx)}</p>
-                        <Slots title="Prefixes" affixes={picked.filter((a) => !a.suffix)} cap={caps.prefix}
-                               totalReached={picked.length >= caps.total} onRemove={toggle}/>
-                        <Slots title="Suffixes" affixes={picked.filter((a) => a.suffix)} cap={caps.suffix}
-                               totalReached={picked.length >= caps.total} onRemove={toggle}/>
-                        {crafted && <p className="ibSub">{picked.length}/{caps.total} random affixes, plus the recipe's fixed mods</p>}
-                        <p className="ibReq">Required level {req}{classNotes(picked)}</p>
-                        <div className="ibActions">
-                            <button type="button" className="btn" onClick={copyLink}>{copyState === "copied" ? "Copied" : "Copy link"}</button>
-                            <button type="button" className="btn" disabled={!picked.length} onClick={() => update({picks: []})}>Clear</button>
-                        </div>
-                        {copyState === "manual" && (
-                            <input className="ibLinkField" readOnly autoFocus aria-label="Link to this build"
-                                   value={window.location.href} onFocus={(e) => e.target.select()}/>
+            <div className="ibCardCol">
+                <section className={`ibCard${build.quality ? ` ib-${build.quality}` : ""}`} ref={cardRef}>
+                    {!base ? (
+                        <p className="ibEmpty">Choose a base item to start.</p>
+                    ) : (
+                        <>
+                            <h2 className="ibTitle">{QUALITY_LABELS[build.quality]} {base.name}</h2>
+                            <p className="ibSub">{levelText(ctx, build)}</p>
+                            {ctx.cls && <p className="ibSub">{CLASS_NAMES[ctx.cls] ?? ctx.cls} only</p>}
+                            <p className="ibSub">{countHint(ctx)}</p>
+                            <Slots title="Prefixes" affixes={picked.filter((a) => !a.suffix)} cap={caps.prefix}
+                                   totalReached={picked.length >= caps.total} onRemove={toggle}/>
+                            <Slots title="Suffixes" affixes={picked.filter((a) => a.suffix)} cap={caps.suffix}
+                                   totalReached={picked.length >= caps.total} onRemove={toggle}/>
+                            {crafted && <p className="ibSub">{picked.length}/{caps.total} random affixes, plus the recipe's fixed mods</p>}
+                            <p className="ibReq">Required level {req}{classNotes(picked)}</p>
+                            <div className="ibActions">
+                                <button type="button" className="btn" onClick={copyLink}>{copyState === "copied" ? "Copied" : "Copy link"}</button>
+                                <button type="button" className="btn" disabled={!picked.length} onClick={() => update({picks: []})}>Clear</button>
+                            </div>
+                            {copyState === "manual" && (
+                                <input className="ibLinkField" readOnly autoFocus aria-label="Link to this build"
+                                       value={window.location.href} onFocus={(e) => e.target.select()}/>
+                            )}
+                        </>
+                    )}
+                </section>
+                {odds && (
+                    <div className="ibOdds">
+                        {odds.p > 0 ? (
+                            <>
+                                <p className="ibOddsLine"><strong className="ibOddsValue">≈ {formatOdds(odds.p)}</strong> to roll these affixes</p>
+                                <p className="ibOddsNote">Estimate under vanilla D2 roll rules; PD2's exact odds aren't public.</p>
+                            </>
+                        ) : (
+                            <p className="ibOddsLine">These affixes can't roll together.</p>
                         )}
-                    </>
+                    </div>
                 )}
-            </section>
+            </div>
 
             {base && (
                 <div className={`ibPinBar${cardVisible ? "" : " show"}`} aria-hidden={cardVisible}>

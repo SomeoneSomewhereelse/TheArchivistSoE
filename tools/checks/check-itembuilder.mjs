@@ -1,5 +1,5 @@
 // The Item Builder tab end to end: picking, group locks, caps, crafted levels, links, history, level
-// input, Ctrl+F, and the phone layout (pinned bar, no horizontal overflow).
+// input, Ctrl+F, the roll-odds line, and the phone layout (pinned bar, no horizontal overflow).
 // node check-itembuilder.mjs   (APP_URL = a dev server)
 import {run, checker, BASE, sleep, clickDesktopTab, OVERFLOW_CHECK} from "./cdp.mjs";
 
@@ -33,6 +33,12 @@ const pickFree = async (page, n, side) => {
         await sleep(200);
     }
 };
+// The roll-odds line under the card: its text and 1/p read back from "≈ 1 in 3.4 million …" (null when absent).
+const oddsLine = async (page) => {
+    const text = await page.eval(`document.querySelector(".ibOddsLine")?.textContent ?? null`);
+    const m = text && /^≈ 1 in ([\d,.]+)( (million|billion))?/.exec(text);
+    return {text, x: m ? Number(m[1].replace(/,/g, "")) * (m[3] === "billion" ? 1e9 : m[3] === "million" ? 1e6 : 1) : null};
+};
 const typeNth = async (page, selector, nth, text) => {
     await page.eval(`(() => { const el = document.querySelectorAll(${JSON.stringify(selector)})[${nth}]; el.focus(); el.select(); })()`);
     await page.send("Input.insertText", {text});
@@ -64,14 +70,24 @@ await run(async (page) => {
     // Picking, group lock, full side.
     await selectBase(page, "cst");
     await page.click(".ibQualityBtn", {text: "Rare"});
+    let odds = await oddsLine(page);
+    c.ok(odds.text === null && await page.eval(`!document.querySelector(".ibOdds")`), "no roll-odds line while nothing is picked", String(odds.text));
     await page.click(`.ibRow[data-key="p352"]`);
+    odds = await oddsLine(page);
+    c.ok(odds.x > 1 && / to roll these affixes$/.test(odds.text), "picking an affix shows '≈ 1 in X to roll these affixes'", String(odds.text));
+    const oddsBox = await page.eval(`(() => { const card = document.querySelector(".ibCard").getBoundingClientRect(); const o = document.querySelector(".ibOdds").getBoundingClientRect(); return {gap: Math.round(o.top - card.bottom), left: Math.round(o.left - card.left), width: Math.round(o.width - card.width)}; })()`);
+    c.ok(oddsBox.gap >= 0 && oddsBox.gap <= 20 && oddsBox.left === 0 && oddsBox.width === 0, "the odds line sits right below the card, as wide as it", JSON.stringify(oddsBox));
+    c.ok(/PD2's exact odds aren't public/.test(await page.eval(`document.querySelector(".ibOddsNote")?.textContent ?? ""`)), "the odds line carries the estimate caption");
     let s = await state(page);
     c.ok(s.hash === `#/itembuilder?v=${v}&b=cst&q=r&a=p352`, "picking writes the build to the hash", s.hash);
     const tags = await page.eval(`(() => { const t = [...document.querySelectorAll(".ibRowMeta")].map((e) => e.textContent.split(" · ")[0]); return {prefix: t.filter((x) => x === "Prefix").length, suffix: t.filter((x) => x === "Suffix").length, other: t.filter((x) => x !== "Prefix" && x !== "Suffix").length, tabs: document.querySelectorAll(".ibSideTab").length}; })()`);
     c.ok(tags.prefix > 0 && tags.suffix > 0 && tags.other === 0 && tags.tabs === 0, "one merged list: rows carry Prefix and Suffix tags, no side tabs", JSON.stringify(tags));
     const why = await page.eval(`document.querySelector('.ibRow[data-key="p354"] .ibWhy')?.textContent`);
     c.ok(why === "Group taken by Lapis", "a taken group greys its other members with the reason", why);
-    await pickFree(page, 2, "Prefix");
+    await pickFree(page, 1, "Prefix");
+    const odds2 = await oddsLine(page);
+    c.ok(odds2.x > odds.x, "a second affix makes the odds rarer", `${odds.text} -> ${odds2.text}`);
+    await pickFree(page, 1, "Prefix");
     const full = await page.eval(`[...document.querySelectorAll(".ibRow.full .ibWhy")].length > 0`);
     c.ok(full, "a full side greys the remaining rows as 'Slots full'");
 
@@ -169,6 +185,9 @@ await run(async (page) => {
     await pickFree(page, 3, "Prefix");
     const overflow = await page.eval(OVERFLOW_CHECK);
     c.ok(overflow.count === 0 && overflow.scrollWidth <= overflow.vw, "no horizontal overflow at 390px", JSON.stringify(overflow.offenders));
+    const phoneOdds = await page.eval(`(() => { const o = document.querySelector(".ibOdds"); if (!o) return null; const r = o.getBoundingClientRect(); const card = document.querySelector(".ibCard").getBoundingClientRect(); return {vis: getComputedStyle(o).visibility, h: Math.round(r.height), left: Math.round(r.left), right: Math.round(r.right), vw: innerWidth, below: r.top >= card.bottom}; })()`);
+    c.ok(phoneOdds && phoneOdds.vis === "visible" && phoneOdds.h > 0 && phoneOdds.left >= 0 && phoneOdds.right <= phoneOdds.vw && phoneOdds.below && overflow.count === 0,
+        "the odds line shows below the card on a phone, inside the screen", JSON.stringify(phoneOdds));
     // The base dropdown on a phone: opens by tap, lists scrollably, stays inside the screen.
     await page.tap(".ibControls .selTrigger");
     await page.waitFor(`!!document.querySelector(".ibControls .selDropdown")`);
