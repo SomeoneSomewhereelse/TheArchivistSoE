@@ -1304,7 +1304,8 @@ button.btn {
     cursor: pointer;
 }
 
-.selOption:hover {
+.selOption:hover,
+.selOption.selActive {
     background: rgba(255, 255, 255, 0.08);
 }
 
