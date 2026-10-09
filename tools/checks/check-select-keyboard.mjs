@@ -6,9 +6,10 @@ import {run, checker, BASE, sleep, openTab, OVERFLOW_CHECK} from "./cdp.mjs";
 
 const c = checker();
 const KEYS = {Escape: 27, Enter: 13, ArrowDown: 40, ArrowUp: 38, Home: 36, End: 35, Tab: 9};
-const press = async (page, key) => {
-    for (const type of ["keyDown", "keyUp"]) {
-        await page.send("Input.dispatchKeyEvent", {type, key, code: key, windowsVirtualKeyCode: KEYS[key]});
+const press = async (page, key, modifiers = 0) => {
+    // Tab needs rawKeyDown for Chrome to run its focus navigation.
+    for (const type of [key === "Tab" ? "rawKeyDown" : "keyDown", "keyUp"]) {
+        await page.send("Input.dispatchKeyEvent", {type, key, code: key, windowsVirtualKeyCode: KEYS[key], modifiers});
     }
     await sleep(150);
 };
@@ -70,6 +71,7 @@ await run(async (page) => {
     const h = await hash();
     c.ok(!after.open && after.expanded === "false" && after.label === picked, "Enter selects the active option, closes, trigger shows it", `${picked} -> ${after.label}`);
     c.ok(/[?&]b=[a-z0-9]+/i.test(h), "the hash carries b= of the chosen base", h);
+    c.ok(after.trigFocused, "after Enter, focus is on the trigger (not dropped to body)", String(after.trigFocused));
     const baseCode = (h.match(/[?&]b=([^&]+)/) ?? [])[1];
 
     // (b) reopen: the chosen base is active; ArrowDown x2 then Enter picks the 3rd selectable.
@@ -126,7 +128,28 @@ await run(async (page) => {
     // Tab closes.
     await press(page, "Tab");
     s = await snap(page, W);
-    c.ok(!s.open, "Tab closes the dropdown");
+    const where = () => page.eval(`(() => {
+        const w = document.querySelector(${JSON.stringify(W)});
+        const a = document.activeElement;
+        return {body: a === document.body, inside: w.contains(a), trig: a === w.querySelector(".selTrigger"),
+            after: !!(w.compareDocumentPosition(a) & Node.DOCUMENT_POSITION_FOLLOWING) && !w.contains(a)};
+    })()`);
+    await typeText(page, "axe");
+    await press(page, "Tab");
+    s = await snap(page, W);
+    let wh = await where();
+    c.ok(!s.open && wh.after && !wh.body, "Tab closes the dropdown and moves focus to the next element after the control", JSON.stringify(wh));
+    await focus(page, ".ibControls .selTrigger");
+    await press(page, "ArrowDown");
+    c.ok((await page.eval(`document.querySelector(".selSearchInput").value`)) === "", "a dropdown closed by Tab reopens with a cleared filter");
+    await typeText(page, "axe");
+    await press(page, "Tab", 8);
+    s = await snap(page, W);
+    wh = await where();
+    c.ok(!s.open && wh.trig, "Shift+Tab closes the dropdown and moves focus to the trigger", JSON.stringify(wh));
+    await press(page, "ArrowDown");
+    c.ok(s.expanded === "false" && (await snap(page, W)).open && (await page.eval(`document.querySelector(".selSearchInput").value`)) === "", "after Shift+Tab it reopens with a cleared filter");
+    await press(page, "Escape");
     // The global Escape handler (blurs the search box) must not run for an Escape the select handled.
     await page.eval(`window.__escSeen = false; window.addEventListener("keydown", (e) => { if (e.key === "Escape") window.__escSeen = true; });`);
     await focus(page, ".ibControls .selTrigger");
@@ -157,6 +180,31 @@ await run(async (page) => {
     const rowsAfter = await rows();
     c.ok(!s.open && s.label === chosen && chosen !== opts[0], "Weapons filter: Enter picks the second option", `${chosen} (of ${opts.length})`);
     c.ok(rowsAfter !== rowsBefore && rowsAfter > 0, "the weapon list actually filtered", `${rowsBefore} -> ${rowsAfter}`);
+
+    // Mouse selection still works: a real click on the trigger, then on an option.
+    await page.eval(`document.activeElement.blur()`);
+    const clickAt = async (selector, opts = {}) => {
+        const {x, y} = await page.center(selector, opts);
+        for (const type of ["mousePressed", "mouseReleased"]) {
+            await page.send("Input.dispatchMouseEvent", {type, x, y, button: "left", clickCount: 1});
+        }
+        await sleep(250);
+    };
+    const rows0 = await rows();
+    await clickAt(".filtersPanel .selTrigger");
+    s = await snap(page, FW);
+    c.ok(s.open, "mouse: clicking the trigger opens the dropdown");
+    const lbl = s.options[0]; // "All types": the list was filtered by the keyboard pick above
+    await clickAt(".filtersPanel .selOption", {text: lbl});
+    s = await snap(page, FW);
+    c.ok(!s.open && s.label === lbl && (await rows()) !== rows0, "mouse: clicking an option selects it and changes the list", `${lbl} | ${rows0} -> ${await rows()}`);
+    await focus(page, ".filtersPanel .selTrigger");
+    await press(page, "ArrowDown");
+    await typeText(page, "zzzz-nomatch");
+    c.ok(await page.eval(`(() => { const e = document.querySelector(".filtersPanel .selEmpty"); return e.getAttribute("role") === "option" && e.getAttribute("aria-disabled") === "true"; })()`), "'No matches' is a disabled option inside the listbox");
+    await press(page, "ArrowDown");
+    c.ok((await snap(page, FW)).activeCount === 0, "keyboard navigation never activates 'No matches'");
+    await press(page, "Escape");
 
     // (g) phone: open dropdown on the Item Builder, no horizontal overflow.
     await page.mobile();

@@ -71,6 +71,7 @@ export default function SearchableSelect({
     };
 
     const handleInputKeyDown = (e) => {
+        if (e.nativeEvent.isComposing) return; // an IME is composing: Enter/Escape belong to it
         if (e.key === "ArrowDown" || e.key === "ArrowUp" || e.key === "Home" || e.key === "End") {
             e.preventDefault();
             e.stopPropagation();
@@ -78,14 +79,29 @@ export default function SearchableSelect({
         } else if (e.key === "Enter") {
             e.preventDefault();
             e.stopPropagation();
-            if (activeIdx >= 0) handleSelect(filteredOptions[activeIdx].value);
+            if (activeIdx >= 0) {
+                handleSelect(filteredOptions[activeIdx].value);
+                triggerRef.current?.focus(); // the focused input unmounts; keep focus on the control
+            }
         } else if (e.key === "Escape") {
             e.preventDefault();
             e.stopPropagation();
             setOpen(false);
             setQuery("");
             triggerRef.current?.focus();
-        } else if (e.key === "Tab") {
+        } else if (e.key === "Tab" && e.shiftKey) {
+            // The trigger precedes the dropdown: go there explicitly instead of unmounting the focused input.
+            e.preventDefault();
+            setOpen(false);
+            setQuery("");
+            triggerRef.current?.focus();
+        }
+        // A plain Tab moves on naturally; handleBlur closes once focus has left the wrapper.
+    };
+
+    // Focus left the control (Tab): close after it has moved, not during the keydown.
+    const handleBlur = (e) => {
+        if (open && e.relatedTarget && !wrapRef.current?.contains(e.relatedTarget)) {
             setOpen(false);
             setQuery("");
         }
@@ -93,6 +109,7 @@ export default function SearchableSelect({
 
     return (<div
         ref={wrapRef}
+        onBlur={handleBlur}
         className={`selSearchWrap ${className}`}
         style={style}
     >
@@ -132,9 +149,9 @@ export default function SearchableSelect({
                 aria-label={ariaLabel ? `${ariaLabel} filter` : "Filter options"}
                 placeholder="Filter options…"
             />
-            <div className="selOptions" id={`${baseId}-list`} role="listbox" aria-label={ariaLabel}>
+            <div className="selOptions" id={`${baseId}-list`} role="listbox" aria-label={ariaLabel} tabIndex={-1}>
                 {filteredOptions.length === 0 ? (
-                    <div className="selOption selEmpty">No matches</div>) : (filteredOptions.map((opt, i) => (opt.group !== undefined ? (<div
+                    <div className="selOption selEmpty" role="option" aria-disabled="true" aria-selected="false">No matches</div>) : (filteredOptions.map((opt, i) => (opt.group !== undefined ? (<div
                     key={`group:${i}:${opt.group}`}
                     className="selGroup"
                     role="presentation"
