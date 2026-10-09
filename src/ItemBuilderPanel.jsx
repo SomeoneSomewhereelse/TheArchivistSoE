@@ -10,6 +10,11 @@ import {formatOdds, rollOdds} from "./itemBuilderOdds.js";
 const QUALITY_LABELS = {magic: "Magic", rare: "Rare", crafted: "Crafted"};
 const CLASS_NAMES = {ama: "Amazon", ass: "Assassin", bar: "Barbarian", dru: "Druid", nec: "Necromancer", pal: "Paladin", sor: "Sorceress"};
 
+// "≈ 1 in 2,100"; the floor ("less than 1 in 1,000 trillion") is already a bound, not an estimate.
+const oddsText = (p) => {
+    const text = formatOdds(p);
+    return text.startsWith("1 in") ? `≈ ${text}` : text;
+};
 const statText = (affix) => affix.displayProperties.map((p) => p.displayString).join(", ");
 
 function levelText(ctx, build) {
@@ -221,7 +226,9 @@ export default function ItemBuilderPanel({status, error, retry, model, build, no
                     <div className="ibOdds">
                         {odds.p > 0 ? (
                             <>
-                                <p className="ibOddsLine"><strong className="ibOddsValue">≈ {formatOdds(odds.p)}</strong> to roll these affixes</p>
+                                <p className="ibOddsLine">
+                                    <strong className="ibOddsValue">{oddsText(odds.p)}</strong> to roll {picked.length === 1 ? "this affix" : "these affixes"}
+                                </p>
                                 <p className="ibOddsNote">Estimate under vanilla D2 roll rules; PD2's exact odds aren't public.</p>
                             </>
                         ) : (

@@ -74,7 +74,7 @@ await run(async (page) => {
     c.ok(odds.text === null && await page.eval(`!document.querySelector(".ibOdds")`), "no roll-odds line while nothing is picked", String(odds.text));
     await page.click(`.ibRow[data-key="p352"]`);
     odds = await oddsLine(page);
-    c.ok(odds.x > 1 && / to roll these affixes$/.test(odds.text), "picking an affix shows '≈ 1 in X to roll these affixes'", String(odds.text));
+    c.ok(odds.x > 1 && / to roll this affix$/.test(odds.text), "picking an affix shows '≈ 1 in X to roll this affix'", String(odds.text));
     const oddsBox = await page.eval(`(() => { const card = document.querySelector(".ibCard").getBoundingClientRect(); const o = document.querySelector(".ibOdds").getBoundingClientRect(); return {gap: Math.round(o.top - card.bottom), left: Math.round(o.left - card.left), width: Math.round(o.width - card.width)}; })()`);
     c.ok(oddsBox.gap >= 0 && oddsBox.gap <= 20 && oddsBox.left === 0 && oddsBox.width === 0, "the odds line sits right below the card, as wide as it", JSON.stringify(oddsBox));
     c.ok(/PD2's exact odds aren't public/.test(await page.eval(`document.querySelector(".ibOddsNote")?.textContent ?? ""`)), "the odds line carries the estimate caption");
@@ -86,7 +86,7 @@ await run(async (page) => {
     c.ok(why === "Group taken by Lapis", "a taken group greys its other members with the reason", why);
     await pickFree(page, 1, "Prefix");
     const odds2 = await oddsLine(page);
-    c.ok(odds2.x > odds.x, "a second affix makes the odds rarer", `${odds.text} -> ${odds2.text}`);
+    c.ok(odds2.x > odds.x && / to roll these affixes$/.test(odds2.text), "a second affix makes the odds rarer (and the line plural)", `${odds.text} -> ${odds2.text}`);
     await pickFree(page, 1, "Prefix");
     const full = await page.eval(`[...document.querySelectorAll(".ibRow.full .ibWhy")].length > 0`);
     c.ok(full, "a full side greys the remaining rows as 'Slots full'");

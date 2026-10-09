@@ -132,17 +132,21 @@ hidden when nothing is picked. `src/itemBuilderOdds.js` (`rollOdds(model, ctx, p
 - Drawing a row by weight among the free-group rows is the same as drawing a free *group* by its total weight
   and then a row inside it. So one side's draws are a weighted draw of groups without replacement, and a
   pick succeeds when its group is drawn and then the pick is the row chosen inside it (weight / group weight).
-- No group is shared by a prefix and a suffix on any builder base (the shared groups are map groups; checked
-  over every base, quality and level band), so the two sides are independent given how many draws each
+- No group is shared by a prefix and a suffix on any builder base (the shared groups are map groups), so the two
+  sides are independent given how many draws each
   gets. A side has at most 26 groups and 3 draws, so `rollOdds` enumerates every draw sequence of each side
   (stopping once the picks' groups are all drawn), combines them with the distribution of (prefix draws,
   suffix draws) after N draws, and averages over N. Well under a millisecond for 6 picks.
+- **The precondition is guarded twice:** a unit test scans every base type x magic/rare x alvl 1–99 of the
+  real data for a group eligible on both sides, and `rollOdds` itself returns `null` (the line is hidden, with
+  no "can't roll together" text) for a pool that has one, rather than a wrong number.
 - **Why not the first sketch** (a DP over the picks found so far, with draws that miss every pick assumed to
   change nothing): a Monte Carlo of the model above showed it off by up to 67 % (a rare Diadem, one prefix
   and one suffix), because a miss uses up a side slot and removes its whole group, and a few heavy groups
   carry most of a side's weight (most of all with magic-lvl weights). Tracking side counts and sibling rows
   still left errors of 12–62 %.
-- `itemBuilderOdds.test.js` checks hand-computed cases and compares `rollOdds` with a seeded Monte Carlo of
+- `itemBuilderOdds.test.js` checks hand-computed cases, compares `rollOdds` with an independent brute-force
+  walk of every draw on random toy models (to 1e-12, every quality, magic-lvl weights, siblings, 1–3 picks), and compares `rollOdds` with a seeded Monte Carlo of
   the draw-by-draw roll on real data (rare, magic, crafted, rare jewel, orb and Diadem builds), within
   max(5 %, 4 standard errors).
 
@@ -346,7 +350,8 @@ under Vitest and `vite preview`. It writes only when the content changed. `.giti
   "plus the recipe's fixed mods" on crafted items.
 - **Copy link** and **Clear**.
 - **Below the card** (desktop: same column; phone: in flow before the pinned bar), once something is picked:
-  "≈ 1 in 1,300 to roll these affixes" and the caption "Estimate under vanilla D2 roll rules; PD2's exact
+  "≈ 1 in 1,300 to roll these affixes" ("this affix" for one pick; past 1,000 trillion "less than 1 in 1,000
+  trillion", without ≈) and the caption "Estimate under vanilla D2 roll rules; PD2's exact
   odds aren't public." (see "Roll odds"); "These affixes can't roll together." if the chance is 0.
 
 **List:**
