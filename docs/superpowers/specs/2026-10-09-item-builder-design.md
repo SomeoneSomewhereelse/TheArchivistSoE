@@ -1,7 +1,7 @@
 # Item Builder — design
 
 **Date:** 2026-10-09
-**Branch:** to be created from `main` when implementation starts (manual worktree, `.worktrees/<name>`, suggested name `item-builder`)
+**Branch:** `item-builder`, created from `main` in the main checkout when implementation starts (plan Task 1 Step 0; no worktree)
 **Status:** design approved section by section in brainstorming (2026-10-09); revised after an independent review (link cleanup moved into an App-level hook, query handling in `useHashTab`, link version, test fixes); approved by the user (2026-10-09)
 
 ## Intent

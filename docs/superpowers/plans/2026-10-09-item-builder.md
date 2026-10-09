@@ -24,11 +24,12 @@
 - Every level input is an integer 1–99, default 99.
 - URL: `#/itembuilder?v=<linkVersion>&b=<base>&q=<m|r|c>&il=<ilvl>&cl=<clvl>&gl=<ingredient ilvl>&a=<key>-<key>…`; `v` always written, defaults left out.
 - Old-link notice text, exactly: `This link was made for older game data and can't be opened.`
-- Commits: small and frequent, on the feature branch; do not push.
+- Commits: small and frequent, on the `item-builder` branch in the main checkout (created in Task 1 Step 0; no worktree); do not push.
+- Dev server in a step: start it on its own line with a trailing `&`, save `VITE=$!`, and stop it with `kill $VITE`. Never `pkill -f "vite …"`: the pattern matches the Bash tool's own command line, so it kills the shell running the step. Don't chain the launch with `&&` before the `&` either (then `$!` is a subshell and vite survives the kill).
 
 ## Review Focus
 
-1. **Typing in a level input:** clearing the field or typing `0` or `100` must not reset the build or rewrite the URL mid-typing; leaving the field shows the last valid value. (Test: Task 9, browser check "level input".)
+1. **Typing in a level input:** typing "85" key by key must not pass through ilvl 8 (which would drop picks for good), and clearing the field or typing `0` or `100` must not reset the build; the value commits on blur or Enter, and an invalid one restores the last valid value. (Test: Task 9, browser check "level input".)
 2. **Changing the base or quality with picks in place** (rare staff with 3 prefixes → Grand Charm, which is magic-only): picks that no longer fit are dropped, earliest kept, with a notice; nothing throws. (Tests: Task 4 `resolveBuild` "control change"; Task 9 browser check "base change".)
 3. **Back after several picks** leaves the Item Builder for the previous tab, because picks replace the history entry, and returning shows the build. (Test: Task 9 browser check "history".)
 4. **Long affix text on a phone** (skill affixes like "+1 to Fire Skills (Sorceress Only)") must not overflow 390px. (Test: Task 9 browser check "phone overflow", on an amulet build with skill affixes.)
@@ -56,12 +57,25 @@
   - `joinAffixes(texts, affixesJson) → Affix[]` where `Affix = {key, suffix, name, level, maxLevel, levelreq, rare, classSpecific, classLevelReq, group, frequency, itypes, etypes, mods, displayProperties}`; `classLevelReq` is `null | {class, level}`, `mods` is `Array<{code, param, min, max}>`
   - fixtures: `tableText(columns, rows) → string`, `affixTableText(rows) → string`
 
+- [ ] **Step 0: Create the feature branch**
+
+```bash
+cd /home/emanresu/TheArchivistSoE && git status --short && git switch -c item-builder
+```
+
+Expected: a clean working tree, then `Switched to a new branch 'item-builder'`. Every later step runs in this checkout.
+
 - [ ] **Step 1: Take the desktop baseline screenshots (before any code change)**
 
 The regression gate in Task 9 diffs every tab against this set, so it must be taken on unchanged code.
 
 ```bash
-export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE && (npx vite --port 5181 --strictPort > /tmp/ib-dev.log 2>&1 &) && sleep 6 && cd tools/checks && node compare-desktop.mjs before http://localhost:5181/TheArchivistSoE/ ; pkill -f "vite --port 5181"
+export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH"
+cd /home/emanresu/TheArchivistSoE
+node node_modules/vite/bin/vite.js --port 5181 --strictPort > /tmp/ib-dev.log 2>&1 &
+VITE=$!; sleep 6
+(cd tools/checks && node compare-desktop.mjs before http://localhost:5181/TheArchivistSoE/)
+kill $VITE
 ```
 
 Expected: 19 `shot before <tab>` lines; `tools/checks/shots/desktop-before/` holds 19 PNGs.
@@ -204,7 +218,7 @@ describe("the real affix tables", () => {
     it("key the rows the spec names", () => {
         expect(byKey.get("p351")).toMatchObject({name: "Lapis", level: 12, etypes: []});
         expect(byKey.get("p352")).toMatchObject({name: "Lapis", level: 35, itypes: ["weap", "tors", "helm", "boot"], etypes: ["orb"]});
-        expect(byKey.get("p481")).toMatchObject({name: "Expert's", classSpecific: "bar", itypes: ["phlm", "weap", "helm"], etypes: ["miss", "rod"]});
+        expect(byKey.get("p481")).toMatchObject({name: "Expert's", classSpecific: "bar", itypes: ["phlm", "weap", "helm"], etypes: ["miss", "rod", "knif", "club"]});
         expect(byKey.get("s123")).toMatchObject({name: "of Anima"});
         expect(byKey.get("s123").itypes).toContain("amu");
     });
@@ -895,7 +909,14 @@ public/data/standard/ItemBuilder.json
 - [ ] **Step 3: Start the dev server once to create the version file**
 
 ```bash
-export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE && rm -f src/itemBuilderVersion.json && (npx vite --port 5182 --strictPort > /tmp/ib-dev.log 2>&1 &) && sleep 6 && pkill -f "vite --port 5182"; cat /tmp/ib-dev.log | grep item-builder-data; cat src/itemBuilderVersion.json; node -e 'const j=require("./public/data/standard/ItemBuilder.json"); console.log(j.version, j.linkVersion, j.bases.length, j.affixes.length)'
+export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH"
+cd /home/emanresu/TheArchivistSoE
+rm -f src/itemBuilderVersion.json
+node node_modules/vite/bin/vite.js --port 5182 --strictPort > /tmp/ib-dev.log 2>&1 &
+VITE=$!; sleep 6; kill $VITE
+grep item-builder-data /tmp/ib-dev.log
+cat src/itemBuilderVersion.json
+node -e 'const j=require("./public/data/standard/ItemBuilder.json"); console.log(j.version, j.linkVersion, j.bases.length, j.affixes.length)'
 ```
 
 Expected:
@@ -1976,10 +1997,16 @@ function classNotes(picked) {
         .join("");
 }
 
-// A 1-99 input that only commits valid values: clearing it or typing 0 never resets the build, and
-// leaving the field shows the last committed value again.
+// A 1-99 input that commits on blur or Enter, never per keystroke: typing "85" must not pass through
+// ilvl 8 (which would drop picks for good). An empty or out-of-range value is discarded on blur, and the
+// field shows the last committed value again.
 function LevelInput({label, value, onCommit}) {
     const [text, setText] = useState(null);
+    const commit = () => {
+        const n = Number(text);
+        if (text && n >= 1 && n <= 99 && n !== value) onCommit(n);
+        setText(null);
+    };
     return (
         <label className="ibLevel">
             <span>{label}</span>
@@ -1989,13 +2016,11 @@ function LevelInput({label, value, onCommit}) {
                 className="ibLevelInput"
                 aria-label={label}
                 value={text ?? String(value)}
-                onChange={(e) => {
-                    const next = e.target.value.replace(/\D/g, "").slice(0, 2);
-                    setText(next);
-                    const n = Number(next);
-                    if (next && n >= 1 && n <= 99) onCommit(n);
+                onChange={(e) => setText(e.target.value.replace(/\D/g, "").slice(0, 3))}
+                onBlur={commit}
+                onKeyDown={(e) => {
+                    if (e.key === "Enter") e.currentTarget.blur();
                 }}
-                onBlur={() => setText(null)}
             />
         </label>
     );
@@ -2585,7 +2610,11 @@ Expected: lint 0 problems, tests pass, build succeeds. If lint flags the render-
 - [ ] **Step 6: Smoke-check in a browser**
 
 ```bash
-export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE && (npx vite --port 5181 --strictPort > /tmp/ib-dev.log 2>&1 &) && sleep 6 && cd tools/checks && node -e '
+export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH"
+cd /home/emanresu/TheArchivistSoE
+node node_modules/vite/bin/vite.js --port 5181 --strictPort > /tmp/ib-dev.log 2>&1 &
+VITE=$!; sleep 6
+(cd tools/checks && node -e '
 import("./cdp.mjs").then(({run, BASE, sleep}) => run(async (page) => {
   await page.desktop();
   await page.goto(BASE + "#/itembuilder");
@@ -2593,10 +2622,11 @@ import("./cdp.mjs").then(({run, BASE, sleep}) => run(async (page) => {
   await page.eval(`(() => { const s = document.querySelector(".ibBase"); s.value = "cst"; s.dispatchEvent(new Event("change", {bubbles: true})); })()`);
   await sleep(300);
   await page.click(".ibQualityBtn", {text: "Rare"});
-  await page.click(".ibRow[data-key=\"p352\"]");
-  console.log(await page.eval(`JSON.stringify({hash: location.hash, slots: document.querySelectorAll(".ibSlot.filled").length, cobalt: document.querySelector(".ibRow[data-key=\"p354\"]")?.className, why: document.querySelector(".ibRow[data-key=\"p354\"] .ibWhy")?.textContent})`));
+  await page.click(".ibRow[data-key=p352]");
+  console.log(await page.eval(`JSON.stringify({hash: location.hash, slots: document.querySelectorAll(".ibSlot.filled").length, cobalt: document.querySelector(".ibRow[data-key=p354]")?.className, why: document.querySelector(".ibRow[data-key=p354] .ibWhy")?.textContent})`));
   await page.screenshot("/tmp/ib-desktop.png");
-}))'; pkill -f "vite --port 5181"
+}))')
+kill $VITE
 ```
 
 Expected: `{"hash":"#/itembuilder?v=1&b=cst&q=r&a=p352","slots":1,"cobalt":"ibRow group","why":"Group taken by Lapis"}`. Look at `/tmp/ib-desktop.png`: card on the left, list on the right.
@@ -2616,7 +2646,7 @@ cd /home/emanresu/TheArchivistSoE && git add src/useItemBuilder.js src/ItemBuild
 - Modify: `CLAUDE.md`
 
 **Interfaces:**
-- Consumes: the running app; `run`, `checker`, `BASE`, `sleep`, `clickDesktopTab`, `openTab`, `OVERFLOW_CHECK` from `tools/checks/cdp.mjs`.
+- Consumes: the running app; `run`, `checker`, `BASE`, `sleep`, `clickDesktopTab`, `OVERFLOW_CHECK` from `tools/checks/cdp.mjs`.
 - Produces: a check script that prints PASS/FAIL lines and exits non-zero on any FAIL.
 
 - [ ] **Step 1: Write the browser check**
@@ -2627,7 +2657,7 @@ cd /home/emanresu/TheArchivistSoE && git add src/useItemBuilder.js src/ItemBuild
 // The Item Builder tab end to end: picking, group locks, caps, crafted levels, links, history, level
 // input, Ctrl+F, and the phone layout (pinned bar, no horizontal overflow).
 // node check-itembuilder.mjs   (APP_URL = a dev server)
-import {run, checker, BASE, sleep, clickDesktopTab, openTab, OVERFLOW_CHECK} from "./cdp.mjs";
+import {run, checker, BASE, sleep, clickDesktopTab, OVERFLOW_CHECK} from "./cdp.mjs";
 
 const c = checker();
 const state = (page) => page.eval(`({
@@ -2702,8 +2732,13 @@ await run(async (page) => {
     await page.eval(`document.querySelector(".ibLevelInput").blur()`);
     await sleep(200);
     c.ok(await page.eval(`document.querySelector(".ibLevelInput").value === "99"`), "leaving the field shows the last valid ilvl");
-    await typeNth(page, ".ibLevelInput", 0, "40");
-    c.ok(/&il=40/.test((await state(page)).hash), "typing 40 commits ilvl 40");
+    await typeNth(page, ".ibLevelInput", 0, "4"); // two separate keystrokes, like a person typing
+    await page.send("Input.insertText", {text: "0"});
+    await sleep(200);
+    c.ok((await state(page)).hash === before, "typing does not commit before the field is left");
+    await page.eval(`document.querySelector(".ibLevelInput").blur()`);
+    await sleep(200);
+    c.ok(/&il=40/.test((await state(page)).hash), "leaving the field commits ilvl 40");
 
     // Reload restores the build.
     s = await state(page);
@@ -2725,7 +2760,9 @@ await run(async (page) => {
     await page.eval("history.back()");
     await sleep(500);
     c.ok(await page.eval(`location.hash === "#/weapons"`), "Back after picks returns to the previous tab");
-    await openTab(page, "itembuilder");
+    // Click the tab, as a person would: setting location.hash = "#/itembuilder" (what openTab does) is a
+    // navigation to a bare builder link, which opens an empty build by design.
+    await clickDesktopTab(page, "itembuilder");
     await sleep(300);
     s = await state(page);
     c.ok(JSON.stringify(s.filled) === JSON.stringify(["Cobalt"]), "returning to the tab shows the build", JSON.stringify(s.filled));
@@ -2783,7 +2820,12 @@ c.done();
 - [ ] **Step 2: Run the check against a dev server**
 
 ```bash
-export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE && (npx vite --port 5181 --strictPort > /tmp/ib-dev.log 2>&1 &) && sleep 6 && cd tools/checks && APP_URL=http://localhost:5181/TheArchivistSoE/ node check-itembuilder.mjs; pkill -f "vite --port 5181"
+export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH"
+cd /home/emanresu/TheArchivistSoE
+node node_modules/vite/bin/vite.js --port 5181 --strictPort > /tmp/ib-dev.log 2>&1 &
+VITE=$!; sleep 6
+(cd tools/checks && APP_URL=http://localhost:5181/TheArchivistSoE/ node check-itembuilder.mjs)
+kill $VITE
 ```
 
 Expected: every line PASS, ending with the checker's all-passed line. A FAIL is a real bug: fix it in the owning file (rules, hash, hook, panel or CSS), re-run the unit tests, and re-run this check before continuing.
@@ -2791,7 +2833,12 @@ Expected: every line PASS, ending with the checker's all-passed line. A FAIL is 
 - [ ] **Step 3: Regression gate: desktop screenshots of every existing tab**
 
 ```bash
-export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH" && cd /home/emanresu/TheArchivistSoE && (npx vite --port 5181 --strictPort > /tmp/ib-dev.log 2>&1 &) && sleep 6 && cd tools/checks && node compare-desktop.mjs after http://localhost:5181/TheArchivistSoE/ && node diff-shots.mjs before after; pkill -f "vite --port 5181"
+export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH"
+cd /home/emanresu/TheArchivistSoE
+node node_modules/vite/bin/vite.js --port 5181 --strictPort > /tmp/ib-dev.log 2>&1 &
+VITE=$!; sleep 6
+(cd tools/checks && node compare-desktop.mjs after http://localhost:5181/TheArchivistSoE/ && node diff-shots.mjs before after)
+kill $VITE
 ```
 
 Expected: `diff-shots.mjs` iterates the "before" set (19 tabs, no `itembuilder`), so the new tab is skipped; every line reports `"diffPixels":0`. Any non-zero diff on an existing tab is a regression: find the CSS or App change that caused it and fix it.
@@ -2824,7 +2871,7 @@ returns it as `[tab, setTab, query, setQuery]`, replaces the history entry when 
 the query while other tabs are open. Any other tab's `?…` is malformed.
 ```
 
-In "Verifying UI changes", in the harness list, add `check-itembuilder.mjs` (Item Builder end to end) to the feature checks, and change "all 19 tabs" to "all 20 tabs".
+In "Verifying UI changes", in the harness list, add `check-itembuilder.mjs` (Item Builder end to end) to the feature checks, and change "all 19 tabs" to "all 20 tabs". In "Tabs", change "`moreKeys` (18 tabs in total)" to "`moreKeys` (19 tabs in total)".
 
 - [ ] **Step 5: Final gates and commit**
 
