@@ -1,5 +1,5 @@
 import {describe, expect, it} from "vitest";
-import {hashForTab, hashWriteAction, parseTabFromHash} from "./hashTab.js";
+import {hashForTab, hashWriteAction, parseHash, parseTabFromHash, targetHash} from "./hashTab.js";
 
 const KEYS = ["weapons", "affixes", "changelog"];
 
@@ -52,5 +52,41 @@ describe("hashWriteAction", () => {
         expect(hashWriteAction("", "weapons", KEYS)).toBe("replace");
         expect(hashWriteAction("#/bogus", "weapons", KEYS)).toBe("replace");
         expect(hashWriteAction("#", "weapons", KEYS)).toBe("replace");
+    });
+});
+
+const QKEYS = ["weapons", "affixes", "itembuilder"];
+const QTABS = ["itembuilder"];
+
+describe("parseHash with query tabs", () => {
+    it("accepts a query only after a listed tab", () => {
+        expect(parseHash("#/itembuilder?v=1&b=axe", QKEYS, QTABS)).toEqual({tab: "itembuilder", query: "v=1&b=axe"});
+        expect(parseHash("#/itembuilder", QKEYS, QTABS)).toEqual({tab: "itembuilder", query: ""});
+        expect(parseHash("#/itembuilder?", QKEYS, QTABS)).toEqual({tab: "itembuilder", query: ""});
+        expect(parseHash("#/affixes?x=1", QKEYS, QTABS)).toBeNull();
+        expect(parseTabFromHash("#/itembuilder?v=1", QKEYS)).toBeNull();
+    });
+});
+
+describe("targetHash and hashWriteAction with a query", () => {
+    it("adds the query only for listed tabs", () => {
+        expect(targetHash("itembuilder", "v=1", QTABS)).toBe("#/itembuilder?v=1");
+        expect(targetHash("itembuilder", "", QTABS)).toBe("#/itembuilder");
+        expect(targetHash("weapons", "v=1", QTABS)).toBe("#/weapons");
+        expect(hashForTab("itembuilder", "v=1")).toBe("#/itembuilder?v=1");
+    });
+
+    it("replaces when only the query changes, pushes when the tab changes", () => {
+        expect(hashWriteAction("#/itembuilder?v=1&b=axe", "itembuilder", QKEYS, "v=1&b=axe", QTABS)).toBeNull();
+        expect(hashWriteAction("#/itembuilder?v=1&b=axe", "itembuilder", QKEYS, "v=1&b=orb", QTABS)).toBe("replace");
+        expect(hashWriteAction("#/itembuilder", "itembuilder", QKEYS, "v=1", QTABS)).toBe("replace");
+        expect(hashWriteAction("#/itembuilder?", "itembuilder", QKEYS, "", QTABS)).toBe("replace");
+        expect(hashWriteAction("#/itembuilder?v=1", "weapons", QKEYS, "v=1", QTABS)).toBe("push");
+        expect(hashWriteAction("#/weapons", "itembuilder", QKEYS, "v=1", QTABS)).toBe("push");
+    });
+
+    it("keeps today's behaviour for tabs without a query", () => {
+        expect(hashWriteAction("#/weapons", "weapons", QKEYS, "v=1", QTABS)).toBeNull();
+        expect(hashWriteAction("#/affixes?x=1", "affixes", QKEYS, "", QTABS)).toBe("replace");
     });
 });
