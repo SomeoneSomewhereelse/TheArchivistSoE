@@ -2,7 +2,7 @@ import React from "react";
 import {filterOptions} from "./searchableSelectFilter.js";
 
 export default function SearchableSelect({
-                              value, onChange, options, placeholder = "Select…", style, className = "",
+                              value, onChange, options, placeholder = "Select…", style, className = "", ariaLabel,
                           }) {
     const [open, setOpen] = React.useState(false);
     const [query, setQuery] = React.useState("");
@@ -50,6 +50,7 @@ export default function SearchableSelect({
         <button
             type="button"
             className="selTrigger"
+            aria-label={ariaLabel ? `${ariaLabel}: ${currentLabel || placeholder}` : undefined}
             onClick={() => setOpen((o) => !o)}
         >
         <span className={currentLabel ? "" : "placeholder"}>

@@ -165,7 +165,7 @@ export default function ItemBuilderPanel({status, error, retry, model, build, no
     return (
         <div className="ibRoot">
             <div className="filtersPanel ibControls">
-                <SearchableSelect className="ibBase" value={build.base ?? ""} options={baseOptions} placeholder="Choose a base item…"
+                <SearchableSelect className="ibBase" ariaLabel="Base item" value={build.base ?? ""} options={baseOptions} placeholder="Choose a base item…"
                                   onChange={(v) => update({base: v || null})}/>
                 {qualities.length > 1 && (
                     <div className="ibQuality" role="group" aria-label="Quality">

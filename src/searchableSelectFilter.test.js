@@ -61,4 +61,15 @@ describe("filterOptions", () => {
     it("returns nothing when nothing matches", () => {
         expect(filterOptions(grouped, "zzz")).toEqual([]);
     });
+
+    it("never lists a heading with no options under it", () => {
+        const opts = [{group: "Empty"}, {group: "Bows"}, {value: "sbw", label: "Short Bow"}, {group: "Bowls"}];
+        expect(labels(filterOptions(opts, "bow"))).toEqual(["Bows", "Short Bow"]);
+        expect(filterOptions([{group: "Empty"}], "empty")).toEqual([]);
+    });
+
+    it("skips an option with no label instead of throwing", () => {
+        const opts = [{value: "x"}, {value: "y", label: "Yes"}];
+        expect(filterOptions(opts, "y")).toEqual([opts[1]]);
+    });
 });

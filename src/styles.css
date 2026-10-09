@@ -1313,6 +1313,16 @@ button.btn {
     cursor: default;
 }
 
+/* Group headings (SearchableSelect options like {group: "Axes"}). */
+.selGroup {
+    padding: 6px 8px 2px;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+    cursor: default;
+}
+
 /* -------------------------------------------------------------------------- */
 /* Runes select panel                                                         */
 /* -------------------------------------------------------------------------- */
@@ -2597,16 +2607,6 @@ a.mdLink {
 .ibControls .selSearchWrap.ibBase {
     flex: 1 1 320px;
     max-width: 460px;
-}
-
-/* The base picker's group headings (SearchableSelect options like {group: "Axes"}). */
-.selGroup {
-    padding: 6px 8px 2px;
-    font-size: 12px;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--muted);
-    cursor: default;
 }
 
 .ibQuality {

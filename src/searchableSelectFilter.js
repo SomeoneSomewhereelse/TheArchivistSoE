@@ -15,8 +15,7 @@ export function filterOptions(options, query) {
         if (opt.group !== undefined) {
             heading = opt;
             headingMatched = matches(opt.group);
-            headingShown = headingMatched;
-            if (headingMatched) out.push(opt);
+            headingShown = false;
         } else if (heading === null ? matches(opt.label) : headingMatched || matches(opt.label)) {
             if (heading !== null && !headingShown) {
                 out.push(heading);

@@ -44,6 +44,8 @@ await run(async (page) => {
     await page.desktop();
     await page.goto(BASE + "#/itembuilder");
     await page.waitFor(`!!document.querySelector(".ibBase .selTrigger")`);
+    const aria = await page.eval(`document.querySelector(".ibControls .selTrigger").getAttribute("aria-label")`);
+    c.ok(/^Base item/.test(aria ?? ""), "the base picker's trigger has an accessible name", String(aria));
     const v = await page.eval(`fetch("data/standard/ItemBuilder.json").then((r) => r.json()).then((j) => j.linkVersion)`);
 
     // The base filter (Change 1): a group's name matches all of its members, headings are not options.
