@@ -2,7 +2,7 @@
 
 **Date:** 2026-10-09
 **Branch:** to be created from `main` when implementation starts (manual worktree, `.worktrees/<name>`, suggested name `item-builder`)
-**Status:** design approved section by section in brainstorming (2026-10-09); written spec awaiting review
+**Status:** design approved section by section in brainstorming (2026-10-09); revised after an independent review (link cleanup moved into an App-level hook, query handling in `useHashTab`, key checks, test fixes); awaiting user review
 
 ## Intent
 
@@ -145,10 +145,12 @@ public/data/{Affixes,Weapons,Armors}.json
 public/data/standard/ItemBuilder.json   (gitignored)
         │  src/itemBuilderLoad.js (fetch once, cache, retry)
         ▼
-ItemBuilderPanel ── src/itemBuilderRules.js (alvl, filters, caps, row state, required level)
+App ── useHashTab (src/hashTab.js): tab + the builder's query ⇄ location.hash
+  └─ useItemBuilder (src/useItemBuilder.js): loads the model, decodes and cleans the query
+        │        ├─ src/itemBuilderRules.js (alvl, filters, caps, row state, required level)
         │        └─ src/itemBuilderHash.js (build ↔ URL query)
         ▼
-App: builder query string ⇄ location.hash via src/hashTab.js
+ItemBuilderPanel (props: model, build, notice, setBuild; local UI state only)
 ```
 
 | Module | Role | Tests |
@@ -157,9 +159,10 @@ App: builder query string ⇄ location.hash via src/hashTab.js
 | `src/itemBuilderRules.js` | alvl, crafted ilvl, caps tables, type matching, eligible list, row state, required level, count hint. | `itemBuilderRules.test.js` |
 | `src/itemBuilderHash.js` | Encode and decode a build. | `itemBuilderHash.test.js` |
 | `src/itemBuilderLoad.js` | Fetch once, cache, retry after a failure (like `dropCalcLoad.js`). | — |
-| `src/ItemBuilderPanel.jsx` | UI state only. | browser check |
+| `src/useItemBuilder.js` | Hook called by `App`: model loading, decode, link cleanup, notice (see "State ownership"). | browser check |
+| `src/ItemBuilderPanel.jsx` | Rendering and local UI state only (list side, search text). | browser check |
 
-`App.jsx` only gains the panel hookup and the builder query state; nothing else grows it.
+`App.jsx` only gains the extended `useHashTab` call, the `useItemBuilder` call and the panel hookup.
 
 ### Source tables
 
@@ -185,7 +188,7 @@ App: builder query string ⇄ location.hash via src/hashTab.js
     ...
   ],
   affixes: [         // Affixes.json order
-    {key: "p412", suffix: false, name: "Lapis", level: 35, maxLevel: null, levelreq: 26, rare: true,
+    {key: "p352", suffix: false, name: "Lapis", level: 35, maxLevel: null, levelreq: 26, rare: true,
      classSpecific: null, classLevelReq: null, group: 116, frequency: 4,
      itypes: ["weap", "tors", "helm", "boot"], etypes: ["orb"],
      mods: [{code: "res-cold", param: "", min: 21, max: 30}],
@@ -197,9 +200,14 @@ App: builder query string ⇄ location.hash via src/hashTab.js
 
 (Values in the example are illustrative.)
 
-- **Affix key:** `p<row>` / `s<row>`, the row's index in its raw table, counting non-spawnable and blank
-  rows as the game does. That is the identity the game stores in item saves, so a mod can't reorder rows
-  without breaking every existing item. It is unique, stable and short. `p` and `s` keep the two tables apart.
+- **Affix key:** `p<row>` / `s<row>`, the row's 0-based index among the data rows of its raw table (the
+  header line excluded; non-spawnable, blank and "Expansion" rows counted, as the game does). That is the
+  identity the game stores in item saves, so a mod can't reorder rows without breaking every existing
+  item. It is unique and short. `p` and `s` keep the two tables apart.
+- **Key check:** each affix also carries `check`, two base-36 characters of an FNV-1a hash of
+  `name|level|group`. Links write `<key><check>` (e.g. `p352k4`). A mod can still *insert* rows between
+  seasons, which shifts later indexes; the check makes an old link drop such an affix (with the notice)
+  instead of silently pointing at a different one.
 - **The join:** filter the raw rows to `spawnable = 1` and `frequency > 0`, then pair them with
   `Affixes.json` by position.
 - **Bases:** the `Weapons.json` / `Armors.json` entries that are spawnable in the `.txt` and not
@@ -214,17 +222,25 @@ App: builder query string ⇄ location.hash via src/hashTab.js
   | `aqv`, `aqv2`, `aqv3` | Arrows | `cqv`, `cqv2`, `cqv3` | Bolts |
 
   The three quiver tiers share a name; the option label's qlvl (0 / 25 / 45) tells them apart.
-- **Base `group`:** the optgroup label (Orbs, Staves, Circlets, Rings, Grand Charms, …), from the base's
-  primary type.
+- **Base fields:** qlvl (`level`), `levelreq`, `magic lvl`, `type`, `type2` and `spawnable` come from the
+  `.txt` tables (the JSON files carry some of them as strings, e.g. `Armors.json` circlet `level: "24"`);
+  only the display name and tier come from `Weapons.json` / `Armors.json`.
+- **Base `group`:** the optgroup label, from an explicit map in `itemBuilderData.js` keyed by the base's
+  primary type code (`orb` → "Orbs", `staf` → "Staves", `lcha` → "Grand Charms", `mcha` → "Large Charms",
+  …). Neither `ItemTypes.txt` (which calls `lcha` "Large Charm") nor the JSON gives usable plural labels.
+  A spawnable in-scope base whose type has no label fails the build.
 - **Loud checks** (the build fails; dev logs and keeps running):
   - the filtered raw rows and `Affixes.json` differ in count, or in name, level or group at any position;
   - a required column is missing from any table;
-  - an in-scope base's type is missing from `ItemTypes.txt`.
+  - an in-scope base's type is missing from `ItemTypes.txt`, or has no optgroup label.
+- **Warning only:** an affix `itype`/`etype` code that isn't in `ItemTypes.txt` is logged, not fatal (one
+  live row uses the item code `amu` as an itype; the game ignores it, and so does the builder).
 
 ### The Vite plugin
 
 `item-builder-data`, beside `drop-calc-data` in `vite.config.js` and built the same way: it runs in
-`configResolved` (dev and build), again in dev when one of its source files changes, and is skipped
+`configResolved` (dev and build), again in dev when one of its source files changes (the six `.txt`
+files in `public/data/standard/` and the three JSON files in `public/data/`), and is skipped
 under Vitest and `vite preview`. It writes only when the content changed. `.gitignore` gains
 `public/data/standard/ItemBuilder.json`.
 
@@ -279,18 +295,20 @@ under Vitest and `vite preview`. It writes only when the content changed. `.giti
 **Layout:**
 - **Desktop (> 980px):** card on the left, list on the right in its own scroll box (viewport height), so the
   card stays in view.
-- **Phone (≤ 980px):** one column, no inner scroll box. A slim bar pins under the tab row once the card
-  scrolls away ("P 2/3 · S 1/3 · Req. lvl 62", "↑ card"), with `top: var(--topbar-h)`. Sticky works there
-  because `.appRoot` is `overflow-x: clip` on mobile.
+- **Phone (≤ 980px):** one column, no inner scroll box. A slim bar ("P 2/3 · S 1/3 · Req. lvl 62",
+  "↑ card") is `position: sticky` under the tab row (`top: var(--topbar-h)`; sticky works there because
+  `.appRoot` is `overflow-x: clip` on mobile), and is shown only while the card is out of view: an
+  `IntersectionObserver` on the card sets a `cardVisible` state from its callback (allowed by the lint
+  rules, unlike a synchronous `setState` in an effect).
 - Mobile rules must be checked against the duplicated 980 / 720 / 480px blocks in `styles.css`.
 
-**Notice line** above the card, for link cleanup and control changes. Cleared by the next user action.
+**Notice line** above the card, for link cleanup and control changes. Cleared by the next user action or a tab change.
 
 **Loading:** "Loading item data…"; a failed fetch shows "Couldn't load the item data" with Retry.
 
 ### URL format
 
-`#/itembuilder?b=obc&q=r&il=85&a=p412-p77-s230`
+`#/itembuilder?b=obc&q=r&il=85&a=p352k4-p77x0-s230q9`
 
 | Param | Meaning | Default when absent |
 |---|---|---|
@@ -298,7 +316,7 @@ under Vitest and `vite preview`. It writes only when the content changed. `.giti
 | `q` | `m`, `r` or `c` | the base's first allowed quality |
 | `il` | ilvl (magic, rare) | 99 |
 | `cl`, `gl` | clvl, ingredient ilvl (crafted) | 99 |
-| `a` | affix keys in pick order, `-`-separated | none |
+| `a` | affix tokens (`<key><check>`) in pick order, `-`-separated | none |
 
 - Defaults are left out of written links. `-` survives chat apps unescaped (commas get `%2C`).
 - No version field; a future format adds `v=2`, and a link without `v` is version 1.
@@ -307,26 +325,43 @@ under Vitest and `vite preview`. It writes only when the content changed. `.giti
 1. A repeated parameter: the first one wins.
 2. A repeated affix key: kept once.
 3. Unknown base, disallowed quality, or a level outside 1–99: that control falls back to its default.
-4. Affixes are applied in URL order. A key is dropped if it doesn't exist, is not eligible, its group is
-   taken, or its side or the total is full. So the earlier affix wins a conflict.
+4. Affixes are applied in URL order. A token is dropped if its key doesn't exist, its check doesn't match
+   (the data changed under the link), it is not eligible, its group is taken, or its side or the total is
+   full. So the earlier affix wins a conflict.
 5. If anything was dropped or replaced, the notice says so ("2 affixes from the link no longer fit and were
    removed"), and the URL is replaced with the cleaned build, so a reload doesn't repeat the notice.
 
 **`src/hashTab.js` changes:**
-- `parseTabFromHash` accepts an optional `?…` after the key, and a parser returns the query too.
-- `hashWriteAction` compares the parsed tab, not the whole string (today it would see
-  `#/itembuilder?…` ≠ `#/itembuilder` and wipe the build). **Push** when the tab changes, **replace**
-  when only the query changes, so picks don't flood the Back history.
-- On `popstate`, the query is read back too.
+- **Only listed tabs take a query.** `useHashTab(validKeys, fallback, queryTabs)` gains a third argument, a
+  stable module-level array (`["itembuilder"]`). The parser accepts `#/<key>?<query>` only when `<key>` is
+  in `queryTabs`; any other `?…` stays malformed, exactly as today (`#/affixes?x=1` still normalises,
+  and its existing test keeps passing).
+- **The query lives in the hook.** `useHashTab` returns `[tab, setTab, query, setQuery]`. The query is the
+  current build's query string, kept in hook state, and survives switching tabs. That matters because the
+  panel remounts on every tab switch (each tab renders a different component; `ErrorBoundary` takes
+  `resetKey={tab}`).
+- **Writing:** the layout effect writes `#/<tab>` plus `?<query>` when the tab is in `queryTabs` and the
+  query is non-empty. `hashWriteAction` compares the parsed tab, not the whole string (today it would see
+  `#/itembuilder?…` ≠ `#/itembuilder` and wipe the build): **push** when the tab changes, **replace** when
+  only the query changes, so picks don't flood the Back history.
+- **`popstate`:** the query is re-read only when the popped hash names a tab in `queryTabs`. Going Back to
+  `#/weapons` leaves the build alone, so returning to the Item Builder tab shows it again.
 
 **State ownership:**
-- `App` holds the builder's query string (as it holds `affixSort`). It is read from the hash at load and on
-  `popstate`, and written by the hash layout effect together with the tab. The query survives switching
-  tabs, which matters because the panel remounts on every tab switch (its `ErrorBoundary` is keyed by tab).
-- **The query string is the single source of truth.** The panel decodes it against the loaded data during
-  render; every pick, removal or control change encodes a new query and hands it to `App`.
-- **Link cleanup** happens during render with the `prevX` pattern (`App`'s `prevTab`), never with
-  `setState` in an effect, to satisfy the React Compiler lint rules.
+- **The query string is the single source of truth**, held by `useHashTab` in `App`.
+- **`useItemBuilder({tab, query, setQuery})`**, a hook in `src/useItemBuilder.js` called by `App`:
+  - starts loading `ItemBuilder.json` the first time the tab is the Item Builder (the model arrives through
+    a promise callback, which may set state);
+  - once the model is loaded, decodes the query during render, and returns `{status, model, build,
+    notice, setBuild, retry}`;
+  - **link cleanup:** when the decoded build's encoding differs from the query, it calls `setQuery(clean)`
+    and stores the notice, during render. That is legal because the hook's state and `useHashTab`'s are
+    both `App`'s own state (the same rule as `App`'s `prevTab` adjustment); it converges because a clean
+    query decodes to itself. No `setState` in an effect, no panel-to-parent update during render.
+  - `setBuild(next)` (picks, removals, control changes) encodes `next`, calls `setQuery`, and replaces the
+    notice with the control-change notice or clears it. The notice also clears when the tab changes.
+- **`ItemBuilderPanel`** receives those values as props and keeps only local UI state (list side, search
+  text, `cardVisible`).
 
 **Copy link** copies `location.href`; if the clipboard API is unavailable, it shows the URL in a read-only,
 pre-selected field.
@@ -361,33 +396,39 @@ section without reworking the data.
   - Crafted ilvl, including the Arreat Summit example: Berserker Axe (qlvl 86), clvl 78, ingredient ilvl 85
     → crafted ilvl 81, raised to 86, alvl 73.
   - Filters: type chains through `type2`; exclusion beats inclusion; class rule (amulet takes any class,
-    orb only Sorceress); magic-only rows hidden on rare and crafted.
+    orb only Sorceress, using a fixture whose item types match the orb so only the class rule can block
+    it); magic-only rows hidden on rare and crafted.
   - Allowed qualities: charms magic only, jewels not craftable, circlets craftable.
   - Row state: a group locking across sides, crafted total of 4 closing both sides, `group` over `full`.
   - Control changes: dropped picks and shrinking caps keep the earliest picks.
 - **`itemBuilderData.test.js`**
-  - Fixture tables: keys with non-spawnable and blank rows interspersed; each loud check fails as
-    described; misc display names.
-  - Smoke test on the real files: 1,412 affixes; *Lapis* eligible on a staff, not on an orb; *Burning*
-    eligible on an orb, not on a Druid pelt.
+  - Fixture tables: keys with non-spawnable and blank rows interspersed; key checks; each loud check fails
+    as described; the unknown-type warning; misc display names and optgroup labels.
+  - Smoke test on the real files, asserting on specific keys (row numbers as of the spec's data):
+    1,412 affixes; the level-35 *Lapis* `p352` (`etype1 = orb`) eligible on a staff, hidden on an orb,
+    while the level-12 *Lapis* `p351` is eligible on an orb; the Barbarian *Expert's* `p481` (itypes
+    `phlm`, `weap`) eligible on an axe, hidden on an orb by the class rule alone.
 - **`itemBuilderHash.test.js`**: round trips; defaults left out; first duplicate parameter wins; duplicate
-  affixes collapse; invalid keys dropped; URL order decides conflicts; control fallbacks.
-- **`hashTab.test.js`**: the query survives the tab write; push vs replace; a query on an unknown tab
-  normalises as before.
+  affixes collapse; invalid keys and mismatched checks dropped; URL order decides conflicts; control
+  fallbacks; a cleaned query decodes to itself.
+- **`hashTab.test.js`**: a query is accepted only for `queryTabs` (`#/affixes?x=1` still malformed); the
+  query survives the tab write; push when the tab changes, replace when only the query does.
 
 ### Browser check: `tools/checks/check-itembuilder.mjs`
 
 Run against a dev server, desktop then a 390×844 phone (desktop hover checks first):
 - the tab loads; base, quality and affixes can be picked;
 - a group locks with its reason; a side fills; crafted shows clvl / ingredient ilvl and the total of 4;
-- a reload restores the build from the URL; Back/Forward between tabs keeps it;
+- a reload restores the build from the URL; Back to another tab and then clicking Item Builder keeps the
+  build; Back/Forward between tabs keeps it;
 - a doctored link shows the notice and the URL gets cleaned;
 - phone: the pinned bar appears once the card scrolls away; no horizontal overflow.
 
 ### Regression gates
 
-- `compare-desktop.mjs` before and after, diffed with `diff-shots.mjs`: every existing tab identical. The
-  tab list in `tools/checks/cdp.mjs` gains `itembuilder`.
+- `compare-desktop.mjs` before and after, diffed with `diff-shots.mjs`: every existing tab identical. Take
+  the "before" shots on `main` before `tools/checks/cdp.mjs` gains `itembuilder`, and diff only the tabs
+  both sets have (check that `diff-shots.mjs` skips a tab missing from one set rather than failing).
 - `npm run lint` at 0 problems; `npm test` green, including the Drop calculator golden snapshot;
   `npm run build` succeeds.
 
