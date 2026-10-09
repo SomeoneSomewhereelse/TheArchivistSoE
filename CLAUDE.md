@@ -54,6 +54,17 @@ the value. No `eslint-disable`.
   clickable column sort: one key, chance highest first by default). `DropCalculatorPanel` in `App.jsx` keeps only
   UI state; a run whose inputs changed while it waited for data sets no state. `src/dropCalcFixtures.js`
   is Node-only (tests and `tools/checks/`), never imported by the app.
+- The Item Builder (`itembuilder` tab): `src/itemBuilderData.js` (`MagicPrefix`/`MagicSuffix.txt` joined row by row
+  with `Affixes.json`, bases, the item-type tree, the `ItemBuilder.json` format, the link-version fingerprint),
+  `src/itemBuilderRules.js` (alvl, eligibility, caps, row state, `resolveBuild`), `src/itemBuilderHash.js` (the URL
+  query), `src/itemBuilderLoad.js`, `src/useItemBuilder.js` (called by `App`: loads, decodes and cleans the query
+  during render) and `src/ItemBuilderPanel.jsx` (props only). `src/itemBuilderFixtures.js` is Node-only (tests).
+  Design: `docs/superpowers/specs/2026-10-09-item-builder-design.md`.
+- The `item-builder-data` plugin in `vite.config.js` writes `public/data/standard/ItemBuilder.json` (gitignored) from
+  the standard `.txt` tables plus `Affixes.json`/`Weapons.json`/`Armors.json`. A data update must also copy
+  `MagicPrefix.txt` and `MagicSuffix.txt` from the mod repo (`Lukaszpg/PD2-Sanctuary-of-Exile`,
+  `standard-mode/data/global/excel/`), run the dev server once, and commit `src/itemBuilderVersion.json` if the link
+  version was bumped; otherwise the build fails.
 - `src/styles.css`: all real styling, about 2,400 lines (`src/App.css` is an unused template leftover; nothing imports it).
 - `src/sortCompare.js` (Affixes sort rules), `src/hashTab.js` (tab ↔ URL hash), `src/pager.js`,
   `src/tabList.js`, `src/tiers.js` (the tier filter's Normal → Exceptional → Elite order) and
@@ -86,13 +97,16 @@ the value. No `eslint-disable`.
 
 - `TABS` (`src/tabList.js`) maps tab keys to titles. A value is either a string or
   `{title, badge}` (Beta/Alpha), rendered by `<TabTitle/>`.
-- The tab bar shows `mainKeys` plus a "More" dropdown of `moreKeys` (18 tabs in total).
+- The tab bar shows `mainKeys` plus a "More" dropdown of `moreKeys` (19 tabs in total).
   `TABS` also holds `changelog`, which is reached only from the footer, and `essences`,
   which has **no panel**, so don't expose it.
 - On mobile (≤980px, via `useIsMobile`, which asks the same `matchMedia` query as the CSS)
   `MobileTabsBar` replaces `TabsBar`: a pinned top row with a menu button that
   opens a bottom sheet grouped by `TAB_GROUPS`. `VALID_TAB_KEYS` (the `TAB_GROUPS` keys plus
   `changelog`) is what the URL hash may name.
+  `QUERY_TABS` (`itembuilder`) may carry a query in the hash (`#/itembuilder?v=1&b=cst&q=r&a=p352`); `useHashTab`
+  returns it as `[tab, setTab, query, setQuery]`, replaces the history entry when only the query changes, and keeps
+  the query while other tabs are open. Any other tab's `?…` is malformed.
 - `tab` changes through many paths, not just `selectTab`: `handleMarkdownAppLink`,
   `openDropCalculator`, `handleVersionClick` and the jump-to-unique/sacred flows call
   `setTab` directly. Anything that has to follow the current tab should key off the `tab`
@@ -214,9 +228,10 @@ The harness is committed in `tools/checks/` (Node ≥ 22, no dependencies; outpu
 - `cdp.mjs`: launches headless Chromium (desktop hover flags included) and drives it; `page` helpers
   (`goto`, `eval`, `waitFor`, `desktop()`, `mobile()`, `click`, `tap`/`tapAt`, `type`, `screenshot`, raw
   `send`), `checker()` for PASS/FAIL lines, `OVERFLOW_CHECK` for horizontal overflow.
-- `compare-desktop.mjs <label> <url>` takes full-page 1500px screenshots of all 19 tabs into
+- `compare-desktop.mjs <label> <url>` takes full-page 1500px screenshots of all 20 tabs into
   `shots/desktop-<label>/`; `diff-shots.mjs <labelA> <labelB>` pixel-diffs two sets.
-- Feature checks: `check-sticky.mjs` (floating table header), `check-multisort.mjs` (Affixes multi-sort).
+- Feature checks: `check-sticky.mjs` (floating table header), `check-multisort.mjs` (Affixes multi-sort),
+  `check-itembuilder.mjs` (Item Builder end to end).
 - Drop calculator: `check-dropcalc.mjs` (browser: rows, one fetch per mode, no `.txt`, stale runs, the
   View drop rates link; WARN-only timing budgets `DROPCALC_DESKTOP_TASK_MS`, `DROPCALC_PHONE_TASK_MS`) and
   `bench-dropcalc.mjs` (Node: every target, every difficulty, both modes; FAIL over the work ceilings,
