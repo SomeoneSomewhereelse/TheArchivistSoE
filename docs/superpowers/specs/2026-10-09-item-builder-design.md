@@ -2,7 +2,7 @@
 
 **Date:** 2026-10-09
 **Branch:** to be created from `main` when implementation starts (manual worktree, `.worktrees/<name>`, suggested name `item-builder`)
-**Status:** design approved section by section in brainstorming (2026-10-09); revised after an independent review (link cleanup moved into an App-level hook, query handling in `useHashTab`, key checks, test fixes); awaiting user review
+**Status:** design approved section by section in brainstorming (2026-10-09); revised after an independent review (link cleanup moved into an App-level hook, query handling in `useHashTab`, link version, test fixes); awaiting user review
 
 ## Intent
 
@@ -170,14 +170,16 @@ ItemBuilderPanel (props: model, build, notice, setBuild; local UI state only)
 - Already present: `Weapons.txt`, `Armor.txt`, `Misc.txt`, `ItemTypes.txt` (`public/data/standard/`).
 - Read at build time: `public/data/Affixes.json` (display strings, `displayProperties`), `Weapons.json` and
   `Armors.json` (base display names, tiers).
-- **Data-update duty:** a data update must copy the two new `.txt` files along with the usual JSON. If it
-  doesn't, the row-join check fails the build.
+- **Data-update duty:** a data update must copy the two new `.txt` files along with the usual JSON (if it
+  doesn't, the row-join check fails the build), run the dev server once, and commit
+  `src/itemBuilderVersion.json` if the link version was bumped (if it isn't, the build fails).
 
 ### `ItemBuilder.json`
 
 ```js
 {
-  version: 1,
+  version: 1,        // the file format
+  linkVersion: 1,    // from src/itemBuilderVersion.json, see "Link version"
   types: {           // every ItemTypes.txt code
     "orb": {chain: ["orb", "weap", "sorc", "clas"], class: "sor", rare: true},
     ...
@@ -203,11 +205,11 @@ ItemBuilderPanel (props: model, build, notice, setBuild; local UI state only)
 - **Affix key:** `p<row>` / `s<row>`, the row's 0-based index among the data rows of its raw table (the
   header line excluded; non-spawnable, blank and "Expansion" rows counted, as the game does). That is the
   identity the game stores in item saves, so a mod can't reorder rows without breaking every existing
-  item. It is unique and short. `p` and `s` keep the two tables apart.
-- **Key check:** each affix also carries `check`, two base-36 characters of an FNV-1a hash of
-  `name|level|group`. Links write `<key><check>` (e.g. `p352k4`). A mod can still *insert* rows between
-  seasons, which shifts later indexes; the check makes an old link drop such an affix (with the notice)
-  instead of silently pointing at a different one.
+  item. It is unique and short. `p` and `s` keep the two tables apart. A mod can still *insert* rows
+  between seasons, shifting later indexes; the link version (below) keeps old links from silently pointing
+  at different affixes.
+- **Link version:** `ItemBuilder.json` carries `linkVersion`, an integer, which every link writes as `v`.
+  See "Link version".
 - **The join:** filter the raw rows to `spawnable = 1` and `frequency > 0`, then pair them with
   `Affixes.json` by position.
 - **Bases:** the `Weapons.json` / `Armors.json` entries that are spawnable in the `.txt` and not
@@ -233,8 +235,26 @@ ItemBuilderPanel (props: model, build, notice, setBuild; local UI state only)
   - the filtered raw rows and `Affixes.json` differ in count, or in name, level or group at any position;
   - a required column is missing from any table;
   - an in-scope base's type is missing from `ItemTypes.txt`, or has no optgroup label.
+- **Link-version mismatch** (build only): see "Link version".
 - **Warning only:** an affix `itype`/`etype` code that isn't in `ItemTypes.txt` is logged, not fatal (one
   live row uses the item code `amu` as an itype; the game ignores it, and so does the builder).
+
+### Link version
+
+Links name affixes by row index and bases by code, so a data update that inserts affix rows, or removes or
+renames a base, would change what an old link means. Such links are refused, not reinterpreted.
+
+- **Fingerprint:** the plugin hashes what links depend on: for each affix, its key, side, name, level and
+  group, in order; and the sorted list of in-scope base codes. Stat values are not included: an old link
+  stays valid when only an affix's values change, and simply shows the new values.
+- **`src/itemBuilderVersion.json`** (committed): `{"version": 1, "fingerprint": "<hex>"}`. Only the plugin
+  reads it (with `fs`); the app never imports it, so rewriting it triggers no reload.
+- **Dev server:** if the fingerprint differs from the file's, the plugin increments `version`, writes the
+  new fingerprint, and logs "item-builder-data: link version bumped to N (commit
+  src/itemBuilderVersion.json)". The person updating the data commits the bump with the data.
+- **`npm run build`** (and therefore CI and deploy): a fingerprint mismatch fails the build with the same
+  instruction. A forgotten bump can't ship.
+- The generated `ItemBuilder.json` carries the file's `version` as `linkVersion`.
 
 ### The Vite plugin
 
@@ -308,26 +328,30 @@ under Vitest and `vite preview`. It writes only when the content changed. `.giti
 
 ### URL format
 
-`#/itembuilder?b=obc&q=r&il=85&a=p352k4-p77x0-s230q9`
+`#/itembuilder?v=1&b=obc&q=r&il=85&a=p352-p77-s230`
 
 | Param | Meaning | Default when absent |
 |---|---|---|
+| `v` | link version (`linkVersion`); always written | treated as an old link |
 | `b` | base code | none: the card asks for a base |
 | `q` | `m`, `r` or `c` | the base's first allowed quality |
 | `il` | ilvl (magic, rare) | 99 |
 | `cl`, `gl` | clvl, ingredient ilvl (crafted) | 99 |
-| `a` | affix tokens (`<key><check>`) in pick order, `-`-separated | none |
+| `a` | affix keys in pick order, `-`-separated | none |
 
-- Defaults are left out of written links. `-` survives chat apps unescaped (commas get `%2C`).
-- No version field; a future format adds `v=2`, and a link without `v` is version 1.
+- Defaults are left out of written links (`v` is always written). `-` survives chat apps unescaped (commas
+  get `%2C`).
+- A query with no parameters other than `v` (or an empty one) is a blank form.
 
 **Decoding**, in this order:
+0. **Version:** if `v` is missing or isn't the current `linkVersion`, the whole link is refused: the builder
+   opens blank, the notice reads "This link was made for older game data and can't be opened", and the
+   query is replaced with an empty one.
 1. A repeated parameter: the first one wins.
 2. A repeated affix key: kept once.
 3. Unknown base, disallowed quality, or a level outside 1–99: that control falls back to its default.
-4. Affixes are applied in URL order. A token is dropped if its key doesn't exist, its check doesn't match
-   (the data changed under the link), it is not eligible, its group is taken, or its side or the total is
-   full. So the earlier affix wins a conflict.
+4. Affixes are applied in URL order. A key is dropped if it doesn't exist, is not eligible, its group is
+   taken, or its side or the total is full. So the earlier affix wins a conflict.
 5. If anything was dropped or replaced, the notice says so ("2 affixes from the link no longer fit and were
    removed"), and the URL is replaced with the cleaned build, so a reload doesn't repeat the notice.
 
@@ -402,15 +426,17 @@ section without reworking the data.
   - Row state: a group locking across sides, crafted total of 4 closing both sides, `group` over `full`.
   - Control changes: dropped picks and shrinking caps keep the earliest picks.
 - **`itemBuilderData.test.js`**
-  - Fixture tables: keys with non-spawnable and blank rows interspersed; key checks; each loud check fails
-    as described; the unknown-type warning; misc display names and optgroup labels.
+  - Fixture tables: keys with non-spawnable and blank rows interspersed; each loud check fails as
+    described; the unknown-type warning; misc display names and optgroup labels.
+  - Link version: the fingerprint ignores stat values but changes when a row is inserted or a base code
+    removed; the dev path bumps and rewrites the version file, the build path fails on a mismatch.
   - Smoke test on the real files, asserting on specific keys (row numbers as of the spec's data):
     1,412 affixes; the level-35 *Lapis* `p352` (`etype1 = orb`) eligible on a staff, hidden on an orb,
     while the level-12 *Lapis* `p351` is eligible on an orb; the Barbarian *Expert's* `p481` (itypes
     `phlm`, `weap`) eligible on an axe, hidden on an orb by the class rule alone.
 - **`itemBuilderHash.test.js`**: round trips; defaults left out; first duplicate parameter wins; duplicate
-  affixes collapse; invalid keys and mismatched checks dropped; URL order decides conflicts; control
-  fallbacks; a cleaned query decodes to itself.
+  affixes collapse; invalid keys dropped; URL order decides conflicts; control fallbacks; a missing or
+  old `v` refuses the whole link; a cleaned query decodes to itself.
 - **`hashTab.test.js`**: a query is accepted only for `queryTabs` (`#/affixes?x=1` still malformed); the
   query survives the tab write; push when the tab changes, replace when only the query does.
 
@@ -421,7 +447,8 @@ Run against a dev server, desktop then a 390×844 phone (desktop hover checks fi
 - a group locks with its reason; a side fills; crafted shows clvl / ingredient ilvl and the total of 4;
 - a reload restores the build from the URL; Back to another tab and then clicking Item Builder keeps the
   build; Back/Forward between tabs keeps it;
-- a doctored link shows the notice and the URL gets cleaned;
+- a doctored link shows the notice and the URL gets cleaned; a link with `v=0` opens blank with the
+  old-data notice;
 - phone: the pinned bar appears once the card scrolls away; no horizontal overflow.
 
 ### Regression gates
@@ -434,5 +461,5 @@ Run against a dev server, desktop then a 390×844 phone (desktop hover checks fi
 
 ## Documentation
 
-`CLAUDE.md`: the new modules, the plugin, the two new `.txt` files, the data-update duty, the tab, and the
-hash query format. `.gitignore`: the generated `ItemBuilder.json`.
+`CLAUDE.md`: the new modules, the plugin, the two new `.txt` files, the data-update duty (copy the tables;
+commit a link-version bump if the dev server made one), the tab, and the hash query format. `.gitignore`: the generated `ItemBuilder.json`.
