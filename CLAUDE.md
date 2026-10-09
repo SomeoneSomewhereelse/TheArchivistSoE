@@ -45,7 +45,8 @@ the value. No `eslint-disable`.
   `src/PagerButtons.jsx` for the paged tables; `src/useIsMobile.js`; `src/ErrorBoundary.jsx`.
 - `src/SearchableSelect.jsx`: the filterable dropdown (Filters bars, Item Builder base). An options array may hold
   `{group: "Axes"}` headings; `filterOptions` in `src/searchableSelectFilter.js` (tested) lets a group's name match
-  all its options.
+  all its options. It is keyboard operable (ArrowDown opens; arrows/Home/End move the active option, Enter picks,
+  Escape closes and refocuses the trigger); the pure navigation helpers sit in the same module, tested.
 - `src/StickyHeadTable.jsx`: the scroller + table used by Affixes, Corruptions and the Drop calculator, plus
   a fixed, `aria-hidden` floating copy of the header row that shows once the real header scrolls away
   (`attachFloatingHead` syncs it by direct DOM writes; the show/hide rule is `floatingHeadVisible` in
@@ -234,7 +235,7 @@ The harness is committed in `tools/checks/` (Node ≥ 22, no dependencies; outpu
 - `compare-desktop.mjs <label> <url>` takes full-page 1500px screenshots of all 20 tabs into
   `shots/desktop-<label>/`; `diff-shots.mjs <labelA> <labelB>` pixel-diffs two sets.
 - Feature checks: `check-sticky.mjs` (floating table header), `check-multisort.mjs` (Affixes multi-sort),
-  `check-itembuilder.mjs` (Item Builder end to end).
+  `check-itembuilder.mjs` (Item Builder end to end), `check-select-keyboard.mjs` (SearchableSelect by keyboard).
 - Drop calculator: `check-dropcalc.mjs` (browser: rows, one fetch per mode, no `.txt`, stale runs, the
   View drop rates link; WARN-only timing budgets `DROPCALC_DESKTOP_TASK_MS`, `DROPCALC_PHONE_TASK_MS`) and
   `bench-dropcalc.mjs` (Node: every target, every difficulty, both modes; FAIL over the work ceilings,
