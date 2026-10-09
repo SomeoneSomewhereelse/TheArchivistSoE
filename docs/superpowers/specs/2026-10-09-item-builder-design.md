@@ -160,7 +160,7 @@ ItemBuilderPanel (props: model, build, notice, setBuild; local UI state only)
 | `src/itemBuilderHash.js` | Encode and decode a build. | `itemBuilderHash.test.js` |
 | `src/itemBuilderLoad.js` | Fetch once, cache, retry after a failure (like `dropCalcLoad.js`). | — |
 | `src/useItemBuilder.js` | Hook called by `App`: model loading, decode, link cleanup, notice (see "State ownership"). | browser check |
-| `src/ItemBuilderPanel.jsx` | Rendering and local UI state only (list side, search text). | browser check |
+| `src/ItemBuilderPanel.jsx` | Rendering and local UI state only (search text). | browser check |
 
 `App.jsx` only gains the extended `useHashTab` call, the `useItemBuilder` call and the panel hookup.
 
@@ -286,8 +286,9 @@ under Vitest and `vite preview`. It writes only when the content changed. `.giti
 "Drop calculator". Mobile: in the sheet's "Tools" group. Added to `TABS`, `TAB_GROUPS` and `moreKeys`.
 
 **Controls row** (only what changes the rules):
-- **Base:** one native `<select>` with `<optgroup>`s, options like "Swirling Crystal · qlvl 50". Phones get
-  the system picker.
+- **Base:** the app's `SearchableSelect` (the same control as the Filters bars), options like "Swirling
+  Crystal · qlvl 50" under non-selectable group headings. Typing filters it, and a group's name matches all
+  of its bases ("bow" lists every Crossbows base too).
 - **Quality:** Magic | Rare | Crafted buttons, limited to the base's allowed qualities, hidden when only
   one is allowed.
 - **Levels:** ilvl for magic and rare; clvl and ingredient ilvl for crafted. Number inputs, 1–99,
@@ -305,12 +306,12 @@ under Vitest and `vite preview`. It writes only when the content changed. `.giti
 - **Copy link** and **Clear**.
 
 **List:**
-- Prefixes / Suffixes switch with counts ("Prefixes 2/3"), and a search box matching names and stat text.
-- Rows: name, stat lines, Grp, alvl, rlvl. Tap picks or drops. Picked rows get ✓. Rows in state `group`
+- One merged list of every eligible prefix and suffix, and a search box matching names and stat text.
+- Rows: name, stat lines, a Prefix or Suffix tag, Grp, alvl, rlvl. Tap picks or drops. Picked rows get ✓. Rows in state `group`
   or `full` stay visible, greyed, with the reason underneath ("Group taken by Garnet", "Slots full").
   Showing locked group members is deliberate: they're a reference.
 - Ineligible rows are hidden.
-- Empty side: "No prefixes can roll at alvl 3".
+- Empty list: "No affixes can roll at alvl 3".
 
 **Layout:**
 - **Desktop (> 980px):** card on the left, list on the right in its own scroll box (viewport height), so the
@@ -384,7 +385,7 @@ under Vitest and `vite preview`. It writes only when the content changed. `.giti
     query decodes to itself. No `setState` in an effect, no panel-to-parent update during render.
   - `setBuild(next)` (picks, removals, control changes) encodes `next`, calls `setQuery`, and replaces the
     notice with the control-change notice or clears it. The notice also clears when the tab changes.
-- **`ItemBuilderPanel`** receives those values as props and keeps only local UI state (list side, search
+- **`ItemBuilderPanel`** receives those values as props and keeps only local UI state (search
   text, `cardVisible`).
 
 **Copy link** copies `location.href`; if the clipboard API is unavailable, it shows the URL in a read-only,

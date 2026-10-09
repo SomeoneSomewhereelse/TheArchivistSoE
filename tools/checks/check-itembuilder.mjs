@@ -9,17 +9,28 @@ const state = (page) => page.eval(`({
     title: document.querySelector(".ibTitle")?.textContent ?? null,
     filled: [...document.querySelectorAll(".ibSlot.filled .ibAffixName")].map((e) => e.textContent),
     notice: document.querySelector(".ibNotice")?.textContent ?? null,
-    base: document.querySelector(".ibBase")?.value ?? null,
+    base: document.querySelector(".ibBase .selTrigger span")?.className === "placeholder" ? "" : (document.querySelector(".ibBase .selTrigger span")?.textContent ?? null),
 })`);
+// The base picker is the app's SearchableSelect: open it, filter by the base's label, click its option.
+let baseLabels = null; // code -> "Name · qlvl N", read from the same data file the app loads
 const selectBase = async (page, code) => {
-    await page.eval(`(() => { const s = document.querySelector(".ibBase"); s.value = ${JSON.stringify(code)}; s.dispatchEvent(new Event("change", {bubbles: true})); })()`);
+    baseLabels ??= await page.eval(`fetch("data/standard/ItemBuilder.json").then((r) => r.json()).then((j) => Object.fromEntries(j.bases.map((b) => [b.code, b.name + " · qlvl " + b.qlvl])))`);
+    const label = baseLabels[code];
+    if (!label) throw new Error(`No base ${code}`);
+    await page.click(".ibControls .selTrigger");
+    await page.waitFor(`!!document.querySelector(".ibControls .selSearchInput")`);
+    await page.type(".ibControls .selSearchInput", label);
+    const hit = await page.eval(`(() => { const o = [...document.querySelectorAll(".ibControls .selOption")].filter((e) => e.textContent === ${JSON.stringify(label)}); if (o.length !== 1) return o.length; o[0].click(); return 1; })()`);
+    if (hit !== 1) throw new Error(`Base ${code} (${label}) matched ${hit} options`);
     await sleep(300);
 };
-// Picks up to n free rows on the current side; stops early when none is left (a group can lock the rest).
-const pickFree = async (page, n) => {
+// Picks up to n free rows of one side ("Prefix" or "Suffix") from the merged list, found by the row's
+// tag; stops early when none is left (a group can lock the rest).
+const pickFree = async (page, n, side) => {
     for (let i = 0; i < n; i++) {
-        if (!(await page.eval(`!!document.querySelector(".ibRow.free")`))) break;
-        await page.click(".ibRow.free");
+        const ok = await page.eval(`(() => { const r = [...document.querySelectorAll(".ibRow.free")].find((e) => e.querySelector(".ibRowMeta").textContent.startsWith(${JSON.stringify(side)})); if (!r) return false; r.click(); return true; })()`);
+        if (!ok) break;
+        await sleep(200);
     }
 };
 const typeNth = async (page, selector, nth, text) => {
@@ -32,8 +43,21 @@ await run(async (page) => {
     // Desktop first: hover checks must run before any touch emulation (CLAUDE.md).
     await page.desktop();
     await page.goto(BASE + "#/itembuilder");
-    await page.waitFor(`!!document.querySelector(".ibBase")`);
+    await page.waitFor(`!!document.querySelector(".ibBase .selTrigger")`);
     const v = await page.eval(`fetch("data/standard/ItemBuilder.json").then((r) => r.json()).then((j) => j.linkVersion)`);
+
+    // The base filter (Change 1): a group's name matches all of its members, headings are not options.
+    await page.click(".ibControls .selTrigger");
+    await page.type(".ibControls .selSearchInput", "bow");
+    const bowList = await page.eval(`({
+        options: [...document.querySelectorAll(".ibControls .selOption")].map((e) => e.textContent),
+        groups: [...document.querySelectorAll(".ibControls .selGroup")].map((e) => e.textContent),
+    })`);
+    c.ok(bowList.options.some((o) => /^Arbalest\b/.test(o)) && bowList.options.some((o) => /^Ballista\b/.test(o)) && bowList.groups.includes("Crossbows"),
+        "typing 'bow' in the base filter lists Crossbows bases whose names lack 'bow' under a Crossbows heading", JSON.stringify(bowList.groups));
+    c.ok(bowList.options.every((o) => !/^Choose/.test(o)) && bowList.groups.length >= 3, "the filter keeps only matching groups with their headings", JSON.stringify(bowList.groups));
+    await page.screenshot("shots/itembuilder-desktop-dropdown.png");
+    await page.click(".ibControls .selTrigger"); // closes it
 
     // Picking, group lock, full side.
     await selectBase(page, "cst");
@@ -41,9 +65,11 @@ await run(async (page) => {
     await page.click(`.ibRow[data-key="p352"]`);
     let s = await state(page);
     c.ok(s.hash === `#/itembuilder?v=${v}&b=cst&q=r&a=p352`, "picking writes the build to the hash", s.hash);
+    const tags = await page.eval(`(() => { const t = [...document.querySelectorAll(".ibRowMeta")].map((e) => e.textContent.split(" · ")[0]); return {prefix: t.filter((x) => x === "Prefix").length, suffix: t.filter((x) => x === "Suffix").length, other: t.filter((x) => x !== "Prefix" && x !== "Suffix").length, tabs: document.querySelectorAll(".ibSideTab").length}; })()`);
+    c.ok(tags.prefix > 0 && tags.suffix > 0 && tags.other === 0 && tags.tabs === 0, "one merged list: rows carry Prefix and Suffix tags, no side tabs", JSON.stringify(tags));
     const why = await page.eval(`document.querySelector('.ibRow[data-key="p354"] .ibWhy')?.textContent`);
     c.ok(why === "Group taken by Lapis", "a taken group greys its other members with the reason", why);
-    await pickFree(page, 2);
+    await pickFree(page, 2, "Prefix");
     const full = await page.eval(`[...document.querySelectorAll(".ibRow.full .ibWhy")].length > 0`);
     c.ok(full, "a full side greys the remaining rows as 'Slots full'");
 
@@ -59,9 +85,8 @@ await run(async (page) => {
     await page.click(".ibQualityBtn", {text: "Crafted"});
     const labels = await page.eval(`[...document.querySelectorAll(".ibLevel span")].map((e) => e.textContent)`);
     c.ok(JSON.stringify(labels) === JSON.stringify(["clvl", "ingredient ilvl"]), "crafted shows clvl and ingredient ilvl", labels.join(", "));
-    await pickFree(page, 3);
-    await page.click(".ibSideTab", {text: "Suffixes"});
-    await pickFree(page, 1);
+    await pickFree(page, 3, "Prefix");
+    await pickFree(page, 1, "Suffix");
     const crafted = await page.eval(`({
         reached: [...document.querySelectorAll(".ibSlot")].some((e) => e.textContent === "total reached"),
         free: document.querySelectorAll(".ibRow.free").length,
@@ -129,19 +154,28 @@ await run(async (page) => {
     await page.goto(`${BASE}#/itembuilder?v=0&b=cst`);
     await page.waitFor(`!!document.querySelector(".ibNotice")`);
     s = await state(page);
-    c.ok(s.notice === "This link was made for older game data and can't be opened." && s.hash === "#/itembuilder" && s.base === "",
+    c.ok(s.notice === "This link was made for older game data and can't be opened." && s.hash === "#/itembuilder" && s.base === "Choose a base item…",
         "an old link opens blank with the old-data notice", JSON.stringify(s));
 
     // Phone (Review Focus 4): skill affixes on an amulet, no overflow, pinned bar.
     await page.mobile();
     await page.goto(BASE + "#/itembuilder");
-    await page.waitFor(`!!document.querySelector(".ibBase")`);
+    await page.waitFor(`!!document.querySelector(".ibBase .selTrigger")`);
     await selectBase(page, "amu");
     await page.click(".ibQualityBtn", {text: "Rare"});
     await typeNth(page, ".ibSearch", 0, "skills"); // skill prefixes share group 125: one pick, the rest greyed with a reason
-    await pickFree(page, 3);
+    await pickFree(page, 3, "Prefix");
     const overflow = await page.eval(OVERFLOW_CHECK);
     c.ok(overflow.count === 0 && overflow.scrollWidth <= overflow.vw, "no horizontal overflow at 390px", JSON.stringify(overflow.offenders));
+    // The base dropdown on a phone: opens by tap, lists scrollably, stays inside the screen.
+    await page.tap(".ibControls .selTrigger");
+    await page.waitFor(`!!document.querySelector(".ibControls .selDropdown")`);
+    const dd = await page.eval(`(() => { const r = document.querySelector(".ibControls .selDropdown").getBoundingClientRect(); const o = document.querySelector(".ibControls .selOptions"); return {left: Math.round(r.left), right: Math.round(r.right), vw: innerWidth, scrolls: o.scrollHeight > o.clientHeight, groups: document.querySelectorAll(".ibControls .selGroup").length}; })()`);
+    const ddOverflow = await page.eval(OVERFLOW_CHECK);
+    c.ok(dd.left >= 0 && dd.right <= dd.vw && dd.scrolls && dd.groups > 0 && ddOverflow.count === 0 && ddOverflow.scrollWidth <= ddOverflow.vw,
+        "the base dropdown opens on a phone, scrolls, and causes no horizontal overflow", JSON.stringify({dd, offenders: ddOverflow.offenders}));
+    await page.screenshot("shots/itembuilder-phone-dropdown.png");
+    await page.tap(".ibControls .selTrigger"); // closes it again
     await typeNth(page, ".ibSearch", 0, "a"); // a long list, so the page can scroll the card away
     c.ok(await page.eval(`getComputedStyle(document.querySelector(".ibPinBar")).visibility === "hidden"`), "the pinned bar hides while the card is in view");
     await page.eval(`window.scrollTo(0, document.querySelector(".ibCard").getBoundingClientRect().bottom + window.scrollY + 300)`);

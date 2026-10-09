@@ -2593,10 +2593,20 @@ a.mdLink {
     justify-content: flex-start;
 }
 
-/* select.ibBase ties `.filtersPanel select` on specificity and wins by coming later. */
-.ibControls select.ibBase {
+/* Three classes, so it beats `.filtersPanel .selSearchWrap`'s max-width (260px). */
+.ibControls .selSearchWrap.ibBase {
     flex: 1 1 320px;
     max-width: 460px;
+}
+
+/* The base picker's group headings (SearchableSelect options like {group: "Axes"}). */
+.selGroup {
+    padding: 6px 8px 2px;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+    cursor: default;
 }
 
 .ibQuality {
@@ -2758,29 +2768,6 @@ a.mdLink {
     display: none;
 }
 
-.ibSideTabs {
-    display: flex;
-    gap: 6px;
-    margin-bottom: 8px;
-}
-
-.ibSideTab {
-    flex: 1;
-    padding: 8px;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    background: rgba(0, 0, 0, 0.35);
-    color: var(--text);
-    font: inherit;
-    cursor: pointer;
-}
-
-.ibSideTab.active {
-    background: linear-gradient(180deg, rgba(202, 161, 74, 0.3), rgba(107, 75, 22, 0.25));
-    border-color: rgba(202, 161, 74, 0.55);
-    color: var(--c-white);
-}
-
 .ibSearch {
     width: 100%;
     margin-bottom: 8px;
@@ -2863,7 +2850,7 @@ a.mdLink {
         gap: 12px;
     }
 
-    .ibControls select.ibBase {
+    .ibControls .selSearchWrap.ibBase {
         flex: 1 1 100%;
         max-width: none;
     }

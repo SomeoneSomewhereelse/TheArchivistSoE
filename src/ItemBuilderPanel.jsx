@@ -1,7 +1,8 @@
 // The Item Builder tab: base, quality and level controls, the item card, and the affix list. The build
 // comes from useItemBuilder (src/useItemBuilder.js) through props; this component only keeps UI state
-// (list side, search text, copy-link state, whether the card is in view).
+// (search text, copy-link state, whether the card is in view).
 import React, {useEffect, useMemo, useRef, useState} from "react";
+import SearchableSelect from "./SearchableSelect.jsx";
 import {compareAffixes} from "./sortCompare.js";
 import {allowedQualities, countHint, eligibleAffixes, requiredLevel, rollContext, rowState} from "./itemBuilderRules.js";
 
@@ -91,7 +92,7 @@ function AffixRow({affix, state, onToggle}) {
                 {affix.displayProperties.map((p, i) => <span key={i} className="ibStat">{p.displayString}</span>)}
             </span>
             <span className="ibRowMeta">
-                Grp {affix.group} · alvl {affix.level} · rlvl {affix.levelreq}{state.state === "picked" ? " ✓" : ""}
+                {affix.suffix ? "Suffix" : "Prefix"} · Grp {affix.group} · alvl {affix.level} · rlvl {affix.levelreq}{state.state === "picked" ? " ✓" : ""}
             </span>
             {state.state === "group" && <span className="ibWhy">Group taken by {state.by.name}</span>}
             {state.state === "full" && <span className="ibWhy">Slots full</span>}
@@ -100,7 +101,6 @@ function AffixRow({affix, state, onToggle}) {
 }
 
 export default function ItemBuilderPanel({status, error, retry, model, build, notice, setBuild, searchRef}) {
-    const [side, setSide] = useState("prefix");
     const [search, setSearch] = useState("");
     const [copyState, setCopyState] = useState("idle");
     const [cardVisible, setCardVisible] = useState(true);
@@ -122,10 +122,9 @@ export default function ItemBuilderPanel({status, error, retry, model, build, no
     const rows = useMemo(() => {
         const needle = search.trim().toLowerCase();
         return eligible
-            .filter((a) => a.suffix === (side === "suffix"))
             .filter((a) => !needle || a.name.toLowerCase().includes(needle) || statText(a).toLowerCase().includes(needle))
             .sort((a, b) => compareAffixes(a, b, "attrs", "desc"));
-    }, [eligible, side, search]);
+    }, [eligible, search]);
 
     if (status === "loading") return <div className="infoPanel ibStatus">Loading item data…</div>;
     if (status === "error") {
@@ -143,6 +142,10 @@ export default function ItemBuilderPanel({status, error, retry, model, build, no
     const count = (suffix) => picked.filter((a) => a.suffix === suffix).length;
     const req = base ? requiredLevel(base, picked) : 0;
 
+    const baseOptions = [
+        {value: "", label: "Choose a base item…"},
+        ...model.groups.flatMap((g) => [{group: g.label}, ...g.bases.map((b) => ({value: b.code, label: `${b.name} · qlvl ${b.qlvl}`}))]),
+    ];
     const update = (patch) => {
         setCopyState("idle");
         setBuild({...build, ...patch});
@@ -162,14 +165,8 @@ export default function ItemBuilderPanel({status, error, retry, model, build, no
     return (
         <div className="ibRoot">
             <div className="filtersPanel ibControls">
-                <select className="ibBase" aria-label="Base item" value={build.base ?? ""} onChange={(e) => update({base: e.target.value || null})}>
-                    <option value="">Choose a base item…</option>
-                    {model.groups.map((g) => (
-                        <optgroup key={g.label} label={g.label}>
-                            {g.bases.map((b) => <option key={b.code} value={b.code}>{b.name} · qlvl {b.qlvl}</option>)}
-                        </optgroup>
-                    ))}
-                </select>
+                <SearchableSelect className="ibBase" value={build.base ?? ""} options={baseOptions} placeholder="Choose a base item…"
+                                  onChange={(v) => update({base: v || null})}/>
                 {qualities.length > 1 && (
                     <div className="ibQuality" role="group" aria-label="Quality">
                         {qualities.map((q) => (
@@ -229,15 +226,6 @@ export default function ItemBuilderPanel({status, error, retry, model, build, no
             )}
 
             <section className="ibList">
-                <div className="ibSideTabs" role="tablist" aria-label="Affix side">
-                    {["prefix", "suffix"].map((s) => (
-                        <button key={s} type="button" role="tab" aria-selected={side === s}
-                                className={`ibSideTab${side === s ? " active" : ""}`} onClick={() => setSide(s)}>
-                            {s === "prefix" ? "Prefixes" : "Suffixes"}
-                            {caps ? ` ${count(s === "suffix")}/${s === "prefix" ? caps.prefix : caps.suffix}` : ""}
-                        </button>
-                    ))}
-                </div>
                 <input type="text" className="ibSearch" ref={searchRef} placeholder="Search names and stats…"
                        aria-label="Search affixes" value={search} onChange={(e) => setSearch(e.target.value)}/>
                 <div className="ibRows">
@@ -245,7 +233,7 @@ export default function ItemBuilderPanel({status, error, retry, model, build, no
                         <p className="ibEmpty">Choose a base item to see its affixes.</p>
                     ) : rows.length === 0 ? (
                         <p className="ibEmpty">
-                            {search.trim() ? "No affixes match the search." : `No ${side === "prefix" ? "prefixes" : "suffixes"} can roll at alvl ${ctx.alvl}.`}
+                            {search.trim() ? "No affixes match the search." : `No affixes can roll at alvl ${ctx.alvl}.`}
                         </p>
                     ) : (
                         rows.map((a) => <AffixRow key={a.key} affix={a} state={rowState(a, picked, caps)} onToggle={toggle}/>)

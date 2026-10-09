@@ -43,6 +43,9 @@ the value. No `eslint-disable`.
 - `src/tabList.js` (`TABS`, `TAB_GROUPS`, `VALID_TAB_KEYS`) and `src/tabs.jsx` (`TabsBar`,
   `MobileTabsBar`, `TabTitle`, the Damnation toggle); `src/pager.js` (`pagerState`, `usePager`) and
   `src/PagerButtons.jsx` for the paged tables; `src/useIsMobile.js`; `src/ErrorBoundary.jsx`.
+- `src/SearchableSelect.jsx`: the filterable dropdown (Filters bars, Item Builder base). An options array may hold
+  `{group: "Axes"}` headings; `filterOptions` in `src/searchableSelectFilter.js` (tested) lets a group's name match
+  all its options.
 - `src/StickyHeadTable.jsx`: the scroller + table used by Affixes, Corruptions and the Drop calculator, plus
   a fixed, `aria-hidden` floating copy of the header row that shows once the real header scrolls away
   (`attachFloatingHead` syncs it by direct DOM writes; the show/hide rule is `floatingHeadVisible` in
