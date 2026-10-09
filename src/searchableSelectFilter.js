@@ -26,3 +26,29 @@ export function filterOptions(options, query) {
     }
     return out;
 }
+
+// Keyboard navigation. The "active" option is an index into the (filtered) options array; headings
+// (`group` entries) are never active. -1 means no selectable option.
+export const selectableIndexes = (options) =>
+    options.flatMap((o, i) => (o.group === undefined ? [i] : []));
+
+// On open: the current value's option when it is listed, else the first selectable one.
+export function initialActive(options, value) {
+    const idx = selectableIndexes(options);
+    const hit = idx.find((i) => String(options[i].value) === String(value));
+    return hit ?? idx[0] ?? -1;
+}
+
+// The active index after a navigation key. ArrowDown/ArrowUp step through selectable options with wrap
+// (from no active option: Down picks the first, Up the last), Home/End jump to the ends, any other key
+// leaves `current` alone.
+export function nextActive(options, current, key) {
+    const idx = selectableIndexes(options);
+    if (idx.length === 0) return -1;
+    if (key === "Home") return idx[0];
+    if (key === "End") return idx[idx.length - 1];
+    if (key !== "ArrowDown" && key !== "ArrowUp") return current;
+    // Next selectable after / before `current` (which may be -1 or a heading), wrapping around.
+    if (key === "ArrowDown") return idx.find((i) => i > current) ?? idx[0];
+    return idx.findLast((i) => i < current) ?? idx[idx.length - 1];
+}
