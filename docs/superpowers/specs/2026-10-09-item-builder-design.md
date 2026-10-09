@@ -2,7 +2,7 @@
 
 **Date:** 2026-10-09
 **Branch:** to be created from `main` when implementation starts (manual worktree, `.worktrees/<name>`, suggested name `item-builder`)
-**Status:** design approved section by section in brainstorming (2026-10-09); revised after an independent review (link cleanup moved into an App-level hook, query handling in `useHashTab`, link version, test fixes); awaiting user review
+**Status:** design approved section by section in brainstorming (2026-10-09); revised after an independent review (link cleanup moved into an App-level hook, query handling in `useHashTab`, link version, test fixes); approved by the user (2026-10-09)
 
 ## Intent
 
