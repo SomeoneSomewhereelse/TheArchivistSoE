@@ -109,6 +109,46 @@ qlvl never changes a cap; it only shifts alvl.
 The highest of the base's `levelreq` and each picked affix's `levelreq`. PD2 removed the old crafted
 penalty (+10, +3 per affix), so crafted items follow the same rule.
 
+### Roll odds
+
+**Meaning:** "≈ 1 in X to roll these affixes" is the chance that one drop of the current base, quality and
+levels carries **all** the picked affixes; its other affix slots roll anything. It works for 1–6 picks and is
+hidden when nothing is picked. `src/itemBuilderOdds.js` (`rollOdds(model, ctx, picks)`, `formatOdds(p)`).
+
+**The model** (vanilla D2's roll, as far as it is known; PD2's own code is closed):
+
+1. The item rolls N affixes, N **uniform** over the "Affix count by ilvl" range (`affixCountRange(ctx)` in
+   `itemBuilderRules.js`, which `countHint` reads too). Uniform is an **assumption**: PD2's real distribution
+   is not public.
+2. Each draw is a prefix or a suffix, 50/50 while both sides are open, else the open side. A side closes at its
+   cap, or when no row with a free group is left on it (the draw goes to the other side). With no open side
+   the item rolls fewer affixes. `caps.total` stops the draws too (it is never below N).
+3. Within the side, a row is drawn with probability proportional to its weight among the rows that can roll
+   (`canRoll`) and whose group no affix on the item already holds. Weight = `frequency`, times the row's
+   `level` on a base with `magic lvl` > 0 (vanilla `ComputeAffixFrequency`).
+
+**The calculation is exact for this model**, not an approximation:
+
+- Drawing a row by weight among the free-group rows is the same as drawing a free *group* by its total weight
+  and then a row inside it. So one side's draws are a weighted draw of groups without replacement, and a
+  pick succeeds when its group is drawn and then the pick is the row chosen inside it (weight / group weight).
+- No group is shared by a prefix and a suffix on any builder base (the shared groups are map groups; checked
+  over every base, quality and level band), so the two sides are independent given how many draws each
+  gets. A side has at most 26 groups and 3 draws, so `rollOdds` enumerates every draw sequence of each side
+  (stopping once the picks' groups are all drawn), combines them with the distribution of (prefix draws,
+  suffix draws) after N draws, and averages over N. Well under a millisecond for 6 picks.
+- **Why not the first sketch** (a DP over the picks found so far, with draws that miss every pick assumed to
+  change nothing): a Monte Carlo of the model above showed it off by up to 67 % (a rare Diadem, one prefix
+  and one suffix), because a miss uses up a side slot and removes its whole group, and a few heavy groups
+  carry most of a side's weight (most of all with magic-lvl weights). Tracking side counts and sibling rows
+  still left errors of 12–62 %.
+- `itemBuilderOdds.test.js` checks hand-computed cases and compares `rollOdds` with a seeded Monte Carlo of
+  the draw-by-draw roll on real data (rare, magic, crafted, rare jewel, orb and Diadem builds), within
+  max(5 %, 4 standard errors).
+
+**Not modelled:** a crafted recipe's fixed mods (the odds cover the random affixes only); any PD2 change to
+affix weights or to the count distribution; the rare-jewel and Mythic Jewel caps follow "Caps" (2 + 2).
+
 ## Data findings
 
 - **`Affixes.json` is lossy for item types.** It stores in-game display names, and one name covers several
@@ -156,7 +196,8 @@ ItemBuilderPanel (props: model, build, notice, setBuild; local UI state only)
 | Module | Role | Tests |
 |---|---|---|
 | `src/itemBuilderData.js` | Column lists, `.txt` + JSON → `ItemBuilder.json`, the join and the loud checks. Node-safe: `vite.config.js` imports it. | `itemBuilderData.test.js` |
-| `src/itemBuilderRules.js` | alvl, crafted ilvl, caps tables, type matching, eligible list, row state, required level, count hint. | `itemBuilderRules.test.js` |
+| `src/itemBuilderRules.js` | alvl, crafted ilvl, caps tables, type matching, eligible list, row state, required level, affix count range and hint. | `itemBuilderRules.test.js` |
+| `src/itemBuilderOdds.js` | Roll odds: the chance a drop rolls every pick (see "Roll odds"), and its "1 in X" text. | `itemBuilderOdds.test.js` |
 | `src/itemBuilderHash.js` | Encode and decode a build. | `itemBuilderHash.test.js` |
 | `src/itemBuilderLoad.js` | Fetch once, cache, retry after a failure (like `dropCalcLoad.js`). | — |
 | `src/useItemBuilder.js` | Hook called by `App`: model loading, decode, link cleanup, notice (see "State ownership"). | browser check |
@@ -304,6 +345,9 @@ under Vitest and `vite preview`. It writes only when the content changed. `.giti
 - Required level (with "(Sorceress: 18)"-style notes for the class level requirement rows), and
   "plus the recipe's fixed mods" on crafted items.
 - **Copy link** and **Clear**.
+- **Below the card** (desktop: same column; phone: in flow before the pinned bar), once something is picked:
+  "≈ 1 in 1,300 to roll these affixes" and the caption "Estimate under vanilla D2 roll rules; PD2's exact
+  odds aren't public." (see "Roll odds"); "These affixes can't roll together." if the chance is 0.
 
 **List:**
 - One merged list of every eligible prefix and suffix, and a search box matching names and stat text.

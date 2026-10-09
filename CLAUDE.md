@@ -60,9 +60,11 @@ the value. No `eslint-disable`.
   is Node-only (tests and `tools/checks/`), never imported by the app.
 - The Item Builder (`itembuilder` tab): `src/itemBuilderData.js` (`MagicPrefix`/`MagicSuffix.txt` joined row by row
   with `Affixes.json`, bases, the item-type tree, the `ItemBuilder.json` format, the link-version fingerprint),
-  `src/itemBuilderRules.js` (alvl, eligibility, caps, row state, `resolveBuild`), `src/itemBuilderHash.js` (the URL
-  query), `src/itemBuilderLoad.js`, `src/useItemBuilder.js` (called by `App`: loads, decodes and cleans the query
-  during render) and `src/ItemBuilderPanel.jsx` (props only). `src/itemBuilderFixtures.js` is Node-only (tests).
+  `src/itemBuilderRules.js` (alvl, eligibility, caps, row state, the affix count range, `resolveBuild`),
+  `src/itemBuilderHash.js` (the URL query), `src/itemBuilderLoad.js`, `src/useItemBuilder.js` (called by `App`: loads,
+  decodes and cleans the query during render) and `src/ItemBuilderPanel.jsx` (props only). `src/itemBuilderOdds.js`
+  computes the "≈ 1 in X to roll these affixes" line under the card (exact for the spec's "Roll odds" model, checked
+  against a Monte Carlo in its test). `src/itemBuilderFixtures.js` is Node-only (tests).
   Design: `docs/superpowers/specs/2026-10-09-item-builder-design.md`.
 - The `item-builder-data` plugin in `vite.config.js` writes `public/data/standard/ItemBuilder.json` (gitignored) from
   the standard `.txt` tables plus `Affixes.json`/`Weapons.json`/`Armors.json`. A data update must also copy
