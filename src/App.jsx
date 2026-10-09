@@ -4,6 +4,7 @@ import ErrorBoundary from "./ErrorBoundary.jsx";
 import PagerButtons from "./PagerButtons.jsx";
 import StickyHeadTable from "./StickyHeadTable.jsx";
 import AffixSortBar from "./AffixSortBar.jsx";
+import SearchableSelect from "./SearchableSelect.jsx";
 import {MobileTabsBar, TabsBar, TabTitle} from "./tabs.jsx";
 import {QUERY_TABS, VALID_TAB_KEYS} from "./tabList.js";
 import ItemBuilderPanel from "./ItemBuilderPanel.jsx";
@@ -864,90 +865,6 @@ function getRequiredStrengthForUnique(u, itemType) {
 
 function getRequiredDexterityForUnique(u) {
     return u?.weaponBase?.requiredDexterity;
-}
-
-function SearchableSelect({
-                              value, onChange, options, placeholder = "Select…", style, className = "",
-                          }) {
-    const [open, setOpen] = React.useState(false);
-    const [query, setQuery] = React.useState("");
-    const wrapRef = React.useRef(null);
-    const inputRef = React.useRef(null);
-
-    const currentLabel = options.find((o) => String(o.value) === String(value))?.label || "";
-
-    const filteredOptions = React.useMemo(() => {
-        const q = query.trim().toLowerCase();
-        if (!q) return options;
-        return options.filter((opt) => (opt.label || "").toLowerCase().includes(q));
-    }, [options, query]);
-
-    // Close on outside click
-    React.useEffect(() => {
-        if (!open) return;
-
-        function handleClick(e) {
-            if (!wrapRef.current) return;
-            if (!wrapRef.current.contains(e.target)) {
-                setOpen(false);
-            }
-        }
-
-        document.addEventListener("mousedown", handleClick);
-        return () => document.removeEventListener("mousedown", handleClick);
-    }, [open]);
-
-    // Auto-focus search input when dropdown opens
-    React.useEffect(() => {
-        if (open && inputRef.current) {
-            inputRef.current.focus();
-            inputRef.current.select();
-        }
-    }, [open]);
-
-    const handleSelect = (val) => {
-        onChange(val);
-        setOpen(false);
-        setQuery("");
-    };
-
-    return (<div
-        ref={wrapRef}
-        className={`selSearchWrap ${className}`}
-        style={style}
-    >
-        <button
-            type="button"
-            className="selTrigger"
-            onClick={() => setOpen((o) => !o)}
-        >
-        <span className={currentLabel ? "" : "placeholder"}>
-          {currentLabel || placeholder}
-        </span>
-            <span className="selArrow">▾</span>
-        </button>
-
-        {open && (<div className="selDropdown">
-            <input
-                ref={inputRef}
-                className="selSearchInput"
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Filter options…"
-            />
-            <div className="selOptions">
-                {filteredOptions.length === 0 ? (
-                    <div className="selOption selEmpty">No matches</div>) : (filteredOptions.map((opt) => (<div
-                    key={String(opt.value) || opt.label}
-                    className="selOption"
-                    onClick={() => handleSelect(opt.value)}
-                >
-                    {opt.label}
-                </div>)))}
-            </div>
-        </div>)}
-    </div>);
 }
 
 function FiltersBar({
