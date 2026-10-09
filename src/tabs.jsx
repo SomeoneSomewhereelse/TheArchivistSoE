@@ -137,6 +137,7 @@ export function TabsBar({
         "damnation",
         "calculators",
         "dropcalc",
+        "itembuilder",
         "help",
     ];
 

@@ -21,6 +21,10 @@ export const TABS = {
         title: "Drop calculator",
         badge: "Alpha"
     },
+    itembuilder: {
+        title: "Item Builder",
+        badge: "Beta"
+    },
     damnation: {
         title: "Damnation Mode",
         badge: "Beta"
@@ -36,9 +40,15 @@ export const TABS = {
 export const TAB_GROUPS = [
     {title: "Items", keys: ["weapons", "armors", "uniques", "runewords", "sacreds", "fatecards"]},
     {title: "Mechanics", keys: ["affixes", "skills", "ascendancies", "corruptions", "mapping", "kiln", "cube"]},
-    {title: "Tools", keys: ["calculators", "dropcalc"]},
+    {title: "Tools", keys: ["calculators", "dropcalc", "itembuilder"]},
     {title: "About", keys: ["changes", "damnation", "help"]},
 ];
 
 // Tabs the URL hash may name. Not Object.keys(TABS): "essences" has no panel.
 export const VALID_TAB_KEYS = [...TAB_GROUPS.flatMap((g) => g.keys), "changelog"];
+
+// The Item Builder's tab key; it keeps its build in the hash query (#/itembuilder?…).
+export const ITEM_BUILDER_TAB = "itembuilder";
+
+// Tabs whose hash may carry a query (useHashTab's third argument).
+export const QUERY_TABS = [ITEM_BUILDER_TAB];

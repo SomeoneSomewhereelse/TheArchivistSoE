@@ -8,16 +8,16 @@ const HERE = path.dirname(new URL(import.meta.url).pathname);
 export const BASE = process.env.APP_URL ?? "http://localhost:5181/TheArchivistSoE/";
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-// The 18 sheet tabs plus Changelog, in tab-sheet order.
+// The 19 sheet tabs plus Changelog, in tab-sheet order.
 export const TAB_KEYS = ["weapons", "armors", "uniques", "runewords", "sacreds", "fatecards", "affixes", "skills",
-    "ascendancies", "corruptions", "mapping", "kiln", "cube", "calculators", "dropcalc", "changes", "damnation",
+    "ascendancies", "corruptions", "mapping", "kiln", "cube", "calculators", "dropcalc", "itembuilder", "changes", "damnation",
     "help", "changelog"];
 
 export const TAB_TITLES = {
     weapons: "Weapons", armors: "Armors", uniques: "Uniques", runewords: "Runewords", sacreds: "Sacreds",
     fatecards: "Fate Cards", affixes: "Affixes", skills: "Skills", ascendancies: "Ascendancies",
     corruptions: "Corruptions", mapping: "Mapping", kiln: "Infernal Kiln", cube: "Cube Recipes",
-    calculators: "Skill Calculators", dropcalc: "Drop calculator", changes: "Standard Mode",
+    calculators: "Skill Calculators", dropcalc: "Drop calculator", itembuilder: "Item Builder", changes: "Standard Mode",
     damnation: "Damnation Mode", help: "Help", changelog: "Changelog",
 };
 
