@@ -210,8 +210,10 @@ layout"); nothing else about it changes.
 2. **Pairs:** min and max damage per element (fire, lightning, magic, cold with length, poison with length), plain
    min and max damage, and ED% (min% equal to max%) each print one line. When the min and max ranges are equal the
    pair uses the single-value string (`strModPoisonDamage` "+%d poison damage over %d seconds", *Septic* 31/31),
-   otherwise the range string (`strMod*DamageRange`). Poison prints ⌊value · length / 256⌋ over ⌊length / 25⌋
-   seconds (d2s; the game's own rounding is checked in-game, see below).
+   otherwise the range string (`strMod*DamageRange`). Poison prints (value · length + 128) >> 8 (rounded half up)
+   over ⌊length / 25⌋ seconds, where value and length are the sums over every poison source: the tooltip doesn't
+   divide the length by `poison_count`, although combat does (in-game results below; d2s's plain floor is wrong,
+   and so is D2ItemToolkit's 1.14d division).
 3. **`dgrp`:** a group prints one line, using `dgrpfunc`, `dgrpval`, `dgrpstrpos` / `dgrpstrneg` (by sign) and
    `dgrpstr2`, when every member is present with an equal range; otherwise each member prints its own line. Group
    funcs in use: 1, 4, 7, 8 and 19.
@@ -336,7 +338,8 @@ update makes the string check fail.
 - **`statEngine.test.js`:** hand-computed cases for every property func, `descfunc` and `dgrpfunc` in use; pairs, with
   the equal and range strings; `dgrp` with equal and unequal ranges and a negative group (`map-play-res-all`); range
   and negative formatting; bracketing in two-value strings; per-level values in eighths and in halves (`att/lvl`
-  param 12 → 6 per level); the charges rule at a fixed ilvl and as a range; sockets from the param; repair;
+  param 12 → 6 per level); the charges rule at a fixed ilvl and as a range; poison rounding and two poison sources;
+  sockets from the param; repair (the in-game results below are fixtures);
   `\n` bottom-up splitting; colour-code stripping; order, including a pair's and a group's priority.
 - **`affixData.test.js`:** the file format; `statKeys` with `via`; skill-carrying stats keyed by (stat, skill) (*of
   Charged Shield* s421–s423 share one key); options under Items and Maps, sorted without leading value tokens; exact
@@ -367,10 +370,20 @@ engine bug. It isn't a gate and its output isn't committed.
 
 ### In-game checks (the user, `-direct -txt` plus a `CubeMain.txt` recipe)
 
-- A *Teleportation* suffix at a known ilvl: the skill level and charges match the D2MOO rule.
-- *Septic* (poison 31 per frame over 50 frames) plus a second poison suffix on one item: the poison line's rounding,
-  and what two poison sources print (also needed by the summing spec).
-- A self-repair suffix (`rep-dur` param 3): the line reads "Repairs 1 durability in 33 seconds".
+Done 2026-10-12 (character level 60, recipe output `lvl=99`, so ilvl 99). Every result matches the rules above; the
+unit tests use them as fixtures.
+
+| Item | In game | Rule |
+|---|---|---|
+| Staff, *of Teleportation* s532 (`charged` 54, −30/−6) | Level 6 Teleport (44/52 Charges) | ⌊81 / ⌊81/6⌋⌋ = 6; ⌊6·30/8⌋ + 30 = 52 (Teleport `reqlevel` 18) |
+| Amulet, *of Teleportation* s533 (−20/−3) | Level 3 Teleport (18/27 Charges) | ⌊81 / 27⌋ = 3; ⌊3·20/8⌋ + 20 = 27. The rule takes the ilvl, not the alvl |
+| *Septic* p555 alone (31/31, 50 frames) | 6 over 2 seconds | (1550 + 128) >> 8 = 6 |
+| *of Blight* s234 alone (24/24, 75 frames) | 7 over 3 seconds | (1800 + 128) >> 8 = 7 |
+| Both on one item (55/55, 125 frames) | 27 over 5 seconds | (6875 + 128) >> 8 = 27; a floor gives 26, dividing by `poison_count` 2 gives 13 over 2 |
+| *of Self-Repair* s402 (`rep-dur` 3) | Repairs 1 durability in 33 seconds | 1 and ⌊100/3⌋ |
+
+Every poison length in today's affixes is a multiple of 25, so the seconds' rounding never shows. The current charges
+(44, 18) are the random new-item value; the tab shows full charges.
 
 ### Regression gates
 
