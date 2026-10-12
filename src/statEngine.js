@@ -3,7 +3,7 @@
 // description follows the game's tooltip writer (ItemStatCost.txt descfuncs, the hardcoded damage pairs,
 // dgrp groups). Values are ranges {min, max}: one affix row describes every roll at once.
 // Pure, so it runs in Vite, Vitest and the browser.
-import {skillOf} from "./statData.js";
+import {HARDCODED_STRINGS, skillName, skillOf} from "./statData.js";
 
 // ---- Expansion: mods -> entries {stat, layer, min, max, skill?, level?} ----------------------------
 
@@ -146,4 +146,274 @@ export function expandMods(mods, dict, ctx = {}) {
         }
     }
     return {entries, unknown};
+}
+
+// The descfuncs and dgrpfuncs the engine implements. Anything else in the data fails the build (checkEntries).
+export const DESC_FUNCS = [1, 2, 3, 4, 6, 7, 8, 9, 11, 13, 14, 15, 19, 20, 24];
+export const GROUP_FUNCS = [1, 2, 3, 4, 6, 7, 8, 9, 19, 20];
+
+// ---- Text helpers ------------------------------------------------------------------------------------
+
+// A range as text. plus: "signed" puts "+" before a positive value, "zero" before zero too. bracket:
+// wrap a real range in [ ] (for lines that print several values). label: "#" instead of the value.
+// A negative range prints the smaller magnitude first: "-2 to -4".
+export function rangeText(r, {plus = "", bracket = false, label = false} = {}) {
+    const sign = (v) => ((plus === "zero" && v >= 0) || (plus === "signed" && v > 0) ? "+" : "");
+    if (label) return `${r.max < 0 ? "-" : sign(r.max)}#`;
+    if (r.min === r.max) return `${sign(r.min)}${r.min}`;
+    const text = r.max <= 0 ? `${r.max} to ${r.min}` : r.min < 0 ? `${r.min} to ${r.max}` : `${sign(r.max)}${r.min}-${r.max}`;
+    return bracket ? `[${text}]` : text;
+}
+
+const negate = (r) => ({min: -r.max, max: -r.min});
+
+// printf for the game's strings: %d %i %u %s and %+d take the next argument (already text); %% is "%".
+export function fill(format, args) {
+    let i = 0;
+    return format.replace(/%\+?([dius%])/g, (m, kind) => (kind === "%" ? "%" : String(args[i++] ?? "")));
+}
+
+// A finished line's display pieces, top first: colour codes (ÿc plus one character) stripped, and a
+// string with "\n" stacked bottom-up as the game draws it (the last piece is the top line).
+export function displayPieces(text) {
+    return text.replace(/ÿc./g, "").split("\n").filter((p) => p.trim() !== "").reverse();
+}
+
+function requireString(dict, key, why) {
+    const s = dict.string(key);
+    if (s === null) throw new Error(`string "${key}" (${why}) is in neither patchstring.tbl nor baseStrings.json`);
+    return s;
+}
+
+function skillText(dict, e) {
+    const skill = dict.skills.get(e.skill);
+    const name = skillName(dict, skill);
+    if (name === null) throw new Error(`skill ${skill.id} ("${skill.name}") has no name string`);
+    return name;
+}
+
+// A filter key per line source: a stat, a stat per layer, or a stat per skill (its layer also holds the
+// skill level, which would split one skill into one key per level).
+export function entryKey(e) {
+    if (e.skill !== undefined) return `${e.stat}:${e.skill}`;
+    return e.layer ? `${e.stat}/${e.layer}` : e.stat;
+}
+
+// A group's name for the Stat filter's "via" tag, from its own string: "All Resistances", "all Attributes".
+export function groupName(dict, primary) {
+    const text = displayPieces(requireString(dict, primary.groupStr2 || primary.groupPos, `dgrp ${primary.group}`)).join(" ");
+    return text.replace(/%\+?[dius]/g, "").replace(/(^|\s)[+-](?=\s|$)/g, " ").replace(/\s+/g, " ").trim()
+        .replace(/^to /i, "").replace(/:$/, "");
+}
+
+// ---- Description: one stat line ----------------------------------------------------------------------
+
+// The text of one stat line, or of a dgrp line when `d` holds the group's func, val and strings. label:
+// "#" for each value. Returns "" when the game prints nothing (func 1 with descval 0).
+function formatStat(d, e, dict, label) {
+    const v = (r, plus = "", bracket = false) => rangeText(r, {plus, bracket, label});
+    const str = (key) => requireString(dict, key, `stat ${e.stat}`);
+    const text = d.func === 0 ? "" : str(e.min < 0 && d.neg ? d.neg : d.pos);
+    // descval 1: the value first; 2: the value last; 0: no value (funcs 1 and 6 then print nothing).
+    const place = (num, emptyWithoutValue = false) =>
+        (d.val === 1 ? `${num} ${text}` : d.val === 2 ? `${text} ${num}` : emptyWithoutValue ? "" : text);
+    const str2 = (s) => (d.func >= 6 && d.func <= 9 && d.str2 ? `${s} ${str(d.str2)}` : s);
+
+    // Per-level stats: the value at character level L is v * L / 2^shift; the line shows L = 1-99, then the rate.
+    let value = e;
+    let perLevel = "";
+    if (d.perLevelShift !== null && d.perLevelShift !== undefined) {
+        const unit = 2 ** d.perLevelShift;
+        value = {min: Math.floor(e.min / unit), max: Math.floor(e.max * 99 / unit)};
+        perLevel = `, ${label ? "#" : rangeText({min: e.min / unit, max: e.max / unit})} per level`;
+    }
+
+    switch (d.func) {
+        case 1:
+        case 6:
+            return str2(place(v(value, "signed"), true)) + perLevel;
+        case 2:
+        case 7:
+            return str2(place(`${v(value)}%`)) + perLevel;
+        case 3:
+        case 9:
+            return str2(place(v(value))) + perLevel;
+        case 4:
+        case 8:
+            return str2(place(`${v(value, "zero")}%`)) + perLevel;
+        case 20:
+            return place(`${v(negate(value), "zero")}%`) + perLevel;
+        case 19:
+            return fill(text, [v(value)]);
+        case 11: {
+            // Repair: 1 durability every (2500 / v + 12) / 25 seconds, or "per second" at 30 frames or less.
+            if (label) return fill(str("ModStre9u"), ["#", "#"]);
+            const frames = Math.trunc(2500 / e.max);
+            return e.max > 0 && frames > 30
+                ? fill(str("ModStre9u"), ["1", String(Math.trunc((frames + 12) / 25))])
+                : fill(str("ModStre9t"), [e.max > 0 ? "1" : "25"]);
+        }
+        case 13:
+            return `${v(value, "signed")} ${str(dict.classes[e.layer].allSkills)}`;
+        case 14: {
+            const cls = dict.classes[e.layer >> 3];
+            return `${fill(str(cls.tabs[e.layer & 7]), [v(value)])} ${str(cls.classOnly)}`;
+        }
+        case 15:
+            return fill(str(d.pos), [v(value, "", true), v(e.level, "", true), skillText(dict, e)]);
+        case 24:
+            return `${str("ModStre10b")} ${v(e.level, "", true)} ${skillText(dict, e)} ${fill(str(d.pos), [v(value, "", true), v(value, "", true)])}`;
+        default:
+            throw new Error(`stat ${e.stat} uses descfunc ${d.func}, which the stat engine doesn't implement`);
+    }
+}
+
+// ---- Description: entries -> lines ------------------------------------------------------------------
+
+const ELEMENT_PAIRS = [
+    {key: "firedamage", min: "firemindam", max: "firemaxdam", single: "strModFireDamage", range: "strModFireDamageRange"},
+    {key: "lightdamage", min: "lightmindam", max: "lightmaxdam", single: "strModLightningDamage", range: "strModLightningDamageRange"},
+    {key: "magicdamage", min: "magicmindam", max: "magicmaxdam", single: "strModMagicDamage", range: "strModMagicDamageRange"},
+    {key: "colddamage", min: "coldmindam", max: "coldmaxdam", single: "strModColdDamage", range: "strModColdDamageRange"},
+    {key: "poisondamage", min: "poisonmindam", max: "poisonmaxdam", length: "poisonlength", single: "strModPoisonDamage", range: "strModPoisonDamageRange"},
+];
+
+// entries -> lines [{pieces, label, key, priority, order, stats, value, via?}], in the game's order:
+// descpriority, highest first (ties by stat id). pieces: the display lines, top first; label: the line
+// with "#" for each value; key: the Stat filter key; stats: the stats the line prints (a group line's
+// members); value: its first value's range; via: a group line's name.
+export function describe(entries, dict) {
+    // 1. Sum per (stat, layer).
+    const live = new Map();
+    for (const e of entries) {
+        const id = `${e.stat}/${e.layer}`;
+        const seen = live.get(id);
+        live.set(id, seen ? {...seen, min: seen.min + e.min, max: seen.max + e.max} : {...e});
+    }
+    for (const [id, e] of live) if (isZero(e)) live.delete(id);
+
+    const stat = (name) => dict.stats.get(name);
+    const at0 = (name) => live.get(`${name}/0`);
+    const take = (...names) => names.forEach((n) => live.delete(`${n}/0`));
+    const lines = [];
+    const add = ({text, labelText, ...line}) => {
+        const pieces = displayPieces(text);
+        if (pieces.length) lines.push({...line, pieces, label: displayPieces(labelText).join(" ")});
+    };
+
+    // 2. The damage pairs, printed as one line when both halves are present. Single value when min >= max
+    // (the game prints the max), else "Adds a-b". Poison converts frames: (v * frames + 128) >> 8 over
+    // frames / 25 seconds, every source summed (in-game: Septic + of Blight print 27 over 5 seconds).
+    for (const p of ELEMENT_PAIRS) {
+        const lo = at0(p.min);
+        const hi = at0(p.max);
+        if (!lo || !hi) continue;
+        const frames = p.length ? at0(p.length)?.max ?? 0 : 0;
+        const conv = (r) => (p.length ? {min: (r.min * frames + 128) >> 8, max: (r.max * frames + 128) >> 8} : {min: r.min, max: r.max});
+        const a = conv(lo);
+        const b = conv(hi);
+        const single = a.min >= b.max;
+        const fmt = requireString(dict, single ? p.single : p.range, "damage pair");
+        const seconds = p.length ? [String(Math.trunc(frames / 25))] : [];
+        const values = (label) => (single ? [rangeText(b, {bracket: !!p.length, label})]
+            : [rangeText(a, {bracket: true, label}), rangeText(b, {bracket: true, label})]);
+        add({text: fill(fmt, [...values(false), ...seconds]), labelText: fill(fmt, [...values(true), ...seconds.map(() => "#")]),
+            key: p.key, priority: stat(p.min).priority, order: stat(p.min).id, stats: [p.min, p.max], value: single ? b : a});
+        take(p.min, p.max);
+    }
+    take("coldlength", "poisonlength");
+
+    // Physical damage: "Adds a-b damage" only when min is below max; otherwise each prints its own line.
+    const lo = at0("mindamage");
+    const hi = at0("maxdamage");
+    if (lo && hi && lo.max < hi.min) {
+        const fmt = requireString(dict, "strModMinDamageRange", "damage pair");
+        add({text: fill(fmt, [rangeText(lo, {bracket: true}), rangeText(hi, {bracket: true})]), labelText: fill(fmt, ["#", "#"]),
+            key: "damage", priority: stat("mindamage").priority, order: stat("mindamage").id, stats: ["mindamage", "maxdamage"], value: lo});
+        take("mindamage", "maxdamage");
+    }
+
+    // Enhanced damage: min% and max% together print "+X% Enhanced Damage".
+    const ed = at0("item_mindamage_percent");
+    if (ed && at0("item_maxdamage_percent")) {
+        const name = requireString(dict, "strModEnhancedDamage", "damage pair");
+        add({text: `${rangeText(ed, {plus: "signed"})}% ${name}`, labelText: `+#% ${name}`, key: "enhanceddamage",
+            priority: stat("item_mindamage_percent").priority, order: stat("item_mindamage_percent").id,
+            stats: ["item_mindamage_percent", "item_maxdamage_percent"], value: ed});
+        take("item_mindamage_percent", "item_maxdamage_percent");
+    }
+
+    // 3. dgrp groups: one line when every member is present with the same value. The member with the
+    // lowest stat id prints it, at its own priority, as the game's emission loop does.
+    for (const [group, members] of dict.groups) {
+        const values = members.map(at0);
+        if (values.some((e) => !e || e.min !== values[0].min || e.max !== values[0].max)) continue;
+        const primary = stat(members[0]);
+        const d = {func: primary.groupFunc, val: primary.groupVal, pos: primary.groupPos, neg: primary.groupNeg,
+            str2: primary.groupStr2, perLevelShift: null};
+        add({text: formatStat(d, values[0], dict, false), labelText: formatStat(d, values[0], dict, true), key: `dgrp${group}`,
+            priority: primary.priority, order: primary.id, stats: [...members], value: values[0], via: groupName(dict, primary)});
+        take(...members);
+    }
+
+    // 4. Everything else, by its own descfunc. Sockets print below every modifier.
+    const rest = [...live.values()].sort((a, b) => stat(a.stat).id - stat(b.stat).id || a.layer - b.layer);
+    for (const e of rest) {
+        const d = stat(e.stat);
+        if (e.stat === "item_numsockets") {
+            const word = requireString(dict, "Socketable", "sockets");
+            add({text: `${word} (${rangeText(e)})`, labelText: `${word} (#)`, key: e.stat, priority: -Infinity, order: d.id, stats: [e.stat], value: e});
+        } else if (d.func) {
+            add({text: formatStat(d, e, dict, false), labelText: formatStat(d, e, dict, true), key: entryKey(e),
+                priority: d.priority, order: d.id, stats: [e.stat], value: d.func === 24 ? e.level : e});
+        }
+    }
+
+    return lines.sort((a, b) => b.priority - a.priority || a.order - b.order);
+}
+
+// ---- Loud checks ----------------------------------------------------------------------------------------
+
+// Run once over every entry the data produces: each stat's descfunc and dgrpfunc is implemented, every
+// string it or its group needs resolves (and the engine's hardcoded ones), each class skill line has its
+// CharStats strings, and each skill a line names has a name. Throws one error listing every problem.
+export function checkEntries(entries, dict) {
+    const problems = new Set();
+    const need = (key, why) => {
+        if (key && dict.string(key) === null) problems.add(`string "${key}" (${why}) is in neither patchstring.tbl nor baseStrings.json`);
+    };
+    for (const key of HARDCODED_STRINGS) need(key, "used by the stat engine");
+
+    for (const e of entries) {
+        const d = dict.stats.get(e.stat);
+        const why = `stat ${e.stat}`;
+        if (d.func && !DESC_FUNCS.includes(d.func)) problems.add(`${why} uses descfunc ${d.func}, which the stat engine doesn't implement`);
+        if (d.op >= 2 && d.op <= 5 && d.perLevelShift === null) problems.add(`${why} scales by a stat other than the character level (op ${d.op}), which the stat engine doesn't implement`);
+        if ([1, 2, 3, 4, 6, 7, 8, 9, 15, 19, 20, 24].includes(d.func)) {
+            need(d.pos, why);
+            need(d.neg, why);
+        }
+        if (d.func >= 6 && d.func <= 9) need(d.str2, why);
+        if (d.func === 13) {
+            const cls = dict.classes[e.layer];
+            if (cls) need(cls.allSkills, why);
+            else problems.add(`${why}: CharStats.txt has no class ${e.layer}`);
+        }
+        if (d.func === 14) {
+            const cls = dict.classes[e.layer >> 3];
+            if (cls && (e.layer & 7) <= 2) {
+                need(cls.tabs[e.layer & 7], why);
+                need(cls.classOnly, why);
+            } else problems.add(`${why}: CharStats.txt has no skill tab for layer ${e.layer}`);
+        }
+        if ((d.func === 15 || d.func === 24) && e.skill !== undefined) {
+            const skill = dict.skills.get(e.skill);
+            if (skillName(dict, skill) === null) problems.add(`skill ${skill.id} ("${skill.name}") has no name string (${why})`);
+        }
+        if (d.group) {
+            if (!GROUP_FUNCS.includes(d.groupFunc)) problems.add(`${why}: dgrp ${d.group} uses dgrpfunc ${d.groupFunc}, which the stat engine doesn't implement`);
+            for (const key of [d.groupPos, d.groupNeg, d.groupStr2]) need(key, `dgrp ${d.group}`);
+        }
+    }
+    if (problems.size) throw new Error([...problems].join("\n"));
 }

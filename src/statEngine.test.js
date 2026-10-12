@@ -1,5 +1,5 @@
 import {describe, expect, it} from "vitest";
-import {chargesAt, expandMods, skillLevelAt} from "./statEngine.js";
+import {chargesAt, checkEntries, describe as describeEntries, displayPieces, entryKey, expandMods, fill, rangeText, skillLevelAt} from "./statEngine.js";
 import {realStatData} from "./statFixtures.js";
 
 const dict = realStatData();
@@ -94,5 +94,194 @@ describe("expandMods", () => {
     it("throws on a property func the engine doesn't implement", () => {
         const odd = {...dict, properties: new Map(dict.properties).set("odd", [{func: 99, stat: "strength", set: 0, val: 0}])};
         expect(() => expandMods([mod("odd", 1, 1)], odd)).toThrow(/property "odd" uses func 99/);
+    });
+});
+
+describe("text helpers", () => {
+    it("rangeText prints single values, ranges, signs, negatives (smaller magnitude first), brackets and labels", () => {
+        expect(rangeText({min: 5, max: 5}, {plus: "signed"})).toBe("+5");
+        expect(rangeText({min: 0, max: 0}, {plus: "signed"})).toBe("0");
+        expect(rangeText({min: 0, max: 0}, {plus: "zero"})).toBe("+0");
+        expect(rangeText({min: 3, max: 6}, {plus: "signed"})).toBe("+3-6");
+        expect(rangeText({min: -4, max: -2})).toBe("-2 to -4");
+        expect(rangeText({min: 20, max: 30}, {bracket: true})).toBe("[20-30]");
+        expect(rangeText({min: 1, max: 1}, {bracket: true})).toBe("1");
+        expect(rangeText({min: 3, max: 6}, {plus: "signed", label: true})).toBe("+#");
+        expect(rangeText({min: -4, max: -2}, {label: true})).toBe("-#");
+    });
+
+    it("fill substitutes printf arguments in order, and %% is a percent sign", () => {
+        expect(fill("%d%% Chance to cast level %d %s on striking", ["10", "8", "Fire Bolt"])).toBe("10% Chance to cast level 8 Fire Bolt on striking");
+        expect(fill("All Resistances +%d", ["3-6"])).toBe("All Resistances +3-6");
+    });
+
+    it("displayPieces strips colour codes and stacks a multi-line string bottom-up", () => {
+        expect(displayPieces("ÿc0Magic Find:ÿc3 +5%")).toEqual(["Magic Find: +5%"]);
+        expect(displayPieces("+25% Enhanced Damage\n")).toEqual(["+25% Enhanced Damage"]);
+        expect(displayPieces("Bottom\nTop")).toEqual(["Top", "Bottom"]);
+    });
+
+    it("entryKey keys a stat, a stat per layer, and a stat per skill", () => {
+        expect(entryKey({stat: "coldresist", layer: 0})).toBe("coldresist");
+        expect(entryKey({stat: "item_addskill_tab", layer: 33})).toBe("item_addskill_tab/33");
+        expect(entryKey({stat: "item_skillongethit", layer: (38 << 6) + 3, skill: 38})).toBe("item_skillongethit:38");
+    });
+});
+
+const describeMods = (mods, ctx = ILVL_99) => describeEntries(expand(mods, ctx).entries, dict);
+const text = (mods, ctx) => describeMods(mods, ctx).flatMap((l) => l.pieces);
+
+describe("describe: the in-game results (character level 60, ilvl 99)", () => {
+    it("prints poison as (v * frames + 128) >> 8 over frames / 25 seconds, every source summed", () => {
+        expect(text([mod("dmg-pois", 31, 31, "50")])).toEqual(["+6 poison damage over 2 seconds"]); // Septic p555
+        expect(text([mod("dmg-pois", 24, 24, "75")])).toEqual(["+7 poison damage over 3 seconds"]); // of Blight s234
+        expect(text([mod("dmg-pois", 31, 31, "50"), mod("dmg-pois", 24, 24, "75")])).toEqual(["+27 poison damage over 5 seconds"]);
+    });
+
+    it("prints charges full, by the item level", () => {
+        expect(text([mod("charged", -30, -6, "54")])).toEqual(["Level 6 Teleport (52/52 Charges)"]); // staff, s532
+        expect(text([mod("charged", -20, -3, "54")])).toEqual(["Level 3 Teleport (27/27 Charges)"]); // amulet, s533
+    });
+
+    it("prints repair from rep-dur's param", () => {
+        expect(text([mod("rep-dur", null, null, "3")])).toEqual(["Repairs 1 durability in 33 seconds"]); // of Self-Repair s402
+    });
+});
+
+describe("describe: values", () => {
+    it("prints a range, a single value and a negative range in the game's wording", () => {
+        expect(text([mod("res-cold", 11, 20)])).toEqual(["Cold Resist +11-20%"]);
+        expect(text([mod("res-cold", 15, 15)])).toEqual(["Cold Resist +15%"]);
+        expect(text([mod("map-play-ac%", -30, -20)])).toEqual(["Players have -20 to -30% Enhanced Defense"]);
+        expect(text([mod("pierce-fire", 2, 4)])).toEqual(["-2 to -4% to Enemy Fire Resistance"]); // descfunc 20 negates
+    });
+
+    it("brackets the ranges of a line that prints several values", () => {
+        expect(text([mod("cold-min", 20, 30), mod("cold-max", 64, 101), mod("cold-len", 25, 25)])).toEqual(["Adds [20-30]-[64-101] cold damage"]);
+        expect(text([mod("ltng-min", 1, 1), mod("ltng-max", 49, 120)])).toEqual(["Adds 1-[49-120] lightning damage"]);
+        expect(text([mod("charged", -30, -6, "54")], {ilvl: {min: 24, max: 99}})).toEqual(["Level [1-6] Teleport ([33-52]/[33-52] Charges)"]);
+    });
+
+    it("prints per-level stats over character levels 1-99, then the rate per level", () => {
+        expect(text([mod("mana/lvl", null, null, "6")])).toEqual(["+0-74 to Mana (Based on Character Level), 0.75 per level"]); // eighths
+        expect(text([mod("att/lvl", null, null, "12")])).toEqual(["+6-594 to Attack Rating (Based on Character Level), 6 per level"]); // halves
+    });
+});
+
+describe("describe: pairs", () => {
+    it("prints an elemental pair as one line: single when min >= max (the max), else a range", () => {
+        expect(text([mod("dmg-cold", 1, 1, "25")])).toEqual(["+1 cold damage"]);
+        expect(text([mod("fire-min", 28, 43), mod("fire-max", 53, 103)])).toEqual(["Adds [28-43]-[53-103] fire damage"]);
+    });
+
+    it("prints enhanced damage from min% and max%, its multi-line string as one line", () => {
+        expect(text([mod("dmg%", 10, 20)])).toEqual(["+10-20% Enhanced Damage"]);
+    });
+
+    it("prints physical min and max damage as one line only when min is below max", () => {
+        expect(text([mod("dmg-min", 1, 4)])).toEqual(["+1-4 to Minimum Damage"]);
+        expect(text([mod("dmg-min", 1, 4), mod("dmg-max", 6, 9)])).toEqual(["Adds [1-4]-[6-9] damage"]);
+    });
+});
+
+describe("describe: dgrp groups", () => {
+    it("fold every member with one value into the group's line (func 19), else each member prints", () => {
+        expect(text([mod("res-all", 3, 6)])).toEqual(["All Resistances +3-6"]);
+        expect(text([mod("res-all", 3, 6), mod("res-cold", 5, 5)])).toEqual([
+            "Cold Resist +8-11%", "Lightning Resist +3-6%", "Fire Resist +3-6%", "Poison Resist +3-6%"]);
+    });
+
+    it("use each group's func, value placement and strings (funcs 1, 4, 7, 8)", () => {
+        expect(text(["str", "dex", "vit", "enr"].map((c) => mod(c, 5, 5)))).toEqual(["+5 to all Attributes"]);
+        expect(text(["extra-fire", "extra-cold", "extra-ltng", "extra-pois"].map((c) => mod(c, 2, 2)))).toEqual(["+2% to All Elemental Skill Damage"]);
+        expect(text([mod("map-play-mag-gold%", 20, 25)])).toEqual(["Magic and Gold Find: +20-25%"]);
+        expect(text([mod("map-play-res-all", -15, -10)])).toEqual(["Players have -10 to -15% to All Resistances"]);
+        expect(text([mod("map-mon-att-cast-speed", 40, 60)])).toEqual(["Monsters have +40-60% Increased Cast and Attack Speed"]);
+    });
+
+    it("print at the priority of the member with the lowest stat id, and name the group for the via tag", () => {
+        // dgrp 5: map_mon_tohit (id 394, priority 115) prints, not map_mon_pierce (132); att% sits at 117.
+        expect(text([mod("map-mon-att-pierce", 30, 50), mod("att%", 10, 20)])).toEqual([
+            "10-20% Bonus to Attack Rating", "Monsters have +30-50% Attack Rating and Chance to Pierce"]);
+        expect(describeMods([mod("res-all", 3, 6)])[0]).toMatchObject({key: "dgrp2", via: "All Resistances", label: "All Resistances +#",
+            stats: ["fireresist", "lightresist", "coldresist", "poisonresist"]});
+    });
+});
+
+describe("describe: descfuncs", () => {
+    it("place the value by descval, with the sign and percent each func adds", () => {
+        expect(text([mod("mag%", 5, 7)])).toEqual(["5-7% Better Chance of Getting Magic Items"]); // 2
+        expect(text([mod("thorns", 3, 6)])).toEqual(["Attacker Takes Damage of 3-6"]); // 3
+        expect(text([mod("knock", 1, 1)])).toEqual(["Knockback"]); // 3, descval 0
+        expect(text([mod("map-mon-crush", 15, 25)])).toEqual(["Monsters have 15-25% Chance of Crushing Blow"]); // 7
+        expect(text([mod("map-mon-ed%", 10, 15)])).toEqual(["Monsters have +10-15% Enhanced Physical Damage"]); // 8
+        expect(text([mod("map-mon-red-dmg", 100, 200)])).toEqual(["Monsters take 100-200 Reduced Physical Damage"]); // 9
+        expect(text([mod("map-mon-splash", 100, 1, "358")])).toEqual(["Monster's Melee Attacks Deal Splash Damage"]); // 9, descval 0
+    });
+
+    it("name class skills, skill tabs and chance-to-cast skills from CharStats and the skill tables", () => {
+        expect(text([mod("sor", 1, 1)])).toEqual(["+1 to Sorceress Skill Levels"]); // 13
+        expect(text([mod("skilltab", 1, 1, "12")])).toEqual(["+1 to Combat Skills (Barbarian Only)"]); // 14 (Expert's)
+        expect(text([mod("skilltab", 1, 1, "13")])).toEqual(["+1 to Masteries (Barbarian Only)"]); // (Fanatic)
+        expect(text([mod("skilltab", 1, 1, "9")])).toEqual(["+1 to Combat Skills (Paladin Only)"]); // the hash-probe winner
+        expect(text([mod("hit-skill", 10, 8, "36")])).toEqual(["10% Chance to cast level 8 Fire Bolt on striking"]); // 15
+        expect(text([mod("gethit-skill", 10, 3, "38")])).toEqual(["10% Chance to cast level 3 Charged Bolt when struck"]);
+    });
+
+    it("print indestructible, and sockets below every other line", () => {
+        expect(text([mod("indestruct")])).toEqual(["Indestructible"]);
+        expect(text([mod("sock", 1, 2), mod("res-cold", 11, 20)])).toEqual(["Cold Resist +11-20%", "Socketed (1-2)"]);
+    });
+
+    it("order lines by descpriority, highest first", () => {
+        expect(text([mod("res-cold", 11, 20), mod("str", 1, 2)])).toEqual(["+1-2 to Strength", "Cold Resist +11-20%"]);
+    });
+});
+
+describe("describe: keys and labels", () => {
+    it("label each line with # for its values, and key it by stat, layer, skill, pair or group", () => {
+        const one = (mods) => describeMods(mods).map((l) => [l.key, l.label]);
+        expect(one([mod("res-cold", 11, 20)])).toEqual([["coldresist", "Cold Resist +#%"]]);
+        expect(one([mod("skilltab", 1, 1, "13")])).toEqual([["item_addskill_tab/33", "+# to Masteries (Barbarian Only)"]]);
+        expect(one([mod("dmg-pois", 31, 31, "50")])).toEqual([["poisondamage", "+# poison damage over # seconds"]]);
+        expect(one([mod("charged", -30, -6, "54")])).toEqual([["item_charged_skill:54", "Level # Teleport (#/# Charges)"]]);
+        // of Charged Shield s421-s423: three levels, one key.
+        const keys = [3, 4, 5].map((level) => describeMods([mod("gethit-skill", 10, level, "38")])[0].key);
+        expect(new Set(keys)).toEqual(new Set(["item_skillongethit:38"]));
+    });
+});
+
+describe("checkEntries", () => {
+    it("passes the real data's stats", () => {
+        expect(() => checkEntries(expand([mod("res-all", 3, 6), mod("charged", -30, -6, "54"), mod("hit-skill", 10, 8, "36")]).entries, dict)).not.toThrow();
+    });
+
+    it("lists a descfunc the engine doesn't implement, a missing string and a skill with no name", () => {
+        const odd = {
+            ...dict,
+            stats: new Map(dict.stats).set("coldresist", {...dict.stats.get("coldresist"), func: 99}),
+            string: (key) => (key === "ModStr1j" ? null : dict.string(key)),
+        };
+        const problems = () => checkEntries(expandMods([mod("res-cold", 1, 1), mod("res-fire", 1, 1), mod("charged", 5, 1, "358")], odd, ILVL_99).entries, odd);
+        expect(problems).toThrow(/stat coldresist uses descfunc 99/);
+        expect(problems).toThrow(/string "ModStr1j"/);
+        expect(problems).toThrow(/skill 358 \("proc_SplashDamage"\) has no name string/);
+    });
+
+    it("lists a dgrpfunc the engine doesn't implement, a missing CharStats class or tab, a missing hardcoded string and a non-level op", () => {
+        const odd = {
+            ...dict,
+            stats: new Map(dict.stats)
+                .set("fireresist", {...dict.stats.get("fireresist"), groupFunc: 99})
+                .set("strength", {...dict.stats.get("strength"), op: 3}),
+            classes: dict.classes.slice(0, 1),
+            string: (key) => (key === "ModStre10b" ? null : dict.string(key)),
+        };
+        const problems = () => checkEntries(expandMods([mod("res-fire", 1, 1), mod("sor", 1, 1), mod("skilltab", 1, 1, "13"), mod("str", 1, 1)], odd, ILVL_99).entries, odd);
+        expect(problems).toThrow(/dgrp 2 uses dgrpfunc 99/);
+        expect(problems).toThrow(/CharStats\.txt has no class 1/);
+        expect(problems).toThrow(/CharStats\.txt has no skill tab for layer 33/);
+        expect(problems).toThrow(/string "ModStre10b" \(used by the stat engine\)/);
+        expect(problems).toThrow(/stat strength scales by a stat other than the character level \(op 3\)/);
     });
 });
