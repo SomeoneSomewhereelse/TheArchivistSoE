@@ -9,6 +9,7 @@ import {MobileTabsBar, TabsBar, TabTitle} from "./tabs.jsx";
 import {QUERY_TABS, VALID_TAB_KEYS} from "./tabList.js";
 import ItemBuilderPanel from "./ItemBuilderPanel.jsx";
 import {useItemBuilder} from "./useItemBuilder.js";
+import {useAffixes} from "./useAffixes.js";
 import {usePager} from "./pager.js";
 import {calculateDrops} from "./dropCalcEngine.js";
 import {loadModel} from "./dropCalcLoad.js";
@@ -226,30 +227,9 @@ function runewordRunes(rw) {
 
 // ----- Affix helpers -----
 
+// An affix row's lines, as the table shows them.
 function affixDisplayString(affix) {
-    const dp = affix?.displayProperties;
-    if (!dp) return "";
-
-    // If it's an array
-    if (Array.isArray(dp)) {
-        // Array of objects: use displayString
-        if (dp.length && typeof dp[0] === "object") {
-            return dp
-                .map((p) => p && p.displayString)
-                .filter(Boolean)
-                .join(" / ");
-        }
-        // Array of strings (old format) – keep supporting it
-        return dp.filter(Boolean).join(" / ");
-    }
-
-    // Single object
-    if (typeof dp === "object") {
-        return dp.displayString || "";
-    }
-
-    // Fallback – if someone ever makes it a raw string
-    return String(dp);
+    return (affix?.lines ?? []).join(" / ");
 }
 
 function repeatIngredient(name, qtyRaw) {
@@ -659,29 +639,8 @@ function buildSearchTextForItem(tab, it) {
     }
 
     if (tab === "affixes") {
-        const dp = it?.displayProperties;
-        let attrsText = "";
-
-        if (Array.isArray(dp)) {
-            if (dp.length && typeof dp[0] === "object") {
-                // Array of { displayString, max, ... }
-                attrsText = dp
-                    .map((p) => p && p.displayString)
-                    .filter(Boolean)
-                    .join("\n")
-                    .toLowerCase();
-            } else {
-                // Backwards-compat: array of strings
-                attrsText = dp
-                    .filter(Boolean)
-                    .map((x) => String(x).toLowerCase())
-                    .join("\n");
-            }
-        } else if (dp && typeof dp === "object") {
-            attrsText = String(dp.displayString || "").toLowerCase();
-        }
-
-        return applyModifierExpansions(`${name}\n${attrsText}`);
+        const lines = (it?.lines ?? []).join("\n").toLowerCase();
+        return applyModifierExpansions(`${name}\n${lines}`);
     }
 
     return name;
@@ -702,7 +661,7 @@ function applyModifierExpansions(searchText) {
 }
 
 function affixTypes(it) {
-    const a = Array.isArray(it?.displayItemTypeNames) ? it.displayItemTypeNames : [];
+    const a = Array.isArray(it?.itemTypes) ? it.itemTypes : [];
     return a.map((x) => n(x)).filter(Boolean);
 }
 
@@ -2091,7 +2050,7 @@ const AFFIX_COLUMNS = [
     {key: "reqLevel", tip: "affixRequiredLevel"},
 ];
 
-function AffixesPanel({data, loading, error, sort, onChangeSort, multi, onChangeMulti}) {
+function AffixesPanel({data, loading, error, sort, onChangeSort, multi, onChangeMulti, onRetry}) {
     const wrapperRef = React.useRef(null);
 
     // Normalised data coming from global filters/search
@@ -2160,7 +2119,8 @@ function AffixesPanel({data, loading, error, sort, onChangeSort, multi, onChange
                 <div className="infoTitle">Affixes</div>
             </div>
             <div className="meta">
-                Failed to load affixes: {String(error.message || error)}
+                Failed to load affixes: {String(error.message || error)}{" "}
+                <button type="button" className="btn" onClick={onRetry}>Retry</button>
             </div>
         </div>);
     }
@@ -2217,7 +2177,7 @@ function AffixesPanel({data, loading, error, sort, onChangeSort, multi, onChange
                     })}
                 </tr>}
             >
-                {current.map((it, idx) => (<tr key={`${pager.page}-${idx}-${it.id || it.name}`}>
+                {current.map((it, idx) => (<tr key={`${pager.page}-${idx}-${it.key}`}>
                     <td>{n(it?.name)}</td>
                     <td>{affixDisplayString(it)}</td>
                     <td>{has(it?.level) ? it.level : ""}</td>
@@ -2226,12 +2186,12 @@ function AffixesPanel({data, loading, error, sort, onChangeSort, multi, onChange
                     <td>{has(it?.frequency) ? it.frequency : ""}</td>
                     <td>{has(it?.maxLevel) ? it.maxLevel : ""}</td>
                     <td>
-                        {(it?.displayItemTypeNames || []).join(", ")}
+                        {(it?.itemTypes || []).join(", ")}
                     </td>
                     <td>
-                        {(it?.displayExcludedItemTypeNames || []).join(", ")}
+                        {(it?.excludedItemTypes || []).join(", ")}
                     </td>
-                    <td>{n(it?.classDisplayName)}</td>
+                    <td>{n(it?.className)}</td>
                     <td>
                         {has(it?.requiredLevel) ? it.requiredLevel : ""}
                     </td>
@@ -2507,6 +2467,9 @@ function StaticDataPanel({data, loading, error, search, onLink}) {
     </>);
 }
 
+// The Affixes rows while Affixes.json loads or failed: one array, so memos keyed on it stay put.
+const NO_AFFIXES = [];
+
 export default function App() {
     const [damnationMode, setDamnationMode] = React.useState(
         localStorage.getItem("damnation") === "true"
@@ -2521,7 +2484,6 @@ export default function App() {
     const mapping = useJson("Mapping.json", damnationMode);
     const standard = useJson("Standard.json", damnationMode);
     const changelog = useJson("Changelog.json", damnationMode);
-    const affixes = useJson("Affixes.json", damnationMode);
     const skills = useJson("Skills.json", damnationMode);
     const damnation = useJson("Damnation.json", damnationMode);
     const corruptions = useJson("Corruptions.json", damnationMode);
@@ -2541,6 +2503,14 @@ export default function App() {
 
     const [tab, setTab, builderQuery, setBuilderQuery] = useHashTab(VALID_TAB_KEYS, "weapons", QUERY_TABS);
     const itemBuilder = useItemBuilder({tab, query: builderQuery, setQuery: setBuilderQuery});
+    const affixFile = useAffixes(tab);
+    // Memoized: `affixes` feeds `dataset` and `items`, which the React Compiler checks as memo dependencies;
+    // a fresh object per render fails lint (react-hooks/preserve-manual-memoization).
+    const affixes = useMemo(() => ({
+        loading: affixFile.status === "loading",
+        error: affixFile.error,
+        data: affixFile.data?.affixes ?? NO_AFFIXES,
+    }), [affixFile.status, affixFile.error, affixFile.data]);
     const isMobile = useIsMobile();
     const [dropCalculatorRequest, setDropCalculatorRequest] = useState(null);
 
@@ -3468,6 +3438,7 @@ export default function App() {
                     />
                 </div>
                 <AffixesPanel
+                    onRetry={affixFile.retry}
                     data={filtered}
                     loading={affixes.loading}
                     error={affixes.error}

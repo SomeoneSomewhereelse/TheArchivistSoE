@@ -17,7 +17,7 @@ import {
     removeSortKey,
 } from "./sortCompare.js";
 
-// Minimal rows shaped like public/data/Affixes.json entries.
+// Minimal rows shaped like the generated Affixes.json rows.
 function affix(id, fields = {}) {
     return {
         id,
@@ -28,9 +28,9 @@ function affix(id, fields = {}) {
         frequency: 1,
         maxLevel: null,
         requiredLevel: 1,
-        classDisplayName: null,
-        displayItemTypeNames: ["Rings"],
-        displayExcludedItemTypeNames: [],
+        className: null,
+        itemTypes: ["Rings"],
+        excludedItemTypes: [],
         sort: {property: "strength", max: 1},
         ...fields,
     };
@@ -90,8 +90,8 @@ describe("affixSortValue", () => {
     it("has a value for every sortable column of a fully populated affix", () => {
         const full = affix("x", {
             maxLevel: 50,
-            classDisplayName: "Amazon",
-            displayExcludedItemTypeNames: ["Staff Class"],
+            className: "Amazon",
+            excludedItemTypes: ["Orb"],
         });
         for (const key of AFFIX_SORT_KEYS.filter((k) => k !== "attrs")) {
             expect(isMissing(affixSortValue(full, key)), key).toBe(false);
@@ -139,8 +139,8 @@ describe("compareAffixes", () => {
     it("Class: missing counts as lowest", () => {
         const rows = [
             affix("a"),
-            affix("b", {classDisplayName: "Sorceress"}),
-            affix("c", {classDisplayName: "Amazon"}),
+            affix("b", {className: "Sorceress"}),
+            affix("c", {className: "Amazon"}),
             affix("d"),
         ];
         expect(sortIds(rows, "class", "asc")).toEqual(["a", "d", "c", "b"]);
@@ -149,13 +149,13 @@ describe("compareAffixes", () => {
 
     it("Item types and Excluded item types: an empty list counts as lowest", () => {
         const types = [
-            affix("a", {displayItemTypeNames: ["Rings"]}),
-            affix("b", {displayItemTypeNames: []}),
-            affix("c", {displayItemTypeNames: ["Amulets"]}),
+            affix("a", {itemTypes: ["Rings"]}),
+            affix("b", {itemTypes: []}),
+            affix("c", {itemTypes: ["Amulets"]}),
         ];
         expect(sortIds(types, "types", "asc")).toEqual(["b", "c", "a"]);
 
-        const excluded = [affix("a", {displayExcludedItemTypeNames: ["Wand"]}), affix("b")];
+        const excluded = [affix("a", {excludedItemTypes: ["Wand"]}), affix("b")];
         expect(sortIds(excluded, "excluded", "asc")).toEqual(["b", "a"]);
         expect(sortIds(excluded, "excluded", "desc")).toEqual(["a", "b"]);
     });
@@ -239,8 +239,8 @@ describe("compareAffixesBy", () => {
         const sample = [
             ...rows,
             affix("f", {
-                name: "Bronze", rare: "", frequency: 3, classDisplayName: "Amazon",
-                displayItemTypeNames: ["Amulets"], displayExcludedItemTypeNames: ["Wand"],
+                name: "Bronze", rare: "", frequency: 3, className: "Amazon",
+                itemTypes: ["Amulets"], excludedItemTypes: ["Wand"],
                 sort: {property: "dex", max: 3},
             }),
         ];

@@ -57,11 +57,11 @@ export function affixSortValue(affix, key) {
         case "maxLevel":
             return numeric(affix?.maxLevel);
         case "types":
-            return affix?.displayItemTypeNames;
+            return affix?.itemTypes;
         case "excluded":
-            return affix?.displayExcludedItemTypeNames;
+            return affix?.excludedItemTypes;
         case "class":
-            return affix?.classDisplayName;
+            return affix?.className;
         case "reqLevel":
             return numeric(affix?.requiredLevel);
         default:
