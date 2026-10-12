@@ -4,18 +4,18 @@
 import React, {useEffect, useMemo, useRef, useState} from "react";
 import SearchableSelect from "./SearchableSelect.jsx";
 import {compareAffixes} from "./sortCompare.js";
+import {CLASS_NAMES} from "./affixData.js";
 import {allowedQualities, countHint, eligibleAffixes, requiredLevel, rollContext, rowState} from "./itemBuilderRules.js";
 import {formatOdds, rollOdds} from "./itemBuilderOdds.js";
 
 const QUALITY_LABELS = {magic: "Magic", rare: "Rare", crafted: "Crafted"};
-const CLASS_NAMES = {ama: "Amazon", ass: "Assassin", bar: "Barbarian", dru: "Druid", nec: "Necromancer", pal: "Paladin", sor: "Sorceress"};
 
 // "≈ 1 in 2,100"; the floor ("less than 1 in 1,000 trillion") is already a bound, not an estimate.
 const oddsText = (p) => {
     const text = formatOdds(p);
     return text.startsWith("1 in") ? `≈ ${text}` : text;
 };
-const statText = (affix) => affix.displayProperties.map((p) => p.displayString).join(", ");
+const statText = (affix) => affix.lines.join(", ");
 
 function levelText(ctx, build) {
     const {base, ilvl, effectiveIlvl, alvl} = ctx;
@@ -95,7 +95,7 @@ function AffixRow({affix, state, onToggle}) {
         >
             <span className="ibRowMain">
                 <span className="ibAffixName">{affix.name}</span>
-                {affix.displayProperties.map((p, i) => <span key={i} className="ibStat">{p.displayString}</span>)}
+                {affix.lines.map((line, i) => <span key={i} className="ibStat">{line}</span>)}
             </span>
             <span className="ibRowMeta">
                 {affix.suffix ? "Suffix" : "Prefix"} · Grp {affix.group} · alvl {affix.level} · rlvl {affix.levelreq}{state.state === "picked" ? " ✓" : ""}

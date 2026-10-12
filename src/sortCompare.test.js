@@ -31,7 +31,7 @@ function affix(id, fields = {}) {
         classDisplayName: null,
         displayItemTypeNames: ["Rings"],
         displayExcludedItemTypeNames: [],
-        displayProperties: [{property: "str", max: 1, displayString: "+1 to Strength"}],
+        sort: {property: "strength", max: 1},
         ...fields,
     };
 }
@@ -166,12 +166,12 @@ describe("compareAffixes", () => {
         expect(sortIds(rows, "rare", "desc")).toEqual(["a", "c", "b"]);
     });
 
-    it("Attributes: groups by property, then max; empty displayProperties sort lowest", () => {
+    it("Attributes: groups by property, then max; a row with no lines (sort null) sorts lowest", () => {
         const rows = [
-            affix("a", {displayProperties: [{property: "str", max: 10}]}),
-            affix("b", {displayProperties: []}),
-            affix("c", {displayProperties: [{property: "dex", max: 5}]}),
-            affix("d", {displayProperties: [{property: "str", max: 2}]}),
+            affix("a", {sort: {property: "str", max: 10}}),
+            affix("b", {sort: null}),
+            affix("c", {sort: {property: "dex", max: 5}}),
+            affix("d", {sort: {property: "str", max: 2}}),
         ];
         expect(sortIds(rows, "attrs", "asc")).toEqual(["b", "c", "d", "a"]);
         expect(sortIds(rows, "attrs", "desc")).toEqual(["a", "d", "c", "b"]);
@@ -204,14 +204,13 @@ describe("compareAffixes", () => {
 });
 
 describe("affixPrimaryPropertyAndMax", () => {
-    it("reads the first property object, trimming the name and numbering the max", () => {
-        expect(affixPrimaryPropertyAndMax(affix("a", {displayProperties: [{property: " str ", max: "7"}]})))
-            .toEqual({property: "str", max: 7});
+    it("reads the row's sort key", () => {
+        expect(affixPrimaryPropertyAndMax(affix("a", {sort: {property: "coldresist", max: 20}}))).toEqual({property: "coldresist", max: 20});
     });
 
-    it("returns an empty property for missing or empty displayProperties", () => {
-        expect(affixPrimaryPropertyAndMax(affix("a", {displayProperties: []}))).toEqual({property: "", max: 0});
-        expect(affixPrimaryPropertyAndMax(affix("a", {displayProperties: null}))).toEqual({property: "", max: 0});
+    it("returns an empty property for a row with no lines", () => {
+        expect(affixPrimaryPropertyAndMax(affix("a", {sort: null}))).toEqual({property: "", max: 0});
+        expect(affixPrimaryPropertyAndMax({})).toEqual({property: "", max: 0});
     });
 });
 
@@ -242,7 +241,7 @@ describe("compareAffixesBy", () => {
             affix("f", {
                 name: "Bronze", rare: "", frequency: 3, classDisplayName: "Amazon",
                 displayItemTypeNames: ["Amulets"], displayExcludedItemTypeNames: ["Wand"],
-                displayProperties: [{property: "dex", max: 3}],
+                sort: {property: "dex", max: 3},
             }),
         ];
         for (const key of AFFIX_SORT_KEYS) {

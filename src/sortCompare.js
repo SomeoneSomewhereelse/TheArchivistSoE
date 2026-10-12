@@ -71,29 +71,12 @@ export function affixSortValue(affix, key) {
     }
 }
 
+// The Attributes sort key: the first line's Stat filter key and the upper bound of its first value
+// (Affixes.json's `sort`). A row with no lines has sort null and sorts lowest.
 export function affixPrimaryPropertyAndMax(affix) {
-    const dp = affix?.displayProperties;
-    if (!dp) return {property: "", max: 0};
-
-    // Pick the first object from displayProperties
-    let first = null;
-
-    if (Array.isArray(dp)) {
-        first = dp.find((p) => p && typeof p === "object") || dp[0];
-    } else if (typeof dp === "object") {
-        first = dp;
-    }
-
-    if (first && typeof first === "object") {
-        const prop = (first.property != null ? String(first.property) : first.prop != null ? String(first.prop) : "").trim();
-
-        const maxRaw = first.max != null ? Number(first.max) : 0;
-        const max = Number.isFinite(maxRaw) ? maxRaw : 0;
-
-        return {property: prop, max};
-    }
-
-    return {property: "", max: 0};
+    const sort = affix?.sort;
+    if (!sort) return {property: "", max: 0};
+    return {property: String(sort.property ?? ""), max: Number.isFinite(sort.max) ? sort.max : 0};
 }
 
 export function compareAffixes(a, b, key, dir) {

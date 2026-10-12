@@ -6,7 +6,7 @@ import {realItemBuilderModel} from "./itemBuilderFixtures.js";
 
 const affix = (key, fields) => ({
     key, suffix: key.startsWith("s"), name: key, level: 1, maxLevel: null, levelreq: 1, rare: true, classSpecific: null,
-    classLevelReq: null, group: 0, frequency: 1, itypes: ["weap"], etypes: [], mods: [], displayProperties: [], ...fields,
+    classLevelReq: null, group: 0, frequency: 1, itypes: ["weap"], etypes: [], mods: [], lines: [], sort: null, ...fields,
 });
 
 // A purpose-built model: an axe (magic lvl 0) and a wand (magic lvl 1) share the given rows; a jewel takes

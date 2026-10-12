@@ -24,8 +24,10 @@ dist-ssr
 *.sw?
 /TheArchivistPage.iml
 
-# Generated from public/data/<mode>/*.txt by the drop-calc-data plugin (vite.config.js)
+# Generated from public/data/<mode>/data/global/excel/*.txt by the drop-calc-data plugin (vite.config.js)
 public/data/*/DropCalculator.json
 
-# Generated from public/data/standard/*.txt and public/data/*.json by the item-builder-data plugin (vite.config.js)
+# Generated from public/data/standard/data/ (game tables, patchstring.tbl), src/baseStrings.json and
+# public/data/*.json by the affix-data plugin (vite.config.js)
+public/data/standard/Affixes.json
 public/data/standard/ItemBuilder.json
