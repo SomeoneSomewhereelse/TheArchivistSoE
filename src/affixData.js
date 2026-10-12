@@ -92,7 +92,7 @@ export function readAffixes(texts) {
 }
 
 // A Stat filter label without its leading value tokens, for sorting: "+# to Life" sorts under L.
-const sortableLabel = (label) => label.replace(/^[\s#+\-%]+/, "");
+export const sortableLabel = (label) => label.replace(/^[\s#+\-%]+/, "").replace(/^to\s+/i, "");
 
 const isMapCode = (code) => code.toLowerCase().startsWith("map-");
 
@@ -172,7 +172,9 @@ export function describeAffixes(affixes, dict, typeNames) {
 // ItemTypes.txt code -> display name, through TYPE_NAME_OVERRIDES.
 export function itemTypeNames(text) {
     const out = new Map();
-    for (const row of parseTxt(text)) {
+    const rows = parseTxt(text);
+    if (rows.length && !("ItemType" in rows[0])) throw new Error("ItemTypes.txt: missing column ItemType");
+    for (const row of rows) {
         const code = cell(row.Code);
         if (code && !out.has(code)) out.set(code, TYPE_NAME_OVERRIDES[code] ?? cell(row.ItemType));
     }

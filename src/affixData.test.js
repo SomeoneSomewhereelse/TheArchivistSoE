@@ -1,5 +1,5 @@
 import {describe, expect, it} from "vitest";
-import {AFFIXES_VERSION, affixesJson, checkAffixColumns, checkAffixesFile, describeAffixes, itemTypeNames, parseTableRows, readAffixes, viaFor} from "./affixData.js";
+import {AFFIXES_VERSION, affixesJson, checkAffixColumns, checkAffixesFile, describeAffixes, itemTypeNames, parseTableRows, readAffixes, sortableLabel, viaFor} from "./affixData.js";
 import {describe as describeEntries, expandMods} from "./statEngine.js";
 import {affixTableText, readExcel, realAffixData, realStatData, tableText} from "./statFixtures.js";
 
@@ -177,5 +177,18 @@ describe("the real affix tables", () => {
     it("match the golden snapshot of every row's lines", async () => {
         const text = rows.map((r) => `${r.key}\t${r.name}\t${r.lines.join(" / ")}`).join("\n") + "\n";
         await expect(text).toMatchFileSnapshot("./__snapshots__/affixLines.golden.txt");
+    });
+});
+
+describe("review fixes", () => {
+    it("sortableLabel drops leading value tokens and a leading \"to\", so \"+# to Life\" sorts under L", () => {
+        expect(sortableLabel("+# to Life")).toBe("Life");
+        expect(sortableLabel("-#% to Enemy Fire Resistance")).toBe("Enemy Fire Resistance");
+        expect(sortableLabel("Cold Resist +#%")).toBe("Cold Resist +#%");
+        expect(["+# to Life", "Magic Find: +#%"].sort((a, b) => sortableLabel(a).localeCompare(sortableLabel(b)))[0]).toBe("+# to Life");
+    });
+
+    it("itemTypeNames fails loudly when ItemTypes.txt has no ItemType column", () => {
+        expect(() => itemTypeNames(tableText(["Code", "Equiv1"], [{Code: "swor"}]))).toThrow(/ItemType/);
     });
 });
