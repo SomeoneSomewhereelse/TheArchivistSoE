@@ -46,7 +46,7 @@ export function formatGolden(entries) {
 // The ten .txt tables of one mode ("standard" or "damnation"), keyed by table name.
 export function readDropCalcTexts(mode) {
     return Object.fromEntries(DROP_CALC_TABLES.map((name) => [
-        name, readFileSync(new URL(`${mode}/${name}.txt`, DATA), "utf8"),
+        name, readFileSync(new URL(`${mode}/data/global/excel/${name}.txt`, DATA), "utf8"),
     ]));
 }
 

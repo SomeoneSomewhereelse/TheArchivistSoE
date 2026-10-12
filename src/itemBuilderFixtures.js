@@ -28,7 +28,7 @@ export function readJson(path) {
 // Everything the plugin reads, from the real files.
 export function readItemBuilderInputs() {
     return {
-        texts: Object.fromEntries(ITEM_BUILDER_TABLES.map((name) => [name, readText(`standard/${name}.txt`)])),
+        texts: Object.fromEntries(ITEM_BUILDER_TABLES.map((name) => [name, readText(`standard/data/global/excel/${name}.txt`)])),
         affixesJson: readJson("Affixes.json"),
         weaponsJson: readJson("Weapons.json"),
         armorsJson: readJson("Armors.json"),

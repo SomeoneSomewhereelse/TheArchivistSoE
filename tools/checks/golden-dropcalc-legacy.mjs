@@ -18,10 +18,10 @@ const body = src.slice(start, end).join("\n").replace("import.meta.env.BASE_URL"
 const makeCalculateAll = new Function("query", "dropMode", "difficulty", "players", "mf", "damnationMode",
     "setRows", "setError", "setLoading", `${body}\nreturn calculateAll;`);
 
-// The legacy loadTxt fetches "data/<mode>/<file>.txt"; serve it from the repo.
+// The legacy loadTxt fetches "data/<mode>/<file>.txt"; serve it from the tables' in-MPQ paths.
 globalThis.fetch = async (url) => {
     const [mode, file] = url.split("/").slice(-2);
-    return {ok: true, text: async () => readFileSync(new URL(`${mode}/${file}`, DATA), "utf8")};
+    return {ok: true, text: async () => readFileSync(new URL(`${mode}/data/global/excel/${file}`, DATA), "utf8")};
 };
 console.log = () => {}; // the legacy code logs "BASE DEBUG" for Aldur targets
 

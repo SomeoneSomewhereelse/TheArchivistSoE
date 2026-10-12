@@ -7,7 +7,10 @@ import { ITEM_BUILDER_FILE, ITEM_BUILDER_JSON_FILES, ITEM_BUILDER_TABLES, buildI
 
 const DROP_CALC_MODES = ['standard', 'damnation']
 
-// Writes public/data/<mode>/DropCalculator.json from that folder's .txt tables (src/dropCalcData.js).
+// The game tables keep their paths inside the game's MPQs, under public/data/<mode>/.
+const EXCEL_DIR = path.join('data', 'global', 'excel')
+
+// Writes public/data/<mode>/DropCalculator.json from that mode's data/global/excel/ tables (src/dropCalcData.js).
 // It runs in configResolved, before the dev server lists public/ (a file first written in buildStart
 // could 404 until a restart), and again in dev when one of those .txt files changes. Skipped under
 // Vitest (mode "test") and vite preview (which only serves dist/). The JSON is gitignored.
@@ -17,7 +20,7 @@ function dropCalcData() {
 
   function generate(mode) {
     const dir = path.join(dataDir, mode)
-    const texts = Object.fromEntries(DROP_CALC_TABLES.map((name) => [name, readFileSync(path.join(dir, `${name}.txt`), 'utf8')]))
+    const texts = Object.fromEntries(DROP_CALC_TABLES.map((name) => [name, readFileSync(path.join(dir, EXCEL_DIR, `${name}.txt`), 'utf8')]))
     const json = JSON.stringify(tablesToJson(texts))
     const out = path.join(dir, DROP_CALC_FILE)
     if (!existsSync(out) || readFileSync(out, 'utf8') !== json) writeFileSync(out, json)
@@ -44,8 +47,10 @@ function dropCalcData() {
     configureServer(server) {
       if (!dataDir) return
       const onTxt = (file) => {
-        const [mode, name, ...rest] = path.relative(dataDir, file).split(path.sep)
-        if (rest.length || !DROP_CALC_MODES.includes(mode) || !name?.endsWith('.txt')) return
+        // <mode>/data/global/excel/<name>.txt: anything shallower or deeper is not a table.
+        const [mode, ...rest] = path.relative(dataDir, file).split(path.sep)
+        const name = rest.pop()
+        if (rest.join('/') !== 'data/global/excel' || !DROP_CALC_MODES.includes(mode) || !name?.endsWith('.txt')) return
         try {
           generate(mode)
           server.config.logger.info(`drop-calc-data: regenerated ${mode}/${DROP_CALC_FILE}`)
@@ -71,7 +76,7 @@ function itemBuilderData() {
   let command = 'serve'
 
   function generate(logger) {
-    const texts = Object.fromEntries(ITEM_BUILDER_TABLES.map((name) => [name, readFileSync(path.join(dataDir, 'standard', `${name}.txt`), 'utf8')]))
+    const texts = Object.fromEntries(ITEM_BUILDER_TABLES.map((name) => [name, readFileSync(path.join(dataDir, 'standard', EXCEL_DIR, `${name}.txt`), 'utf8')]))
     const [affixesJson, weaponsJson, armorsJson] = ITEM_BUILDER_JSON_FILES.map((f) => JSON.parse(readFileSync(path.join(dataDir, f), 'utf8')))
     const { json, warnings } = buildItemBuilderJson({ texts, affixesJson, weaponsJson, armorsJson })
     for (const w of warnings) logger.warn(`item-builder-data: ${w}`)
@@ -110,7 +115,7 @@ function itemBuilderData() {
     configureServer(server) {
       if (!dataDir) return
       const sources = new Set([
-        ...ITEM_BUILDER_TABLES.map((name) => path.join(dataDir, 'standard', `${name}.txt`)),
+        ...ITEM_BUILDER_TABLES.map((name) => path.join(dataDir, 'standard', EXCEL_DIR, `${name}.txt`)),
         ...ITEM_BUILDER_JSON_FILES.map((f) => path.join(dataDir, f)),
       ])
       const onFile = (file) => {

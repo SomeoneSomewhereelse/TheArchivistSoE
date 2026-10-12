@@ -71,7 +71,7 @@ describe("joinAffixes", () => {
 });
 
 describe("the real affix tables", () => {
-    const texts = {MagicPrefix: readText("standard/MagicPrefix.txt"), MagicSuffix: readText("standard/MagicSuffix.txt")};
+    const texts = {MagicPrefix: readText("standard/data/global/excel/MagicPrefix.txt"), MagicSuffix: readText("standard/data/global/excel/MagicSuffix.txt")};
     const affixes = joinAffixes(texts, readJson("Affixes.json"));
     const byKey = new Map(affixes.map((a) => [a.key, a]));
 

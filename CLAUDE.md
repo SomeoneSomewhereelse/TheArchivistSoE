@@ -67,9 +67,9 @@ the value. No `eslint-disable`.
   against a Monte Carlo in its test). `src/itemBuilderFixtures.js` is Node-only (tests).
   Design: `docs/superpowers/specs/2026-10-09-item-builder-design.md`.
 - The `item-builder-data` plugin in `vite.config.js` writes `public/data/standard/ItemBuilder.json` (gitignored) from
-  the standard `.txt` tables plus `Affixes.json`/`Weapons.json`/`Armors.json`. A data update must also copy
+  the standard `data/global/excel/` tables plus `Affixes.json`/`Weapons.json`/`Armors.json`. A data update must also copy
   `MagicPrefix.txt` and `MagicSuffix.txt` from the mod repo (`Lukaszpg/PD2-Sanctuary-of-Exile`,
-  `standard-mode/data/global/excel/`), run the dev server once, and commit `src/itemBuilderVersion.json` if the link
+  `standard-mode/data/global/excel/`) into `public/data/standard/data/global/excel/`, run the dev server once, and commit `src/itemBuilderVersion.json` if the link
   version was bumped; otherwise the build fails.
 - `src/styles.css`: all real styling, about 2,400 lines (`src/App.css` is an unused template leftover; nothing imports it).
 - `src/sortCompare.js` (Affixes sort rules), `src/hashTab.js` (tab ↔ URL hash), `src/pager.js`,
@@ -78,7 +78,7 @@ the value. No `eslint-disable`.
 - `src/main.jsx`: renders `<App/>` inside `React.StrictMode`, so effects double-fire in dev.
 - `src/icons/*.svg`: item-type icons, imported as URLs.
 - `public/data/*.json`: game data, fetched at runtime (see Data).
-- `public/data/standard/*.txt`, `public/data/damnation/*.txt`: raw game tables
+- `public/data/<mode>/data/global/excel/*.txt`: raw game tables at their in-MPQ paths
   (MonStats, TreasureClassEx, Weapons, …), the source of the Drop calculator's data. The `drop-calc-data`
   plugin in `vite.config.js` turns them into `public/data/<mode>/DropCalculator.json` (gitignored) when
   Vite starts (dev, build) and again in dev when a `.txt` file changes. A missing required column fails
