@@ -2,6 +2,7 @@
 // the app must never import this module.
 import {readFileSync} from "node:fs";
 import {parseTbl} from "./tblFile.js";
+import {STAT_TABLES, buildStatData} from "./statData.js";
 
 const STANDARD = new URL("../public/data/standard/", import.meta.url);
 
@@ -17,6 +18,25 @@ export function readExcel(name) {
 
 export function readPatchStrings() {
     return parseTbl(new Uint8Array(readFileSync(new URL("data/local/LNG/ENG/patchstring.tbl", STANDARD))));
+}
+
+export function readBaseStrings() {
+    return JSON.parse(readFileSync(new URL("./baseStrings.json", import.meta.url), "utf8"));
+}
+
+// Everything buildStatData reads, from the real files.
+export function readStatInputs() {
+    return {
+        texts: Object.fromEntries(STAT_TABLES.map((name) => [name, readExcel(name)])),
+        patchStrings: readPatchStrings(),
+        baseStrings: readBaseStrings(),
+    };
+}
+
+let realDict = null;
+export function realStatData() {
+    realDict ??= buildStatData(readStatInputs());
+    return realDict;
 }
 
 // A .tbl file built in memory. nodes: [{slot, key, value, hash = slot, active = true}] in the hash table
