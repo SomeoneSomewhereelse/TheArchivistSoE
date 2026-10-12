@@ -3,8 +3,7 @@
 **Date:** 2026-10-11
 **Branch:** `stat-engine`
 **Status:** design approved section by section in brainstorming (2026-10-11); revised after an independent review
-(per-level units, encoding, `dgrp` groups, string sources, filter keys, the table move's readers); awaiting the
-user's review of this file
+(per-level units, encoding, `dgrp` groups, string sources, filter keys, the table move's readers); approved by the user (2026-10-12) after the in-game checks; refined while planning (see the plan's Task 1)
 
 ## Intent
 
@@ -165,8 +164,8 @@ public/data/standard/ItemBuilder.json  → Item Builder (unchanged loading)
 | Module | Role | Tests |
 |---|---|---|
 | `src/tblFile.js` | `parseTbl(bytes)` → `Map` of key → string, duplicates resolved by the game's hash probe; header sanity check. | `tblFile.test.js` |
-| `src/statData.js` | Builds the stat dictionary: `Properties.txt` rows by lower-cased code, `ItemStatCost.txt` rows by stat with strings resolved (patch, then `baseStrings.json`), `CharStats.txt` class strings, skill names (`Skills.txt` → `Skilldesc.txt` `str name` → string), each skill's `reqlevel` and `maxlvl`. Runs the loud checks. | `statData.test.js` |
-| `src/statEngine.js` | `expandMods(mods, dict, ctx)` → stat entries; `describe(entries, dict)` → lines; `statKeysOf(mods, dict)` → filter keys; `statOptionLabel(key, dict)`. Pure. | `statEngine.test.js` |
+| `src/statData.js` | Builds the stat dictionary: `Properties.txt` rows by lower-cased code, `ItemStatCost.txt` rows by stat with strings resolved (patch, then `baseStrings.json`), `CharStats.txt` class strings, skill names (`Skills.txt` → `Skilldesc.txt` `str name` → string), each skill's `reqlevel` and `maxlvl`. Checks its columns; the engine's `checkEntries` runs the other loud checks. Also exports `HARDCODED_STRINGS`. | `statData.test.js` |
+| `src/statEngine.js` | `expandMods(mods, dict, ctx)` → stat entries; `describe(entries, dict)` → lines (each with its Stat filter key and label); `checkEntries(entries, dict)` → the loud checks. Pure. | `statEngine.test.js` |
 | `src/affixData.js` | Raw `MagicPrefix`/`MagicSuffix` rows → generated Affixes rows and the stat options; replaces the builder's `joinAffixes`. | `affixData.test.js` |
 | `src/affixesLoad.js` | Fetch `Affixes.json` once, cache, retry after a failure (like `itemBuilderLoad.js`). | — |
 | `src/useAffixes.js` | Hook called by `App` for the Affixes tab: starts the load the first time the tab opens and takes the result in the promise callback (the `useItemBuilder` pattern; no synchronous `setState` in an effect). Returns `{status, data, error, retry}`. | browser check |
@@ -191,7 +190,7 @@ layout"); nothing else about it changes.
 **Expansion: mods → stat entries `{stat, layer, min, max}`**, following `Properties.txt` as D2MOO does:
 
 - The code is looked up case-insensitively. An unknown code yields no entries and a build warning.
-- Funcs 1, 2, 8 and 13 take min..max. Func 3 reuses the previous slot's value (`res-all`). Funcs 15, 16 and 17 take
+- Funcs 1, 2 and 21 take min..max; funcs 3, 5–8, 10 and 14 reuse the first slot's value when it is set (D2MOO passes `nFirstValue`, the first slot's result, to every later slot). Func 10's layer is `param % 3 + 8 · ⌊param / 3⌋` (D2MOO writes `8 * param / 3`, a precedence slip; the tooltip decodes class = layer >> 3, tab = layer & 7). Func 3 reuses the previous slot's value (`res-all`). Funcs 15, 16 and 17 take
   min, max or param; for the `*/lvl` codes the value is the param, in the per-level units of "Research". Func 7
   writes `item_mindamage_percent` and `item_maxdamage_percent` together. Funcs 5 and 6 write min and max damage
   (which weapon stat they hit only matters for base lines, in the summing spec). Funcs 10 and 21 take the layer from
@@ -210,7 +209,7 @@ layout"); nothing else about it changes.
 2. **Pairs:** min and max damage per element (fire, lightning, magic, cold with length, poison with length), plain
    min and max damage, and ED% (min% equal to max%) each print one line. When the min and max ranges are equal the
    pair uses the single-value string (`strModPoisonDamage` "+%d poison damage over %d seconds", *Septic* 31/31),
-   otherwise the range string (`strMod*DamageRange`). Poison prints (value · length + 128) >> 8 (rounded half up)
+   otherwise the range string (`strMod*DamageRange`). The game prints the single string when min ≥ max, with the max. Physical min and max damage print `strModMinDamageRange` only when min is below max; otherwise each prints its own line. Poison prints (value · length + 128) >> 8 (rounded half up)
    over ⌊length / 25⌋ seconds, where value and length are the sums over every poison source: the tooltip doesn't
    divide the length by `poison_count`, although combat does (in-game results below; d2s's plain floor is wrong,
    and so is D2ItemToolkit's 1.14d division).
@@ -218,15 +217,15 @@ layout"); nothing else about it changes.
    `dgrpstr2`, when every member is present with an equal range; otherwise each member prints its own line. Group
    funcs in use: 1, 4, 7, 8 and 19.
 4. **Formatting** by `descfunc` and `descval` with the resolved strings, `descstrpos` or `descstrneg` by the sign of
-   the range. A single value prints as-is; a range prints `a-b`, or `-a to -b` when negative (no mod range crosses
+   the range. A single value prints as-is; a range prints `a-b`, or `-a to -b` when negative (smaller magnitude first: "-2 to -4") (no mod range crosses
    zero except charges, whose values are rewritten first). In a string with two or more values, each range is
    bracketed: "Adds [20-30]-[64-101] cold damage". The game's own wording and case are kept: `res-all` prints
    "All Resistances +3-6" (no `%`). Special cases: descfunc 11 (repair) prints `ModStre9u` "Repairs %d durability in
-   %d seconds" with 1 and ⌊100 / value⌋; sockets print `strSocketedDisplay` "Socketed (n)"; charges print
+   %d seconds" with 1 and ⌊(⌊2500 / value⌋ + 12) / 25⌋, or `ModStre9t` "Repairs %d durability per second" with 1 when ⌊2500 / value⌋ is 30 or less (D2ItemToolkit `formatRepair`; for SoE's params 3 and 5 this equals ⌊100 / value⌋); sockets print `Socketable` "Socketed", a space and "(n)" (string index 3453, the key the game's hardcoded lookup uses); charges print
    `ModStre10b` "Level", the skill level, the skill name and `ModStre10d` "(%d/%d Charges)".
 5. **Per-level stats:** the value at character level L is ⌊v · L / 2^`op param`⌋; the line shows the range over L =
    1–99, then the rate v / 2^`op param`: "+0-74 to Mana (Based on Character Level), 0.75 per level".
-6. **Order:** `descpriority`, highest first, 0 last. A pair or group line takes its highest member's priority. Ties
+6. **Order:** `descpriority`, highest first, 0 last. A pair line takes its min stat's priority (the higher of the two). A group line takes the priority of its member with the lowest stat id, which is the member the game prints it for (D2ItemToolkit `isGrouped`: the primary is the lowest id). Ties
    keep `ItemStatCost.txt` row order (there are none in today's data; a real-data test keeps it that way).
 7. **Strings** are decoded as UTF-8. `ÿc` plus the next character (a colour code) is stripped. A string containing
    `\n` is split, empty pieces are dropped, and the pieces print in reverse (the last piece is the top line).
@@ -254,8 +253,7 @@ layout"); nothing else about it changes.
 - **Rows:** the raw rows with `spawnable = 1` and `frequency > 0`, prefixes then suffixes, in file order. `key` is the
   builder's affix key (`p<row>` / `s<row>`).
 - **`itemTypes` / `excludedItemTypes`:** `ItemTypes.txt`'s `ItemType` name for each `itype` / `etype` code, through a
-  small override map for the names `ItemTypes.txt` gets wrong (`lcha` → "Grand Charm", `mcha` → "Large Charm", and
-  the PVP charm types), shared with the builder's existing overrides in `itemBuilderData.js`. A code missing from
+  small override map for the names `ItemTypes.txt` gets wrong (`lcha` → "Grand Charm", `mcha` → "Large Charm", `lchp`/`mchp` → "Grand/Large Charm PVP", `misl` → "Bow/Crossbow Quiver"), kept in `affixData.js`. A code missing from
   `ItemTypes.txt` is skipped with a warning (one live row uses the item code `amu`).
 - **`className`:** the class's full name ("Sorceress").
 - **`sort`:** `{property, max}` for the first printed line: `property` is that line's stat key (Stat filter), `max` the
@@ -289,10 +287,9 @@ layout"); nothing else about it changes.
   and when-struck stats, func 19's charges, `map_mon_splash`) are keyed by (stat, skill), not by layer: their layer
   also encodes the skill level, so keying by layer would split "#% Chance to cast level # Charged Bolt when struck"
   into one entry per level (*of Charged Shield* s421–s423). Stats with no `descfunc` get no entry.
-- **Labels:** the engine's own line with `#` for each value, so a label always matches the rows' text.
+- **Labels:** the engine's own line with `#` for each value, so a label always matches the rows' text. When one key prints in two forms (a pair's single and range strings), the label is the form most rows print.
 - **Matching:** a row matches directly when it prints the line. It matches **indirectly** when it reaches the stat but
-  the line folded into a group line; its `statKeys` entry then carries `via` (the group line's label without the
-  value, e.g. "All Resistances"). The plugin computes it all; the browser compares keys.
+  the line folded into a group line; its `statKeys` entry then carries `via` (the group's own name, from its `dgrpstr2` or `dgrpstrpos` without value tokens, a leading "to " or a trailing ":", e.g. "All Resistances", "all Attributes"). The plugin computes it all; the browser compares keys.
 - **Options:** the `stats` list, holding only stats some row reaches, under two `SearchableSelect` headings: **Items**,
   and **Maps** (stats reached only through `map-*` codes). Alphabetical within each, comparing the label without
   its leading value tokens (`#`, `+`, `-`, `%`), so "+# to Life" sorts under L, not with every other "+#" label.
@@ -309,7 +306,7 @@ layout"); nothing else about it changes.
 
 - a required column is missing from any table;
 - a string key a reachable stat or group needs, or one of the engine's hardcoded keys (the damage-pair strings,
-  `ModStre9u`, `ModStre10b`, `ModStre10d`, `strSocketedDisplay`), resolves in neither `patchstring.tbl` nor
+  `ModStre9u`, `ModStre9t`, `ModStre10b`, `Socketable`), resolves in neither `patchstring.tbl` nor
   `baseStrings.json`;
 - a reachable stat uses a `descfunc`, a group uses a `dgrpfunc`, or a mod uses a property func, that the engine
   doesn't implement;
@@ -317,7 +314,7 @@ layout"); nothing else about it changes.
   name (15 and 24; `map_mon_splash`, descfunc 9, prints none);
 - a `.tbl` header disagrees with the file's size, or a value isn't valid UTF-8.
 
-**Warnings only:** an unknown property code (it yields no line); an item-type code missing from `ItemTypes.txt`.
+**Warnings only:** an unknown property code (it yields no line); an item-type code missing from `ItemTypes.txt`. Unknown codes and unknown item types are each one warning per code, listing the row keys.
 
 **`tools/extract-base-strings.mjs`** writes the keys the engine can need that exist in the base or expansion table,
 even where the patch table overrides them today, so a future SoE patch that drops a key still builds. "Can need" is
