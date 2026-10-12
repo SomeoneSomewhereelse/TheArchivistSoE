@@ -442,6 +442,8 @@ pre-selected field.
 
 ## Follow-up: stat summing
 
+The engine it needs is designed in `2026-10-11-stat-engine-affixes-design.md` (built first; the builder already shows its lines). Stat summing (the full item tooltip, base lines, cross-affix merges) is the next spec; its research is in the local vault `docs/research/stat-summing/`.
+
 Wanted: sum picked affixes whose properties hit the same stat, to show the item's totals. Affix
 properties only; not how they change the base (requirements, attack speed). Its own spec, because:
 

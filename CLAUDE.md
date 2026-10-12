@@ -58,19 +58,15 @@ the value. No `eslint-disable`.
   clickable column sort: one key, chance highest first by default). `DropCalculatorPanel` in `App.jsx` keeps only
   UI state; a run whose inputs changed while it waited for data sets no state. `src/dropCalcFixtures.js`
   is Node-only (tests and `tools/checks/`), never imported by the app.
-- The Item Builder (`itembuilder` tab): `src/itemBuilderData.js` (`MagicPrefix`/`MagicSuffix.txt` joined row by row
-  with `Affixes.json`, bases, the item-type tree, the `ItemBuilder.json` format, the link-version fingerprint),
+- The Item Builder (`itembuilder` tab): `src/itemBuilderData.js` (the affix rows from `affixData.js`, bases, the item-type tree, the `ItemBuilder.json` format, the link-version fingerprint),
   `src/itemBuilderRules.js` (alvl, eligibility, caps, row state, the affix count range, `resolveBuild`),
   `src/itemBuilderHash.js` (the URL query), `src/itemBuilderLoad.js`, `src/useItemBuilder.js` (called by `App`: loads,
   decodes and cleans the query during render) and `src/ItemBuilderPanel.jsx` (props only). `src/itemBuilderOdds.js`
   computes the "≈ 1 in X to roll these affixes" line under the card (exact for the spec's "Roll odds" model, checked
   against a Monte Carlo in its test). `src/itemBuilderFixtures.js` is Node-only (tests).
   Design: `docs/superpowers/specs/2026-10-09-item-builder-design.md`.
-- The `item-builder-data` plugin in `vite.config.js` writes `public/data/standard/ItemBuilder.json` (gitignored) from
-  the standard `data/global/excel/` tables plus `Affixes.json`/`Weapons.json`/`Armors.json`. A data update must also copy
-  `MagicPrefix.txt` and `MagicSuffix.txt` from the mod repo (`Lukaszpg/PD2-Sanctuary-of-Exile`,
-  `standard-mode/data/global/excel/`) into `public/data/standard/data/global/excel/`, run the dev server once, and commit `src/itemBuilderVersion.json` if the link
-  version was bumped; otherwise the build fails.
+- The stat engine: `src/tblFile.js` (`parseTbl`: `.tbl` string tables, duplicate keys by the game's hash probe), `src/statData.js` (`buildStatData`: the stat dictionary from `Properties`, `ItemStatCost`, `CharStats`, `Skills`, `Skilldesc.txt` and the strings; `HARDCODED_STRINGS`), `src/statEngine.js` (`expandMods`: mods → stat entries by Properties.txt's funcs; `describe`: entries → the game's lines, each with a Stat filter key and label; `checkEntries`: the loud checks), `src/affixData.js` (`readAffixes`, `describeAffixes`, the `Affixes.json` format, `viaFor`), `src/affixesLoad.js` and `src/useAffixes.js` (the Affixes tab's file). `src/statFixtures.js` is Node-only. Design: `docs/superpowers/specs/2026-10-11-stat-engine-affixes-design.md`.
+- The `affix-data` plugin in `vite.config.js` writes `public/data/standard/Affixes.json` and `ItemBuilder.json` (both gitignored) from the standard `data/global/excel/` tables, `data/local/LNG/ENG/patchstring.tbl`, `src/baseStrings.json` and `Weapons.json`/`Armors.json`. A data update copies the changed `.txt` tables and `patchstring.tbl` from the mod repo (`Lukaszpg/PD2-Sanctuary-of-Exile`, `standard-mode/data/…`) into the same paths, runs the dev server once, and commits `src/itemBuilderVersion.json` if the link version was bumped. If the build fails on a missing string, re-run `node tools/extract-base-strings.mjs <string.tbl> <expansionstring.tbl>` with the game's own tables (never commit those) and commit `src/baseStrings.json`. An upstream merge that brings back `public/data/Affixes.json` is resolved by keeping it deleted.
 - `src/styles.css`: all real styling, about 2,400 lines (`src/App.css` is an unused template leftover; nothing imports it).
 - `src/sortCompare.js` (Affixes sort rules), `src/hashTab.js` (tab ↔ URL hash), `src/pager.js`,
   `src/tabList.js`, `src/tiers.js` (the tier filter's Normal → Exceptional → Elite order) and
@@ -136,6 +132,7 @@ the value. No `eslint-disable`.
   `cache: "no-store"` and drops hidden entries via `filterVisible`.
 - Damnation mode (the header toggle, persisted in `localStorage`) swaps only `Uniques.json`
   (to `data/damnation/`) and the Drop calculator's `DropCalculator.json`. Everything else is shared.
+- The affix lines are pinned by `src/__snapshots__/affixLines.golden.txt` the same way as the Drop calculator's results below.
 - The Drop calculator's results are pinned by a golden snapshot (`src/__snapshots__/dropCalc.golden.txt`,
   captured from the pre-refactor code by `tools/checks/golden-dropcalc-legacy.mjs`). An upstream data drop
   or a deliberate formula change shows up as a snapshot diff: review it, then accept with `npx vitest -u`.
@@ -148,16 +145,11 @@ the value. No `eslint-disable`.
   callbacks (`jumpToCode`, `jumpToUnique`, `jumpToSacred`, `handleMarkdownAppLink`,
   `openDropCalculator`).
 
-### Affixes (`public/data/Affixes.json`, `AffixesPanel`)
+### Affixes (`public/data/standard/Affixes.json`, `AffixesPanel`)
 
+- `public/data/standard/Affixes.json` (generated, `{version, stats, affixes}`): each row has the engine's `lines`, `statKeys` (`{key, via?}`) and `sort` (`{property, max}` or null for a row with no lines). The **Stat filter** (Filters bar, after Prefix/Suffix) matches `statKeys`; a row that reaches the stat only through a group line shows "via …" under its lines.
 - `group`: affixes with the same group can't roll together on one item.
-- Missing values are meaningful:
-  - `maxLevel: null` means **no cap** (true for about 1,000 rows).
-  - `rare: ""` means No. It's a boolean, not missing data.
-  - `classDisplayName`, `requiredLevel`, item-type arrays and `displayProperties` can each
-    be null or empty.
-- `displayExcludedItemTypeNames` sometimes repeats an entry ("Staff Class" three times).
-  That's a data quirk, displayed as-is.
+- `maxLevel: null` means **no cap** (true for about 1,000 rows). `rare` is a boolean; item types are exact `ItemTypes.txt` names (with `TYPE_NAME_OVERRIDES`).
 - The sort is an ordered list of `{key, dir}` held in `App` (`affixSort`) and saved to `localStorage`
   (`"the-archivist-affix-sort"`, cleaned by `parseStoredSort` on load); the Multi-sort switch is saved too
   (`"the-archivist-affix-multi"`, `parseStoredFlag`), so a restored multi-key sort comes back with it on. An **empty list** is the starting
@@ -237,7 +229,8 @@ The harness is committed in `tools/checks/` (Node ≥ 22, no dependencies; outpu
 - `compare-desktop.mjs <label> <url>` takes full-page 1500px screenshots of all 20 tabs into
   `shots/desktop-<label>/`; `diff-shots.mjs <labelA> <labelB>` pixel-diffs two sets.
 - Feature checks: `check-sticky.mjs` (floating table header), `check-multisort.mjs` (Affixes multi-sort),
-  `check-itembuilder.mjs` (Item Builder end to end), `check-select-keyboard.mjs` (SearchableSelect by keyboard).
+  `check-itembuilder.mjs` (Item Builder end to end), `check-select-keyboard.mjs` (SearchableSelect by keyboard), `check-affix-stats.mjs` (Affixes Stat filter) and
+  `diff-affix-lines.mjs` (Node: the engine's lines vs upstream's last `Affixes.json`, a report into the research vault).
 - Drop calculator: `check-dropcalc.mjs` (browser: rows, one fetch per mode, no `.txt`, stale runs, the
   View drop rates link; WARN-only timing budgets `DROPCALC_DESKTOP_TASK_MS`, `DROPCALC_PHONE_TASK_MS`) and
   `bench-dropcalc.mjs` (Node: every target, every difficulty, both modes; FAIL over the work ceilings,
