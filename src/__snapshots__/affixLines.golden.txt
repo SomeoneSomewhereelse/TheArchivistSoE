@@ -1,0 +1,1412 @@
+p119	Stout	+3-5 Defense
+p120	Stout	+6-9 Defense
+p121	Stout	+10-12 Defense
+p122	Burly	+13-15 Defense
+p123	Burly	+16-22 Defense
+p124	Burly	+23-30 Defense
+p125	Stalwart	+33-40 Defense
+p126	Stalwart	+44-50 Defense
+p127	Stalwart	+60-100 Defense
+p128	Stout	+2-3 Defense
+p129	Stout	+4-6 Defense
+p130	Stout	+8-12 Defense
+p131	Burly	+13-18 Defense
+p132	Burly	+20-30 Defense
+p133	Stalwart	+30-40 Defense
+p134	Stalwart	+45-60 Defense
+p135	Stout	+1 Defense
+p136	Stout	+4-8 Defense
+p137	Burly	+15-20 Defense
+p138	Stalwart	+20-30 Defense
+p139	Blanched	+5-8 Defense
+p140	Eburin	+9-20 Defense
+p141	Bone	+21-40 Defense
+p142	Ivory	+41-64 Defense
+p143	Sturdy	+10-20% Enhanced Defense
+p144	Sturdy	+21-30% Enhanced Defense
+p145	Strong	+31-40% Enhanced Defense
+p146	Glorious	+41-50% Enhanced Defense
+p147	Blessed	+51-65% Enhanced Defense
+p148	Saintly	+66-80% Enhanced Defense
+p149	Holy	+81-100% Enhanced Defense
+p150	Godly	+101-200% Enhanced Defense
+p166	Scarlet	+1-4 to Minimum Damage
+p167	Crimson	+5-8 to Minimum Damage
+p183	Carbuncle	+1-5 to Maximum Damage
+p184	Carmine	+6-9 to Maximum Damage
+p185	Vermillion	+11-15 to Maximum Damage
+p186	Jagged	+10-20% Enhanced Damage
+p187	Deadly	+21-30% Enhanced Damage
+p188	Vicious	+31-40% Enhanced Damage
+p189	Brutal	+41-50% Enhanced Damage
+p190	Massive	+51-65% Enhanced Damage
+p191	Savage	+66-80% Enhanced Damage
+p192	Merciless	+81-100% Enhanced Damage
+p193	Ferocious	+101-200% Enhanced Damage
+p194	Cruel	+201-300% Enhanced Damage
+p195	Cinnabar	+5-10% Enhanced Damage
+p196	Rusty	+11-20% Enhanced Damage
+p197	Realgar	+21-30% Enhanced Damage
+p198	Ruby	+31-40% Enhanced Damage
+p199	Vulpine	7-12% Damage Taken Gained as Mana when Hit
+p200	Dun	7-12% Damage Taken Gained as Mana when Hit
+p201	Tireless	Heal Stamina Plus 25%
+p202	Tireless	Heal Stamina Plus 50%
+p218	Bronze	+6-12 to Attack Rating
+p219	Bronze	+13-27 to Attack Rating
+p220	Bronze	+28-42 to Attack Rating
+p221	Iron	+43-57 to Attack Rating
+p222	Iron	+58-72 to Attack Rating
+p223	Iron	+73-87 to Attack Rating
+p224	Steel	+88-102 to Attack Rating
+p225	Steel	+103-117 to Attack Rating
+p226	Steel	+118-132 to Attack Rating
+p227	Bronze	+4-8 to Attack Rating
+p228	Bronze	+6-12 to Attack Rating
+p229	Bronze	+13-25 to Attack Rating
+p230	Iron	+26-38 to Attack Rating
+p231	Iron	+39-51 to Attack Rating
+p232	Steel	+52-64 to Attack Rating
+p233	Steel	+65-77 to Attack Rating
+p234	Bronze	+2-4 to Attack Rating
+p235	Bronze	+6-12 to Attack Rating
+p236	Iron	+13-24 to Attack Rating
+p237	Steel	+25-36 to Attack Rating
+p238	Bronze	+10-20 to Attack Rating
+p239	Iron	+21-40 to Attack Rating
+p240	Steel	+41-60 to Attack Rating
+p241	Silver	+61-80 to Attack Rating
+p242	Gold	+81-100 to Attack Rating
+p243	Platinum	+101-120 to Attack Rating
+p244	Meteoric	+121-150 to Attack Rating
+p245	Strange	+151-300 to Attack Rating
+p246	Weird	+301-450 to Attack Rating
+p247	Nickel	+10-20 to Attack Rating
+p248	Tin	+21-40 to Attack Rating
+p249	Silver	+41-60 to Attack Rating
+p250	Argent	+61-100 to Attack Rating
+p251	Fine	+1-3 to Maximum Damage / +10-20 to Attack Rating
+p252	Fine	+4-6 to Maximum Damage / +21-48 to Attack Rating
+p253	Sharp	+7-10 to Maximum Damage / +49-76 to Attack Rating
+p254	Fine	+1-3 to Maximum Damage / +10-20 to Attack Rating
+p255	Sharp	+4-6 to Maximum Damage / +21-48 to Attack Rating
+p256	Fine	+1-3 to Maximum Damage / +10-20 to Attack Rating
+p257	Sharp	+10-20% Enhanced Damage / +10-20 to Attack Rating
+p258	Fine	+21-30% Enhanced Damage / +21-40 to Attack Rating
+p259	Warrior's	+31-40% Enhanced Damage / +41-60 to Attack Rating
+p260	Soldier's	+41-50% Enhanced Damage / +61-80 to Attack Rating
+p261	Knight's	+51-65% Enhanced Damage / +81-100 to Attack Rating
+p262	Lord's	+66-80% Enhanced Damage / +101-120 to Attack Rating
+p263	King's	+81-100% Enhanced Damage / +121-150 to Attack Rating
+p264	Master's	+101-150% Enhanced Damage / +151-250 to Attack Rating
+p265	Grandmaster's	+151-200% Enhanced Damage / +251-300 to Attack Rating
+p266	Glimmering	+1 to Light Radius
+p267	Glowing	+2 to Light Radius
+p268	Bright	+10 to Attack Rating / +1 to Light Radius
+p275	Lucky	1-4% Better Chance of Getting Magic Items
+p276	Lucky	5-7% Better Chance of Getting Magic Items
+p277	Lucky	8-12% Better Chance of Getting Magic Items
+p278	Lucky	1% Better Chance of Getting Magic Items
+p279	Lucky	2-3% Better Chance of Getting Magic Items
+p280	Lucky	4-6% Better Chance of Getting Magic Items
+p281	Felicitous	5-10% Better Chance of Getting Magic Items
+p282	Fortuitous	11-15% Better Chance of Getting Magic Items
+p283	Emerald	3-7% Better Chance of Getting Magic Items
+p284	Lizard's	+3-7 to Mana
+p285	Lizard's	+8-13 to Mana
+p286	Lizard's	+14-20 to Mana
+p287	Snake's	+21-26 to Mana
+p288	Snake's	+27-33 to Mana
+p289	Snake's	+34-39 to Mana
+p290	Serpent's	+40-46 to Mana
+p291	Serpent's	+47-52 to Mana
+p292	Serpent's	+53-59 to Mana
+p293	Lizard's	+2-4 to Mana
+p294	Lizard's	+5-7 to Mana
+p295	Lizard's	+8-12 to Mana
+p296	Snake's	+13-18 to Mana
+p297	Snake's	+19-23 to Mana
+p298	Serpent's	+24-29 to Mana
+p299	Serpent's	+30-34 to Mana
+p300	Lizard's	+1-2 to Mana
+p301	Lizard's	+3-7 to Mana
+p302	Snake's	+8-12 to Mana
+p303	Serpent's	+13-17 to Mana
+p304	Lizard's	+3-5 to Mana
+p305	Snake's	+5-10 to Mana
+p306	Serpent's	+11-20 to Mana
+p307	Serpent's	+11-20 to Mana
+p308	Drake's	+21-30 to Mana
+p309	Dragon's	+31-40 to Mana
+p310	Dragon's	+31-40 to Mana
+p311	Wyrm's	+41-60 to Mana
+p312	Great Wyrm's	+61-90 to Mana
+p313	Bahamut's	+91-120 to Mana
+p314	Zircon	+5-10 to Mana
+p315	Jacinth	+11-15 to Mana
+p316	Turquoise	+16-20 to Mana
+p317	Shimmering	All Resistances +3-6
+p318	Shimmering	All Resistances +8-12
+p319	Shimmering	All Resistances +13-15
+p320	Shimmering	All Resistances +3-5
+p321	Shimmering	All Resistances +6-8
+p322	Shimmering	All Resistances +3-5
+p323	Shimmering	All Resistances +3-7
+p324	Rainbow	All Resistances +8-11
+p325	Scintillating	All Resistances +12-15
+p326	Prismatic	All Resistances +16-20
+p327	Chromatic	All Resistances +21-30
+p328	Shimmering	All Resistances +3-7
+p329	Rainbow	All Resistances +8-11
+p330	Scintillating	All Resistances +12-15
+p331	Prismatic	All Resistances +16-20
+p332	Chromatic	All Resistances +21-30
+p333	Shimmering	All Resistances +3-7
+p334	Rainbow	All Resistances +8-11
+p335	Scintillating	All Resistances +12-15
+p336	Shimmering	All Resistances +5-10
+p337	Scintillating	All Resistances +11-15
+p338	Azure	Cold Resist +7-15%
+p339	Lapis	Cold Resist +16-20%
+p340	Cobalt	Cold Resist +21-25%
+p341	Sapphire	Cold Resist +26-30%
+p342	Azure	Cold Resist +4-7%
+p343	Lapis	Cold Resist +8-10%
+p344	Cobalt	Cold Resist +11-12%
+p345	Sapphire	Cold Resist +13-15%
+p346	Azure	Cold Resist +3-5%
+p347	Lapis	Cold Resist +6-7%
+p348	Cobalt	Cold Resist +8-9%
+p349	Sapphire	Cold Resist +10-11%
+p350	Azure	Cold Resist +5-10%
+p351	Lapis	Cold Resist +11-20%
+p352	Lapis	Cold Resist +11-20%
+p353	Cobalt	Cold Resist +21-30%
+p354	Cobalt	Cold Resist +21-30%
+p355	Sapphire	Cold Resist +31-40%
+p356	Lapis Lazuli	Cold Resist +5-15%
+p357	Sapphire	Cold Resist +16-30%
+p358	Crimson	Fire Resist +7-15%
+p359	Russet	Fire Resist +16-20%
+p360	Garnet	Fire Resist +21-25%
+p361	Ruby	Fire Resist +26-30%
+p362	Crimson	Fire Resist +4-7%
+p363	Russet	Fire Resist +8-10%
+p364	Garnet	Fire Resist +11-12%
+p365	Ruby	Fire Resist +13-15%
+p366	Crimson	Fire Resist +3-5%
+p367	Russet	Fire Resist +6-7%
+p368	Garnet	Fire Resist +8-9%
+p369	Ruby	Fire Resist +10-11%
+p370	Russet	Fire Resist +11-20%
+p371	Russet	Fire Resist +11-20%
+p372	Garnet	Fire Resist +21-30%
+p373	Garnet	Fire Resist +21-30%
+p374	Ruby	Fire Resist +31-40%
+p375	Garnet	Fire Resist +5-15%
+p376	Ruby	Fire Resist +16-30%
+p377	Tangerine	Lightning Resist +7-15%
+p378	Ocher	Lightning Resist +16-20%
+p379	Coral	Lightning Resist +21-25%
+p380	Amber	Lightning Resist +26-30%
+p381	Tangerine	Lightning Resist +4-7%
+p382	Ocher	Lightning Resist +8-10%
+p383	Coral	Lightning Resist +11-12%
+p384	Amber	Lightning Resist +13-15%
+p385	Tangerine	Lightning Resist +3-5%
+p386	Ocher	Lightning Resist +6-7%
+p387	Coral	Lightning Resist +8-9%
+p388	Amber	Lightning Resist +10-11%
+p389	Tangerine	Lightning Resist +5-10%
+p390	Ocher	Lightning Resist +11-20%
+p391	Ocher	Lightning Resist +11-20%
+p392	Coral	Lightning Resist +21-30%
+p393	Coral	Lightning Resist +21-30%
+p394	Amber	Lightning Resist +31-40%
+p395	Camphor	Lightning Resist +5-15%
+p396	Ambergris	Lightning Resist +16-30%
+p397	Beryl	Poison Resist +7-15%
+p398	Viridian	Poison Resist +16-20%
+p399	Jade	Poison Resist +21-25%
+p400	Emerald	Poison Resist +26-30%
+p401	Beryl	Poison Resist +4-7%
+p402	Viridian	Poison Resist +8-10%
+p403	Jade	Poison Resist +11-12%
+p404	Emerald	Poison Resist +13-15%
+p405	Beryl	Poison Resist +3-5%
+p406	Viridian	Poison Resist +6-7%
+p407	Jade	Poison Resist +8-9%
+p408	Emerald	Poison Resist +10-11%
+p409	Beryl	Poison Resist +5-10%
+p410	Viridian	Poison Resist +11-20%
+p411	Viridian	Poison Resist +11-20%
+p412	Jade	Poison Resist +21-30%
+p413	Jade	Poison Resist +21-30%
+p414	Emerald	Poison Resist +31-40%
+p415	Beryl	Poison Resist +5-15%
+p416	Jade	Poison Resist +16-30%
+p417	Triumphant	+1-2 to Mana after each Kill
+p418	Victorious	+3-5 to Mana after each Kill
+p419	Aureolin	+2-3 to Mana after each Kill
+p420	Mechanist's	Socketed (1-2)
+p421	Artificer's	Socketed (3)
+p422	Jeweler's	Socketed (4)
+p423	Assamic	+10-25% Damage to Demons / +25-50 to Attack Rating against Demons
+p424	Arcadian	+26-50% Damage to Demons / +51-100 to Attack Rating against Demons
+p425	Unearthly	+51-100% Damage to Demons / +101-150 to Attack Rating against Demons
+p426	Astral	+101-150% Damage to Demons / +151-200 to Attack Rating against Demons
+p427	Elysian	+151-200% Damage to Demons / +201-300 to Attack Rating against Demons
+p428	Celestial	+201-300% Damage to Demons / +301-400 to Attack Rating against Demons
+p429	Diamond	+25-40% Damage to Demons / +25-50 to Attack Rating against Demons
+p430	Fletcher's	+1 to Bow and Crossbow Skills (Amazon Only)
+p431	Acrobat's	+1 to Passive and Magic Skills (Amazon Only)
+p432	Harpoonist's	+1 to Javelin and Spear Skills (Amazon Only)
+p433	Fletcher's	+1 to Bow and Crossbow Skills (Amazon Only)
+p434	Bowyer's	+2 to Bow and Crossbow Skills (Amazon Only)
+p435	Archer's	+3 to Bow and Crossbow Skills (Amazon Only)
+p436	Acrobat's	+1 to Passive and Magic Skills (Amazon Only)
+p437	Gymnast's	+2 to Passive and Magic Skills (Amazon Only)
+p438	Athlete's	+3 to Passive and Magic Skills (Amazon Only)
+p439	Harpoonist's	+1 to Javelin and Spear Skills (Amazon Only)
+p440	Spearmaiden's	+2 to Javelin and Spear Skills (Amazon Only)
+p441	Lancer's	+3 to Javelin and Spear Skills (Amazon Only)
+p442	Burning	+1 to Fire Skills (Sorceress Only)
+p443	Sparking	+1 to Lightning Skills (Sorceress Only)
+p444	Chilling	+1 to Cold Skills (Sorceress Only)
+p445	Burning	+1 to Fire Skills (Sorceress Only)
+p446	Blazing	+2 to Fire Skills (Sorceress Only)
+p447	Volcanic	+3 to Fire Skills (Sorceress Only)
+p448	Sparking	+1 to Lightning Skills (Sorceress Only)
+p449	Charged	+2 to Lightning Skills (Sorceress Only)
+p450	Powered	+3 to Lightning Skills (Sorceress Only)
+p451	Chilling	+1 to Cold Skills (Sorceress Only)
+p452	Freezing	+2 to Cold Skills (Sorceress Only)
+p453	Glacial	+3 to Cold Skills (Sorceress Only)
+p454	Hexing	+1 to Curses (Necromancer Only)
+p455	Fungal	+1 to Poison and Bone Skills (Necromancer Only)
+p456	Graverobber's	+1 to Summoning Skills (Necromancer Only)
+p457	Hexing	+1 to Curses (Necromancer Only)
+p458	Blighting	+2 to Curses (Necromancer Only)
+p459	Accursed	+3 to Curses (Necromancer Only)
+p460	Fungal	+1 to Poison and Bone Skills (Necromancer Only)
+p461	Noxious	+2 to Poison and Bone Skills (Necromancer Only)
+p462	Venomous	+3 to Poison and Bone Skills (Necromancer Only)
+p463	Graverobber's	+1 to Summoning Skills (Necromancer Only)
+p464	Vodoun	+2 to Summoning Skills (Necromancer Only)
+p465	Golemlord's	+3 to Summoning Skills (Necromancer Only)
+p466	Lion Branded	+1 to Combat Skills (Paladin Only)
+p467	Captain's	+1 to Offensive Auras (Paladin Only)
+p468	Preserver's	+1 to Defensive Auras (Paladin Only)
+p469	Lion Branded	+1 to Combat Skills (Paladin Only)
+p470	Hawk Branded	+2 to Combat Skills (Paladin Only)
+p471	Rose Branded	+3 to Combat Skills (Paladin Only)
+p472	Captain's	+1 to Offensive Auras (Paladin Only)
+p473	Commander's	+2 to Offensive Auras (Paladin Only)
+p474	Marshal's	+3 to Offensive Auras (Paladin Only)
+p475	Preserver's	+1 to Defensive Auras (Paladin Only)
+p476	Warder's	+2 to Defensive Auras (Paladin Only)
+p477	Guardian's	+3 to Defensive Auras (Paladin Only)
+p478	Expert's	+1 to Combat Skills (Barbarian Only)
+p479	Fanatic	+1 to Masteries (Barbarian Only)
+p480	Sounding	+1 to Warcries (Barbarian Only)
+p481	Expert's	+1 to Combat Skills (Barbarian Only)
+p482	Veteran's	+2 to Combat Skills (Barbarian Only)
+p483	Master's	+3 to Combat Skills (Barbarian Only)
+p484	Fanatic	+1 to Masteries (Barbarian Only)
+p485	Raging	+2 to Masteries (Barbarian Only)
+p486	Furious	+3 to Masteries (Barbarian Only)
+p487	Sounding	+1 to Warcries (Barbarian Only)
+p488	Resonant	+2 to Warcries (Barbarian Only)
+p489	Echoing	+3 to Warcries (Barbarian Only)
+p490	Trainer's	+1 to Summoning Skills (Druid Only)
+p491	Spiritual	+1 to Shape Shifting Skills (Druid Only)
+p492	Nature's	+1 to Elemental Skills (Druid Only)
+p493	Trainer's	+1 to Summoning Skills (Druid Only)
+p494	Caretaker's	+2 to Summoning Skills (Druid Only)
+p495	Keeper's	+3 to Summoning Skills (Druid Only)
+p496	Spiritual	+1 to Shape Shifting Skills (Druid Only)
+p497	Feral	+2 to Shape Shifting Skills (Druid Only)
+p498	Communal	+3 to Shape Shifting Skills (Druid Only)
+p499	Nature's	+1 to Elemental Skills (Druid Only)
+p500	Terra's	+2 to Elemental Skills (Druid Only)
+p501	Gaea's	+3 to Elemental Skills (Druid Only)
+p502	Entrapping	+1 to Traps (Assassin Only)
+p503	Mentalist's	+1 to Shadow Disciplines (Assassin Only)
+p504	Shogukusha's	+1 to Martial Arts (Assassin Only)
+p505	Entrapping	+1 to Traps (Assassin Only)
+p506	Trickster's	+2 to Traps (Assassin Only)
+p507	Cunning	+3 to Traps (Assassin Only)
+p508	Mentalist's	+1 to Shadow Disciplines (Assassin Only)
+p509	Psychic	+2 to Shadow Disciplines (Assassin Only)
+p510	Shadow	+3 to Shadow Disciplines (Assassin Only)
+p511	Shogukusha's	+1 to Martial Arts (Assassin Only)
+p512	Sensei's	+2 to Martial Arts (Assassin Only)
+p513	Kenshi's	+3 to Martial Arts (Assassin Only)
+p520	Paleocene	+3-297 Defense (Based on Character Level), 3 per level
+p521	Paleocene	+0-49 Defense (Based on Character Level), 0.5 per level
+p526	Trump	+0-49 to Maximum Damage (Based on Character Level), 0.5 per level / +16-1633 to Attack Rating (Based on Character Level), 16.5 per level
+p531	Gritty	+0-74 to Maximum Damage (Based on Character Level), 0.75 per level
+p537	Hawkeye	+6-594 to Attack Rating (Based on Character Level), 6 per level
+p539	Visionary	1-99% Bonus to Attack Rating (Based on Character Level), 1 per level
+p540	Mnemonic	+0-74 to Mana (Based on Character Level), 0.75 per level
+p541	Snowflake	Adds [20-30]-[64-101] cold damage
+p542	Shivering	Adds [37-56]-[115-166] cold damage
+p543	Boreal	Adds [46-62]-[131-256] cold damage
+p544	Hibernal	Adds [60-112]-[226-348] cold damage
+p545	Ember	Adds [28-43]-[53-103] fire damage
+p546	Smoldering	Adds [47-72]-[109-161] fire damage
+p547	Smoking	Adds [81-128]-[145-208] fire damage
+p548	Flaming	Adds [138-204]-[224-306] fire damage
+p549	Scorching	Adds [217-306]-[325-432] fire damage
+p550	Static	Adds 1-[49-120] lightning damage
+p551	Glowing	Adds 1-[121-180] lightning damage
+p552	Buzzing	Adds 1-[181-260] lightning damage
+p553	Arcing	Adds 1-[287-396] lightning damage
+p554	Shocking	Adds 1-[433-576] lightning damage
+p555	Septic	+6 poison damage over 2 seconds
+p556	Envenomed	+24 poison damage over 2 seconds
+p557	Corosive	+78 poison damage over 2 seconds
+p558	Toxic	+227 poison damage over 2 seconds
+p559	Pestilent	+385 poison damage over 2 seconds
+p560	Maiden's	+1 to Amazon Skill Levels
+p561	Valkyrie's	+2 to Amazon Skill Levels
+p562	Maiden's	+1 to Amazon Skill Levels
+p563	Valkyrie's	+2 to Amazon Skill Levels
+p564	Monk's	+1 to Paladin Skill Levels
+p565	Priest's	+2 to Paladin Skill Levels
+p566	Monk's	+1 to Paladin Skill Levels
+p567	Priest's	+2 to Paladin Skill Levels
+p568	Monk's	+1 to Paladin Skill Levels
+p569	Priest's	+2 to Paladin Skill Levels
+p570	Summoner's	+1 to Necromancer Skill Levels
+p571	Necromancer's	+2 to Necromancer Skill Levels
+p572	Summoner's	+1 to Necromancer Skill Levels
+p573	Necromancer's	+2 to Necromancer Skill Levels
+p574	Angel's	+1 to Sorceress Skill Levels
+p575	Arch-Angel's	+2 to Sorceress Skill Levels
+p576	Angel's	+1 to Sorceress Skill Levels
+p577	Arch-Angel's	+2 to Sorceress Skill Levels
+p578	Slayer's	+1 to Barbarian Skill Levels
+p579	Berserker's	+2 to Barbarian Skill Levels
+p580	Slayer's	+1 to Barbarian Skill Levels
+p581	Berserker's	+2 to Barbarian Skill Levels
+p582	Slayer's	+1 to Barbarian Skill Levels
+p583	Berserker's	+2 to Barbarian Skill Levels
+p584	Shaman's	+1 to Druid Skill Levels
+p585	Hierophant's	+2 to Druid Skill Levels
+p586	Shaman's	+1 to Druid Skill Levels
+p587	Hierophant's	+2 to Druid Skill Levels
+p588	Magekiller's	+1 to Assassin Skill Levels
+p589	Witch-hunter's	+2 to Assassin Skill Levels
+p590	Magekiller's	+1 to Assassin Skill Levels
+p591	Witch-hunter's	+2 to Assassin Skill Levels
+p595	Consecrated	+25-75% Damage to Undead / +25-75 to Attack Rating against Undead
+p596	Pure	+76-125% Damage to Undead / +76-175 to Attack Rating against Undead
+p597	Sacred	+126-200% Damage to Undead / +175-250 to Attack Rating against Undead
+p598	Hallowed	+201-275% Damage to Undead / +251-325 to Attack Rating against Undead
+p599	Divine	+276-350% Damage to Undead / +326-450 to Attack Rating against Undead
+p600	Pearl	+25-50% Damage to Undead / +25-50 to Attack Rating against Undead
+p601	Crimson	Fire Resist +5-10%
+p602	Red	+1 to Minimum Damage
+p603	Sanguinary	+2 to Minimum Damage
+p604	Bloody	+3 to Minimum Damage
+p605	Red	+1 to Minimum Damage
+p606	Sanguinary	+2 to Minimum Damage
+p607	Red	+1 to Minimum Damage
+p608	Jagged	+1 to Maximum Damage
+p609	Forked	+2 to Maximum Damage
+p610	Serrated	+3 to Maximum Damage
+p611	Jagged	+1 to Maximum Damage
+p612	Forked	+2 to Maximum Damage
+p613	Jagged	+1 to Maximum Damage
+p614	Snowflake	Adds [3-5]-[5-11] cold damage
+p615	Shivering	Adds [8-11]-[12-22] cold damage
+p616	Boreal	Adds [11-16]-[27-43] cold damage
+p617	Hibernal	Adds [30-35]-[54-73] cold damage
+p618	Snowflake	Adds [2-4]-[4-8] cold damage
+p619	Shivering	Adds [6-8]-[10-16] cold damage
+p620	Boreal	Adds [12-16]-[20-30] cold damage
+p621	Hibernal	Adds [22-26]-[40-54] cold damage
+p622	Snowflake	Adds [1-2]-[2-4] cold damage
+p623	Shivering	Adds [3-4]-[5-8] cold damage
+p624	Boreal	Adds [6-8]-[10-16] cold damage
+p625	Hibernal	Adds [11-13]-[20-27] cold damage
+p626	Ember	Adds 1-[2-3] fire damage
+p627	Smoldering	Adds [5-8]-[11-27] fire damage
+p628	Smoking	Adds [11-24]-[30-51] fire damage
+p629	Flaming	Adds [27-51]-[54-78] fire damage
+p630	Ember	Adds 2-[4-6] fire damage
+p631	Smoldering	Adds [4-6]-[8-20] fire damage
+p632	Smoking	Adds [8-18]-[22-38] fire damage
+p633	Flaming	Adds [20-38]-[40-58] fire damage
+p634	Ember	Adds 1-[2-3] fire damage
+p635	Smoldering	Adds [2-3]-[4-10] fire damage
+p636	Smoking	Adds [4-9]-[11-19] fire damage
+p637	Flaming	Adds [10-19]-[20-29] fire damage
+p638	Static	Adds 1-[16-30] lightning damage
+p639	Glowing	Adds 1-[22-46] lightning damage
+p640	Arcing	Adds 1-[46-81] lightning damage
+p641	Shocking	Adds 1-[84-135] lightning damage
+p642	Static	Adds 1-[12-22] lightning damage
+p643	Glowing	Adds 1-[16-34] lightning damage
+p644	Arcing	Adds 1-[34-60] lightning damage
+p645	Shocking	Adds 1-[62-100] lightning damage
+p646	Static	Adds 1-[6-11] lightning damage
+p647	Glowing	Adds 1-[8-17] lightning damage
+p648	Arcing	Adds 1-[17-30] lightning damage
+p649	Shocking	Adds 1-[31-50] lightning damage
+p650	Septic	+14 poison damage over 2 seconds
+p651	Envenomed	+36 poison damage over 2 seconds
+p652	Toxic	+68 poison damage over 2 seconds
+p653	Pestilent	+175 poison damage over 2 seconds
+p654	Septic	+10 poison damage over 2 seconds
+p655	Envenomed	+26 poison damage over 2 seconds
+p656	Toxic	+50 poison damage over 2 seconds
+p657	Pestilent	+130 poison damage over 2 seconds
+p658	Septic	+5 poison damage over 2 seconds
+p659	Envenomed	+13 poison damage over 2 seconds
+p660	Toxic	+25 poison damage over 2 seconds
+p661	Pestilent	+65 poison damage over 2 seconds
+p662	Tireless	Heal Stamina Plus 10%
+p663	Lizard's	+1-2 to Mana
+p664	Azure	Cold Resist +5%
+p665	Crimson	Fire Resist +5%
+p666	Tangerine	Lightning Resist +5%
+p667	Beryl	Poison Resist +5%
+p671	Champion's	Monster Rarity: +30-40%
+p672	Flaming	Experience: +3-4% / Monster Density: +13-18% / Monsters have +5-10% to Fire Skill Damage
+p673	Ember	Experience: +4-5% / Monster Density: +18-23% / Monsters have +10-15% to Fire Skill Damage
+p674	Smoldering	Experience: +5-6% / Monster Density: +23-25% / Monsters have +15-20% to Fire Skill Damage
+p675	Hibernal	Monster Density: +13-15% / Magic and Gold Find: +15-20% / Monsters have +5-10% to Cold Skill Damage
+p676	Snowflake	Monster Density: +15-18% / Magic and Gold Find: +25-30% / Monsters have +10-15% to Cold Skill Damage
+p677	Shivering	Monster Density: +18-20% / Magic and Gold Find: +35-40% / Monsters have +15-20% to Cold Skill Damage
+p678	Static	Experience: +3-4% / Monster Density: +13-20% / Monsters have +5-10% to Lightning Skill Damage
+p679	Glowing	Experience: +4-5% / Monster Density: +18-23% / Monsters have +10-15% to Lightning Skill Damage
+p680	Arcing	Experience: +5-6% / Monster Density: +23-25% / Monsters have +15-20% to Lightning Skill Damage
+p681	Toxic	Monster Density: +15-20% / Magic and Gold Find: +5-10% / Monsters have +5-10% to Poison Skill Damage
+p682	Pestilent	Monster Density: +20-25% / Magic and Gold Find: +15-20% / Monsters have +10-15% to Poison Skill Damage
+p683	Septic	Monster Density: +25-30% / Magic and Gold Find: +25-30% / Monsters have +15-20% to Poison Skill Damage
+p690	Silver	Monster Density: +8-10% / Magic and Gold Find: +15-20% / Monsters have +30-50% Attack Rating and Chance to Pierce
+p691	Shining	Monster Density: +15-18% / Magic and Gold Find: +30-35% / Monsters have +50-70% Attack Rating and Chance to Pierce
+p692	Opulent	Monster Density: +18-20% / Magic and Gold Find: +45-50% / Monsters have +70-90% Attack Rating and Chance to Pierce
+p693	Fast	Experience: +3-4% / Monster Density: +15-20% / Monsters have +40-60% Increased Cast and Attack Speed
+p694	Speedy	Experience: +4-5% / Monster Density: +20-25% / Monsters have +60-80% Increased Cast and Attack Speed
+p695	Ludicrous	Experience: +5-6% / Monster Density: +25-30% / Monsters have +80-100% Increased Cast and Attack Speed
+p696	Large	Experience: +6-8% / Monster Density: +15-20% / Monsters have 5-10% Increased Maximum Life
+p697	Huge	Experience: +8-10% / Monster Density: +20-25% / Monsters have 10-15% Increased Maximum Life
+p698	Colossal	Experience: +10-12% / Monster Density: +25-30% / Monsters have 15-20% Increased Maximum Life
+p699	Strong	Experience: +4-5% / Magic and Gold Find: +10-15% / Monsters have +10-15% Enhanced Physical Damage
+p700	Mighty	Experience: +5-6% / Magic and Gold Find: +25-30% / Monsters have +15-20% Enhanced Physical Damage
+p701	Formidable	Experience: +6-7% / Magic and Gold Find: +40-45% / Monsters have +20-25% Enhanced Physical Damage
+p702	Splashing	Monster Density: +8-13% / Magic and Gold Find: +5-10% / Monster's Melee Attacks Deal Splash Damage
+p703	Splashing	Monster Density: +18-23% / Magic and Gold Find: +20-25% / Monster's Melee Attacks Deal Splash Damage
+p704	Splashing	Monster Density: +23-25% / Magic and Gold Find: +35-40% / Monster's Melee Attacks Deal Splash Damage
+p705	Bloody	Experience: +4-5% / Magic and Gold Find: +5-10% / Monsters have 5-10% Chance of Open Wounds
+p706	Gory	Experience: +5-6% / Magic and Gold Find: +20-25% / Monsters have 10-15% Chance of Open Wounds
+p707	Sanguinary	Experience: +6-7% / Magic and Gold Find: +35-40% / Monsters have 15-20% Chance of Open Wounds
+p708	Unhealthy	Experience: +3-4% / Magic and Gold Find: +5-10% / Players have -30 to -40 Drain Life
+p709	Sickly	Experience: +4-5% / Magic and Gold Find: +20-25% / Players have -50 to -60 Drain Life
+p710	Diseased	Experience: +5-6% / Magic and Gold Find: +35-40% / Players have -70 to -80 Drain Life
+p711	Crushing	Monster Density: +8-10% / Magic and Gold Find: +5-10% / Monsters have 15-25% Chance of Crushing Blow
+p712	Smashing	Monster Density: +15-18% / Magic and Gold Find: +20-25% / Monsters have 25-35% Chance of Crushing Blow
+p713	Obliterating	Monster Density: +18-20% / Magic and Gold Find: +35-40% / Monsters have 35-45% Chance of Crushing Blow
+p714	Sparking	Monster Density: +13-15% / Magic and Gold Find: +5-10% / Monsters have +60-80% of Physical Damage as Extra Lightning Damage
+p715	Shocking	Monster Density: +15-18% / Magic and Gold Find: +20-25% / Monsters have +70-90% of Physical Damage as Extra Lightning Damage
+p716	Thunderous	Monster Density: +18-20% / Magic and Gold Find: +35-40% / Monsters have +80-100% of Physical Damage as Extra Lightning Damage
+p717	Chilling	Monster Density: +13-15% / Magic and Gold Find: +5-10% / Monsters have +60-80% of Physical Damage as Extra Cold Damage
+p718	Boreal	Monster Density: +15-18% / Magic and Gold Find: +20-25% / Monsters have +70-90% of Physical Damage as Extra Cold Damage
+p719	Glacial	Monster Density: +18-20% / Magic and Gold Find: +35-40% / Monsters have +80-100% of Physical Damage as Extra Cold Damage
+p720	Smoking	Monster Density: +13-15% / Magic and Gold Find: +5-10% / Monsters have +60-80% of Physical Damage as Extra Fire Damage
+p721	Molten	Monster Density: +15-18% / Magic and Gold Find: +20-25% / Monsters have +70-90% of Physical Damage as Extra Fire Damage
+p722	Volcanic	Monster Density: +18-20% / Magic and Gold Find: +35-40% / Monsters have +80-100% of Physical Damage as Extra Fire Damage
+p723	Poisonous	Monster Density: +13-15% / Magic and Gold Find: +5-10% / Monsters have +123-163% of Physical Damage as Extra Poison Damage over 5 Seconds
+p724	Envenomed	Monster Density: +15-18% / Magic and Gold Find: +20-25% / Monsters have +143-184% of Physical Damage as Extra Poison Damage over 5 Seconds
+p725	Plagued	Monster Density: +18-20% / Magic and Gold Find: +35-40% / Monsters have +163-205% of Physical Damage as Extra Poison Damage over 5 Seconds
+p726	Runic	Monster Density: +13-15% / Magic and Gold Find: +5-10% / Monsters have +8-10% of Physical Damage as Extra Magic Damage
+p727	Taboo	Monster Density: +15-18% / Magic and Gold Find: +20-25% / Monsters have +10-12% of Physical Damage as Extra Magic Damage
+p728	Occult	Monster Density: +18-20% / Magic and Gold Find: +35-40% / Monsters have +12-14% of Physical Damage as Extra Magic Damage
+p729	Blood Letting	+1-2 Life after each Kill
+p730	Murderous	+3-5 Life after each Kill
+p731	Blood Sucking	+2-3 Life after each Kill
+p732	Channeling	+2% to Lightning Skill Damage
+p733	Cold	+2% to Cold Skill Damage
+p734	Cinder	+2% to Fire Skill Damage
+p735	Morbid	+2% to Poison Skill Damage
+p736	Sparkling	+2% To Magic Skill Damage
+p737	Discharging	+2-3% to Lightning Skill Damage
+p738	Frigid	+2-3% to Cold Skill Damage
+p739	Wildfire	+2-3% to Fire Skill Damage
+p740	Malicious	+2-3% to Poison Skill Damage
+p741	Effervescent	+2-3% To Magic Skill Damage
+p742	Conduit	+3% to Lightning Skill Damage
+p743	Numbing	+3% to Cold Skill Damage
+p744	Inferno	+3% to Fire Skill Damage
+p745	Infectious	+3% to Poison Skill Damage
+p746	Scintillating	+3% To Magic Skill Damage
+p747	Visceral	+301-400% Enhanced Damage
+p748	Divine	+276-350% Damage to Undead / +326-450 to Attack Rating against Undead
+p749	Celestial	+201-300% Damage to Demons / +301-400 to Attack Rating against Demons
+p750	Grandmaster's	+151-200% Enhanced Damage / +251-300 to Attack Rating
+p751	Supporting	+10-20% Enhanced Damage
+p752	Reinforcing	+20-40% Enhanced Damage
+p753	Empowering	+40-60% Enhanced Damage
+p754	Bolstering	+60-80% Enhanced Damage
+p755	Fortifying	+80-120% Enhanced Damage
+p756	Embattled	+120-160% Enhanced Damage
+p757	Rampaging	+160-200% Enhanced Damage
+p758	Lancer's	+3 to Javelin and Spear Skills (Amazon Only)
+p759	Archer's	+3 to Bow and Crossbow Skills (Amazon Only)
+p760	Artificer's	Socketed (3)
+p762	Lancer's	+3 to Javelin and Spear Skills (Amazon Only)
+p763	Maiden's	+1 to Amazon Skill Levels
+p764	Monk's	+1 to Paladin Skill Levels
+p765	Summoner's	+1 to Necromancer Skill Levels
+p766	Angel's	+1 to Sorceress Skill Levels
+p767	Slayer's	+1 to Barbarian Skill Levels
+p768	Shaman's	+1 to Druid Skill Levels
+p769	Magekiller's	+1 to Assassin Skill Levels
+p770	Cerulean	+21-30 to Mana
+p771	Lancer's	+3 to Javelin and Spear Skills (Amazon Only)
+p772	Strange	+151-300 to Attack Rating
+p773	Unearthly	+51-100% Damage to Demons / +101-150 to Attack Rating against Demons
+p774	Plague	+367 poison damage over 6 seconds
+p775	Savage	+66-80% Enhanced Damage
+p776	Cardinal	+10-14 to Minimum Damage
+p777	Penetrating	+5-10% Chance to Pierce
+p778	Puncturing	+11-20% Chance to Pierce
+p779	Piercing	+21-30% Chance to Pierce
+p780	Impaling	+31-40% Chance to Pierce
+p781	Devout	+10-25% Damage to Undead / +25-50 to Attack Rating against Undead
+p782	Consecrated	+25-75% Damage to Undead / +25-75 to Attack Rating against Undead
+p783	Pure	+76-125% Damage to Undead / +76-175 to Attack Rating against Undead
+p784	Champion's	Monster Rarity: +40-50%
+p785	Champion's	Monster Rarity: +50-60%
+p786	Crimson	+5-8 to Minimum Damage
+p787	Serpent's	+11-20 to Mana
+p788	Serpent's	+11-20 to Mana
+p789	Jagged	+10-20% Enhanced Damage
+p790	Deadly	+21-30% Enhanced Damage
+p791	Vicious	+31-40% Enhanced Damage
+p792	Brutal	+41-50% Enhanced Damage
+p793	Massive	+51-65% Enhanced Damage
+p794	Assamic	+10-25% Damage to Demons / +25-50 to Attack Rating against Demons
+p795	Arcadian	+26-50% Damage to Demons / +51-100 to Attack Rating against Demons
+p796	Cultist's	+20% Chance of Open Wounds / +30-40 Open Wounds Damage Per Second
+p797	Bloodthirster's	+20% Chance of Open Wounds / +204-285 Open Wounds Damage Per Second
+p798	Gorelust's	+20% Chance of Open Wounds / +407-563 Open Wounds Damage Per Second
+p799	Cultist's	+5% Chance of Open Wounds / +30-40 Open Wounds Damage Per Second
+p800	Bloodthirster's	+5% Chance of Open Wounds / +65-85 Open Wounds Damage Per Second
+p801	Gorelust's	+5% Chance of Open Wounds / +95-125 Open Wounds Damage Per Second
+p802	Ember	Adds [16-25]-[31-60] fire damage
+p803	Snowflake	Adds [6-9]-[19-30] cold damage
+p804	Virulent	+738 poison damage over 2 seconds
+p805	Infectious	+886 poison damage over 2 seconds
+p806	Fine	+2 to Maximum Damage / +10 to Attack Rating
+p807	Shimmering	All Resistances +3
+p808	Lapis	Cold Resist +7%
+p809	Russet	Fire Resist +7%
+p810	Ocher	Lightning Resist +7%
+p811	Viridian	Poison Resist +7%
+p812	Sizzling	-2 to -4% to Enemy Fire Resistance
+p813	Singeing	-4 to -6% to Enemy Fire Resistance
+p814	Infernal	-6 to -10% to Enemy Fire Resistance
+p815	Frigid	-2 to -4% to Enemy Cold Resistance
+p816	Frostbitten	-4 to -6% to Enemy Cold Resistance
+p817	Subzero	-6 to -10% to Enemy Cold Resistance
+p818	Crackling	-2 to -4% to Enemy Lightning Resistance
+p819	Jolting	-4 to -6% to Enemy Lightning Resistance
+p820	Surging	-6 to -10% to Enemy Lightning Resistance
+p821	Decaying	-2 to -4% to Enemy Poison Resistance
+p822	Festering	-4 to -6% to Enemy Poison Resistance
+p823	Necrotic	-6 to -10% to Enemy Poison Resistance
+p824	Sizzling	-3 to -6% to Enemy Fire Resistance
+p825	Singeing	-6 to -10% to Enemy Fire Resistance
+p826	Infernal	-10 to -15% to Enemy Fire Resistance
+p827	Frigid	-3 to -6% to Enemy Cold Resistance
+p828	Frostbitten	-6 to -10% to Enemy Cold Resistance
+p829	Subzero	-10 to -15% to Enemy Cold Resistance
+p830	Crackling	-3 to -6% to Enemy Lightning Resistance
+p831	Jolting	-6 to -10% to Enemy Lightning Resistance
+p832	Surging	-10 to -15% to Enemy Lightning Resistance
+p833	Champion's	Monster Rarity: +45-60%
+p834	Champion's	Monster Rarity: +60-75%
+p835	Champion's	Monster Rarity: +75-90%
+p836	Flaming	Experience: +6-8% / Monster Density: +26-36% / Monsters have +8-15% to Fire Skill Damage
+p837	Ember	Experience: +8-10% / Monster Density: +36-46% / Monsters have +15-23% to Fire Skill Damage
+p838	Smoldering	Experience: +10-12% / Monster Density: +46-50% / Monsters have +23-30% to Fire Skill Damage
+p839	Hibernal	Monster Density: +26-30% / Magic and Gold Find: +30-40% / Monsters have +8-15% to Cold Skill Damage
+p840	Snowflake	Monster Density: +30-36% / Magic and Gold Find: +50-60% / Monsters have +15-23% to Cold Skill Damage
+p841	Shivering	Monster Density: +36-40% / Magic and Gold Find: +70-80% / Monsters have +23-30% to Cold Skill Damage
+p842	Static	Experience: +6-8% / Monster Density: +26-40% / Monsters have +8-15% to Lightning Skill Damage
+p843	Glowing	Experience: +8-10% / Monster Density: +36-46% / Monsters have +15-23% to Lightning Skill Damage
+p844	Arcing	Experience: +10-12% / Monster Density: +46-50% / Monsters have +23-30% to Lightning Skill Damage
+p845	Toxic	Monster Density: +30-40% / Magic and Gold Find: +10-20% / Monsters have +8-15% to Poison Skill Damage
+p846	Pestilent	Monster Density: +40-50% / Magic and Gold Find: +30-40% / Monsters have +15-23% to Poison Skill Damage
+p847	Septic	Monster Density: +50-60% / Magic and Gold Find: +50-60% / Monsters have +23-30% to Poison Skill Damage
+p848	Silver	Monster Density: +16-20% / Magic and Gold Find: +30-40% / Monsters have +45-75% Attack Rating and Chance to Pierce
+p849	Shining	Monster Density: +30-36% / Magic and Gold Find: +60-70% / Monsters have +75-105% Attack Rating and Chance to Pierce
+p850	Opulent	Monster Density: +36-40% / Magic and Gold Find: +90-100% / Monsters have +105-135% Attack Rating and Chance to Pierce
+p851	Fast	Experience: +6-8% / Monster Density: +30-40% / Monsters have +60-90% Increased Cast and Attack Speed
+p852	Speedy	Experience: +8-10% / Monster Density: +40-50% / Monsters have +90-120% Increased Cast and Attack Speed
+p853	Ludicrous	Experience: +10-12% / Monster Density: +50-60% / Monsters have +120-150% Increased Cast and Attack Speed
+p854	Large	Experience: +12-16% / Monster Density: +30-40% / Monsters have 10-20% Increased Maximum Life
+p855	Huge	Experience: +16-20% / Monster Density: +40-50% / Monsters have 20-30% Increased Maximum Life
+p856	Colossal	Experience: +20-24% / Monster Density: +50-60% / Monsters have 30-40% Increased Maximum Life
+p857	Strong	Experience: +8-10% / Magic and Gold Find: +20-30% / Monsters have +15-23% Enhanced Physical Damage
+p858	Mighty	Experience: +10-12% / Magic and Gold Find: +50-60% / Monsters have +23-30% Enhanced Physical Damage
+p859	Formidable	Experience: +12-14% / Magic and Gold Find: +80-90% / Monsters have +30-38% Enhanced Physical Damage
+p860	Splashing	Monster Density: +16-26% / Magic and Gold Find: +10-20% / Monster's Melee Attacks Deal Splash Damage
+p861	Splashing	Monster Density: +36-46% / Magic and Gold Find: +40-50% / Monster's Melee Attacks Deal Splash Damage
+p862	Splashing	Monster Density: +46-50% / Magic and Gold Find: +70-80% / Monster's Melee Attacks Deal Splash Damage
+p863	Bloody	Experience: +8-10% / Magic and Gold Find: +10-20% / Monsters have 8-15% Chance of Open Wounds
+p864	Gory	Experience: +10-12% / Magic and Gold Find: +40-50% / Monsters have 15-23% Chance of Open Wounds
+p865	Sanguinary	Experience: +12-14% / Magic and Gold Find: +70-80% / Monsters have 23-30% Chance of Open Wounds
+p866	Unhealthy	Experience: +6-8% / Magic and Gold Find: +10-20% / Players have -45 to -60 Drain Life
+p867	Sickly	Experience: +8-10% / Magic and Gold Find: +40-50% / Players have -75 to -90 Drain Life
+p868	Diseased	Experience: +10-12% / Magic and Gold Find: +70-80% / Players have -105 to -120 Drain Life
+p869	Crushing	Monster Density: +16-20% / Magic and Gold Find: +10-20% / Monsters have 23-38% Chance of Crushing Blow
+p870	Smashing	Monster Density: +30-36% / Magic and Gold Find: +40-50% / Monsters have 38-53% Chance of Crushing Blow
+p871	Obliterating	Monster Density: +36-40% / Magic and Gold Find: +70-80% / Monsters have 53-68% Chance of Crushing Blow
+p872	Sparking	Monster Density: +26-30% / Magic and Gold Find: +10-20% / Monsters have +90-120% of Physical Damage as Extra Lightning Damage
+p873	Shocking	Monster Density: +30-36% / Magic and Gold Find: +40-50% / Monsters have +105-135% of Physical Damage as Extra Lightning Damage
+p874	Thunderous	Monster Density: +36-40% / Magic and Gold Find: +70-80% / Monsters have +120-150% of Physical Damage as Extra Lightning Damage
+p875	Chilling	Monster Density: +26-30% / Magic and Gold Find: +10-20% / Monsters have +90-120% of Physical Damage as Extra Cold Damage
+p876	Boreal	Monster Density: +30-36% / Magic and Gold Find: +40-50% / Monsters have +105-135% of Physical Damage as Extra Cold Damage
+p877	Glacial	Monster Density: +36-40% / Magic and Gold Find: +70-80% / Monsters have +120-150% of Physical Damage as Extra Cold Damage
+p878	Smoking	Monster Density: +26-30% / Magic and Gold Find: +10-20% / Monsters have +90-120% of Physical Damage as Extra Fire Damage
+p879	Molten	Monster Density: +30-36% / Magic and Gold Find: +40-50% / Monsters have +105-135% of Physical Damage as Extra Fire Damage
+p880	Volcanic	Monster Density: +36-40% / Magic and Gold Find: +70-80% / Monsters have +120-150% of Physical Damage as Extra Fire Damage
+p881	Poisonous	Monster Density: +26-30% / Magic and Gold Find: +10-20% / Monsters have +185-245% of Physical Damage as Extra Poison Damage over 5 Seconds
+p882	Envenomed	Monster Density: +30-36% / Magic and Gold Find: +40-50% / Monsters have +215-276% of Physical Damage as Extra Poison Damage over 5 Seconds
+p883	Plagued	Monster Density: +36-40% / Magic and Gold Find: +70-80% / Monsters have +245-308% of Physical Damage as Extra Poison Damage over 5 Seconds
+p884	Runic	Monster Density: +26-30% / Magic and Gold Find: +10-20% / Monsters have +12-15% of Physical Damage as Extra Magic Damage
+p885	Taboo	Monster Density: +30-36% / Magic and Gold Find: +40-50% / Monsters have +15-18% of Physical Damage as Extra Magic Damage
+p886	Occult	Monster Density: +36-40% / Magic and Gold Find: +70-80% / Monsters have +18-21% of Physical Damage as Extra Magic Damage
+p887	Felicitous	5-10% Better Chance of Getting Magic Items
+p888	Fortuitous	11-15% Better Chance of Getting Magic Items
+p889	Drake's	+21-30 to Mana
+p890	Tricky	13-20% Damage Taken Gained as Mana when Hit
+p891	Devious	21-30% Damage Taken Gained as Mana when Hit
+p892	Swift	+4-5% Increased Attack Speed
+p893	Quick	+6-7% Increased Attack Speed
+p894	Arcane	+3-4% Faster Cast Rate
+p895	Mystic	+5-6% Faster Cast Rate
+p896	Siphoning	+5-8 to Mana after each Kill
+p897	Lifeforged	+5-8 Life after each Kill
+p898	Ruby	Fire Resist +31-40%
+p899	Sapphire	Cold Resist +31-40%
+p900	Amber	Lightning Resist +31-40%
+p901	Emerald	Poison Resist +31-40%
+p902	Relentless	+5-10% Chance of Deadly Strike
+p903	Rending	+10-15% Chance of Deadly Strike
+p904	Rending	+4-7% Chance of Deadly Strike
+p905	Ruthless	+15-20% Chance of Deadly Strike
+p906	Ruthless	+7-10% Chance of Deadly Strike
+p907	Cracking	+5-10% Chance of Crushing Blow
+p908	Shattering	+10-15% Chance of Crushing Blow
+p909	Shattering	+4-7% Chance of Crushing Blow
+p910	Sundering	+15-20% Chance of Crushing Blow
+p911	Sundering	+7-10% Chance of Crushing Blow
+p912	Angel's	+1 to Sorceress Skill Levels
+p913	Arch-Angel's	+2 to Sorceress Skill Levels
+p914	Triumphant	+1-2 to Mana after each Kill
+p915	Victorious	+3-5 to Mana after each Kill
+p916	Aureolin	+2-3 to Mana after each Kill
+p917	Blood Letting	+1-2 Life after each Kill
+p918	Murderous	+3-5 Life after each Kill
+p919	Blood Sucking	+2-3 Life after each Kill
+p920	Slayer's	+1 to Barbarian Skill Levels
+p921	Berserker's	+2 to Barbarian Skill Levels
+p922	Jagged	+10-20% Enhanced Damage
+p923	Deadly	+21-30% Enhanced Damage
+p924	Impenetrable	+79-92 Defense
+p925	Merciless	+41-50% Enhanced Damage
+p926	Tempered	+9-12 to Minimum Damage
+p927	Flaring	+16-20 to Maximum Damage
+p928	Enthropic	13-18% Damage Taken Gained as Mana when Hit
+p929	Mercenary	+140-179 to Attack Rating
+p930	Zaffre	+31-40 to Mana
+p931	Opalescent	All Resistances +16-20
+p932	Haast	Cold Resist +31-45%
+p933	Magma	Fire Resist +31-45%
+p934	Maelstorm	Lightning Resist +31-45%
+p935	Explusion	Poison Resist +31-45%
+p936	Retention	+4-6 to Mana after each Kill
+p937	Masterstroke	+4-6 Life after each Kill
+p938	Hemorrhaging	+9% Chance of Open Wounds / +157-187 Open Wounds Damage Per Second
+p939	Virile	Increase Maximum Life 4-5%
+p941	Impenetrable	+100-140 Defense
+p942	Tempered	+8-9 to Minimum Damage
+p943	Flaring	+14-15 to Maximum Damage
+p944	Mercenary	+133-147 to Attack Rating
+p945	Emperor	+11-14 to Maximum Damage / +77-104 to Attack Rating
+p946	Zaffre	+60-67 to Mana
+p947	Opalescent	All Resistances +16-18
+p948	Haast	Cold Resist +31-35%
+p949	Magma	Fire Resist +31-35%
+p950	Maelstorm	Lightning Resist +31-35%
+p951	Explusion	Poison Resist +31-35%
+p952	Entombing	Adds [36-41]-[74-93] cold damage
+p953	Cremating	Adds [52-76]-[79-103] fire damage
+p954	Discharging	Adds 1-[136-187] lightning damage
+p955	of Expertise	+3-5% to Skill AoE
+p956	of Mastery	+6-8% to Skill AoE
+p957	of Grandmastery	+9-12% to Skill AoE
+s115	of Health	Physical Damage Taken Reduced by 1
+s116	of Protection	Physical Damage Taken Reduced by 2
+s117	of Absorption	Physical Damage Taken Reduced by 3
+s118	of Life	Physical Damage Taken Reduced by 4
+s119	of Life Everlasting	Physical Damage Taken Reduced by 10-25
+s120	of Protection	Physical Damage Taken Reduced by 2
+s121	of Absorption	Physical Damage Taken Reduced by 3
+s122	of Life	Physical Damage Taken Reduced by 4-7
+s123	of Anima	Physical Damage Taken Reduced by 8-15
+s124	of Warding	Magic Damage Taken Reduced by 1-2
+s125	of the Sentinel	Magic Damage Taken Reduced by 2-4
+s126	of Guarding	Magic Damage Taken Reduced by 3-6
+s127	of Negation	Magic Damage Taken Reduced by 8-12
+s128	of the Sentinel	Magic Damage Taken Reduced by 2-4
+s129	of Guarding	Magic Damage Taken Reduced by 3-6
+s130	of Negation	Magic Damage Taken Reduced by 8-12
+s158	of Piercing	Ignore Target's Defense
+s161	of Thorns	Attacker Takes Damage of 3-6
+s162	of Spikes	Attacker Takes Damage of 8-12
+s163	of Razors	Attacker Takes Damage of 31-40
+s164	of Swords	Attacker Takes Damage of 80-160
+s165	of Malice	Attacker Takes Damage of 30-40
+s166	of Readiness	+10% Increased Attack Speed
+s167	of Alacrity	+20% Increased Attack Speed
+s168	of Swiftness	+30% Increased Attack Speed
+s169	of Quickness	+40% Increased Attack Speed
+s170	of Alacrity	+20% Increased Attack Speed
+s171	of Fervor	+15% Increased Attack Speed
+s172	of Blocking	+15% Faster Block Rate / 10% Increased Chance of Blocking
+s173	of Deflecting	+30% Faster Block Rate / 20% Increased Chance of Blocking
+s174	of the Apprentice	+10% Faster Cast Rate
+s175	of the Magus	+20% Faster Cast Rate
+s176	of Frost	Adds 1-[1-2] cold damage
+s177	of the Icicle	Adds [3-4]-[12-16] cold damage
+s178	of the Glacier	Adds [14-21]-[45-71] cold damage
+s179	of Winter	Adds [44-60]-[126-246] cold damage
+s180	of Frost	Adds 1-[3-6] cold damage
+s181	of Frigidity	Adds 1-[3-5] cold damage
+s182	of Warmth	Half Freeze Duration
+s183	of Flame	Adds 1-[2-5] fire damage
+s184	of Fire	Adds [2-8]-[12-22] fire damage
+s185	of Burning	Adds [20-30]-[37-72] fire damage
+s186	of Incineration	Adds [57-90]-[102-146] fire damage
+s188	of Passion	Adds [1-3]-[6-10] fire damage
+s189	of Shock	Adds 1-[3-8] lightning damage
+s190	of Lightning	Adds 1-[14-24] lightning damage
+s191	of Thunder	Adds 1-[34-84] lightning damage
+s192	of Storms	Adds [1-6]-[85-126] lightning damage
+s193	of Shock	Adds 1-[11-23] lightning damage
+s194	of Ennui	Adds 1-[10-20] lightning damage
+s195	of Craftsmanship	+1 to Maximum Damage
+s196	of Quality	+2 to Maximum Damage
+s197	of Maiming	+3-4 to Maximum Damage
+s198	of Slaying	+5-7 to Maximum Damage
+s199	of Gore	+8-10 to Maximum Damage
+s200	of Carnage	+11-14 to Maximum Damage
+s201	of Slaughter	+15-20 to Maximum Damage
+s202	of Butchery	+21-40 to Maximum Damage
+s203	of Evisceration	+41-63 to Maximum Damage
+s204	of Maiming	+3-4 to Maximum Damage
+s205	of Craftsmanship	+1-2 to Maximum Damage
+s206	of Craftsmanship	+2-3 to Maximum Damage
+s207	of Craftsmanship	+4-5 to Maximum Damage
+s208	of Quality	+6-7 to Maximum Damage
+s209	of Quality	+7-8 to Maximum Damage
+s210	of Maiming	+9-10 to Maximum Damage
+s211	of Maiming	+11-12 to Maximum Damage
+s220	of Ire	+2-5 to Maximum Damage
+s221	of Wrath	+6-9 to Maximum Damage
+s222	of Carnage	+11-15 to Maximum Damage
+s223	of Worth	+1-2 to Minimum Damage
+s224	of Measure	+3-4 to Minimum Damage
+s225	of Excellence	+5-8 to Minimum Damage
+s226	of Performance	+9-14 to Minimum Damage
+s227	of Transcendence	+15-20 to Minimum Damage
+s228	of Worth	+2-3 to Minimum Damage
+s229	of Measure	+4-5 to Minimum Damage
+s230	of Excellence	+6-9 to Minimum Damage
+s231	of Performance	+10-13 to Minimum Damage
+s232	of Joyfulness	+1-4 to Minimum Damage
+s233	of Bliss	+5-10 to Minimum Damage
+s234	of Blight	+7 poison damage over 3 seconds
+s235	of Venom	+21 poison damage over 4 seconds
+s236	of Pestilence	+50 poison damage over 5 seconds
+s237	of Anthrax	+100 poison damage over 6 seconds
+s238	of Blight	+50 poison damage over 3 seconds
+s239	of Envy	+20 poison damage over 2 seconds
+s240	of Dexterity	+1-2 to Dexterity
+s241	of Skill	+3-5 to Dexterity
+s242	of Accuracy	+6-9 to Dexterity
+s243	of Precision	+10-15 to Dexterity
+s244	of Perfection	+16-20 to Dexterity
+s245	of Nirvana	+21-30 to Dexterity
+s246	of Dexterity	+1-2 to Dexterity
+s247	of Skill	+3-5 to Dexterity
+s248	of Accuracy	+6-9 to Dexterity
+s249	of Precision	+10-15 to Dexterity
+s250	of Perfection	+16-20 to Dexterity
+s251	of Dexterity	+2-3 to Dexterity
+s252	of Skill	+4-5 to Dexterity
+s253	of Accuracy	+6-9 to Dexterity
+s254	of Precision	+10-15 to Dexterity
+s255	of Dexterity	+3-4 to Dexterity
+s256	of Dexterity	+2-3 to Dexterity
+s257	of Dexterity	+1 to Dexterity
+s258	of Dexterity	+5-6 to Dexterity
+s259	of Dexterity	+4-5 to Dexterity
+s260	of Dexterity	+2 to Dexterity
+s261	of Daring	+1-3 to Dexterity
+s262	of Balance	+10% Faster Hit Recovery
+s263	of Equilibrium	+17% Faster Hit Recovery
+s264	of Stability	+24% Faster Hit Recovery
+s265	of Balance	+12% Faster Hit Recovery
+s266	of Balance	+8% Faster Hit Recovery
+s267	of Balance	+5% Faster Hit Recovery
+s268	of Truth	+7% Faster Hit Recovery
+s269	of Regeneration	Replenish Life +6-10
+s270	of Regeneration	Replenish Life +6-10
+s271	of Regeneration	Replenish Life +6-10
+s272	of Regrowth	Replenish Life +12-20
+s273	of Regrowth	Replenish Life +12-18
+s274	of Revivification	Replenish Life +22-30
+s275	of Honor	Replenish Life +1-4
+s276	of Vileness	Prevent Monster Heal
+s277	of Greed	25-40% Extra Gold from Monsters
+s278	of Wealth	41-80% Extra Gold from Monsters
+s279	of Greed	10-20% Extra Gold from Monsters
+s280	of Greed	21-30% Extra Gold from Monsters
+s281	of Greed	31-40% Extra Gold from Monsters
+s282	of Greed	5-10% Extra Gold from Monsters
+s283	of Greed	11-22% Extra Gold from Monsters
+s284	of Greed	5-10% Extra Gold from Monsters
+s285	of Avarice	10-30% Extra Gold from Monsters
+s286	of Chance	5-15% Better Chance of Getting Magic Items
+s287	of Fortune	16-25% Better Chance of Getting Magic Items
+s288	of Fortune	16-25% Better Chance of Getting Magic Items
+s289	of Luck	26-35% Better Chance of Getting Magic Items
+s290	of Fortune	3-5% Better Chance of Getting Magic Items
+s291	of Good Luck	6-7% Better Chance of Getting Magic Items
+s292	of Prosperity	5-10% Better Chance of Getting Magic Items
+s293	of Energy	+1-3 to Energy
+s294	of the Mind	+4-6 to Energy
+s295	of Brilliance	+7-10 to Energy
+s296	of Sorcery	+11-15 to Energy
+s297	of Wizardry	+16-20 to Energy
+s298	of Enlightenment	+21-30 to Energy
+s299	of Energy	+1-3 to Energy
+s300	of the Mind	+4-6 to Energy
+s301	of Brilliance	+7-10 to Energy
+s302	of Sorcery	+11-15 to Energy
+s303	of Wizardry	+16-20 to Energy
+s304	of Energy	+1-3 to Energy
+s305	of the Mind	+4-6 to Energy
+s306	of Brilliance	+7-10 to Energy
+s307	of Sorcery	+11-15 to Energy
+s308	of Knowledge	+1-5 to Energy
+s309	of the Bear	Knockback
+s310	of Light	+15-30 to Attack Rating / +1 to Light Radius
+s311	of Radiance	+30-60 to Attack Rating / +3 to Light Radius
+s312	of the Sun	10-20% Bonus to Attack Rating / +5 to Light Radius
+s313	of the Jackal	+1-5 to Life
+s314	of the Fox	+6-10 to Life
+s315	of the Wolf	+11-20 to Life
+s316	of the Tiger	+21-30 to Life
+s317	of the Mammoth	+31-40 to Life
+s318	of the Colosuss	+41-60 to Life
+s319	of the Squid	+61-80 to Life
+s320	of the Whale	+81-100 to Life
+s321	of the Jackal	+1-5 to Life
+s322	of the Fox	+6-10 to Life
+s323	of the Wolf	+11-20 to Life
+s324	of the Tiger	+21-30 to Life
+s325	of the Mammoth	+31-40 to Life
+s326	of the Colosuss	+41-60 to Life
+s327	of the Jackal	+1-5 to Life
+s328	of the Fox	+6-10 to Life
+s329	of the Wolf	+11-20 to Life
+s330	of the Tiger	+21-30 to Life
+s331	of the Mammoth	+31-40 to Life
+s332	of Life	+5-10 to Life
+s333	of Life	+11-15 to Life
+s334	of Life	+16-20 to Life
+s335	of Substinence	+21-25 to Life
+s336	of Substinence	+26-30 to Life
+s337	of Substinence	+31-35 to Life
+s338	of Vita	+36-40 to Life
+s339	of Vita	+41-45 to Life
+s340	of Vita	+46-50 to Life
+s341	of Life	+6-10 to Life
+s342	of Life	+11-15 to Life
+s343	of Substinence	+16-20 to Life
+s344	of Substinence	+21-25 to Life
+s345	of Vita	+26-30 to Life
+s346	of Vita	+31-35 to Life
+s347	of Life	+5-10 to Life
+s348	of Substinence	+11-15 to Life
+s349	of Vita	+16-20 to Life
+s350	of Spirit	+3-8 to Life
+s351	of Hope	+9-20 to Life
+s352	of the Leech	4-5% Life stolen per hit
+s353	of the Locust	6-7% Life stolen per hit
+s354	of the Lamprey	8-9% Life stolen per hit
+s355	of the Leech	3-4% Life stolen per hit
+s356	of the Locust	5-6% Life stolen per hit
+s357	of the Lamprey	7-8% Life stolen per hit
+s358	of the Leech	3% Life stolen per hit
+s359	of the Bat	4-5% Mana stolen per hit
+s360	of the Wraith	6-7% Mana stolen per hit
+s361	of the Vampire	8-9% Mana stolen per hit
+s362	of the Bat	3-4% Mana stolen per hit
+s363	of the Wraith	5-6% Mana stolen per hit
+s364	of the Vampire	7-8% Mana stolen per hit
+s365	of the Bat	3% Mana stolen per hit
+s366	of Defiance	Poison Length Reduced by 75%
+s367	of Amelioration	Poison Length Reduced by 50%
+s368	of Remedy	Poison Length Reduced by 25%
+s369	of Simplicity	Requirements -30%
+s370	of Ease	Requirements -20%
+s371	of Freedom	Requirements -15%
+s372	of Strength	+1-2 to Strength
+s373	of Might	+3-5 to Strength
+s374	of the Ox	+6-9 to Strength
+s375	of the Giant	+10-15 to Strength
+s376	of the Titan	+16-20 to Strength
+s377	of Atlus	+21-30 to Strength
+s378	of Strength	+1-2 to Strength
+s379	of Might	+3-5 to Strength
+s380	of the Ox	+6-9 to Strength
+s381	of the Giant	+10-15 to Strength
+s382	of the Titan	+16-20 to Strength
+s383	of Strength	+1-2 to Strength
+s384	of Might	+3-5 to Strength
+s385	of the Ox	+6-9 to Strength
+s386	of the Giant	+10-15 to Strength
+s387	of Strength	+3-4 to Strength
+s388	of Strength	+2-3 to Strength
+s389	of Strength	+1 to Strength
+s390	of Strength	+5-6 to Strength
+s391	of Strength	+4-5 to Strength
+s392	of Strength	+2 to Strength
+s393	of Virility	+1-4 to Strength
+s394	of Pacing	+10% Faster Run/Walk
+s395	of Haste	+20% Faster Run/Walk
+s396	of Speed	+30% Faster Run/Walk
+s397	of Traveling	+30% Faster Run/Walk / 80-90% Slower Stamina Drain
+s398	of Acceleration	+40% Faster Run/Walk
+s399	of Inertia	+7% Faster Run/Walk
+s400	of Inertia	+5% Faster Run/Walk
+s401	of Inertia	+3% Faster Run/Walk
+s402	of Self-Repair	Repairs 1 durability in 33 seconds
+s403	of Fast Repair	Repairs 1 durability in 20 seconds
+s404	of Ages	Indestructible
+s407	of the Kraken	+0-74 to Life (Based on Character Level), 0.75 per level
+s408	of Memory	+0-74 to Mana (Based on Character Level), 0.75 per level
+s409	of the Elephant	+0-49 to Life (Based on Character Level), 0.5 per level / +0-24 to Mana (Based on Character Level), 0.25 per level
+s418	of Firebolts	10% Chance to cast level 8 Fire Bolt on striking
+s421	of Charged Shield	10% Chance to cast level 3 Charged Bolt when struck
+s422	of Charged Shield	12% Chance to cast level 4 Charged Bolt when struck
+s423	of Charged Shield	14% Chance to cast level 5 Charged Bolt when struck
+s428	of Frost Shield	5% Chance to cast level 3 Frost Nova when struck
+s432	of Nova	10% Chance to cast level 3 Nova on striking
+s433	of Nova	12% Chance to cast level 4 Nova on striking
+s434	of Nova Shield	10% Chance to cast level 3 Nova when struck
+s435	of Nova Shield	12% Chance to cast level 4 Nova when struck
+s436	of Nova Shield	14% Chance to cast level 5 Nova when struck
+s454	of Hydra Shield	10% Chance to cast level 3 Hydra when struck
+s511	of Telekinesis	Level [1-5] Telekinesis ([22-32]/[22-32] Charges)
+s532	of Teleportation	Level [1-6] Teleport ([33-52]/[33-52] Charges)
+s533	of Teleportation	Level [1-3] Teleport ([22-27]/[22-27] Charges)
+s578	of Life Tap	Level 1 Life Tap (67/67 Charges)
+s579	of Life Tap	Level 1 Life Tap (22/22 Charges)
+s594	of Lower Resistance	Level 15 Lower Resist (80/80 Charges)
+s595	of Lower Resistance	Level 15 Lower Resist (80/80 Charges)
+s662	of Damage Amplification	8% Chance to cast level 15 Amplify Damage on striking
+s663	of the Icicle	Adds [2-3]-[6-10] cold damage
+s664	of the Glacier	Adds [4-5]-[11-15] cold damage
+s665	of Fire	Adds [4-10]-[11-30] fire damage
+s666	of Burning	Adds [11-25]-[31-50] fire damage
+s667	of Lightning	Adds 1-[21-60] lightning damage
+s668	of Thunder	Adds 1-[61-100] lightning damage
+s669	of Daring	+4-6 to Dexterity
+s670	of Daring	+7-9 to Dexterity
+s671	of Knowledge	+4-6 to Energy
+s672	of Knowledge	+7-9 to Energy
+s673	of Virility	+5-6 to Strength
+s674	of Virility	+7-9 to Strength
+s675	of Readiness	+10% Increased Attack Speed
+s676	of Craftsmanship	+1 to Maximum Damage
+s677	of Quality	+2 to Maximum Damage
+s678	of Maiming	+3-4 to Maximum Damage
+s679	of Craftsmanship	+1 to Maximum Damage
+s680	of Quality	+2 to Maximum Damage
+s681	of Craftsmanship	+1 to Maximum Damage
+s682	of Blight	+11 poison damage over 2 seconds
+s683	of Venom	+19 poison damage over 2 seconds
+s684	of Pestilence	+32 poison damage over 2 seconds
+s685	of Anthrax	+154 poison damage over 2 seconds
+s686	of Blight	+8 poison damage over 2 seconds
+s687	of Venom	+14 poison damage over 2 seconds
+s688	of Pestilence	+26 poison damage over 2 seconds
+s689	of Anthrax	+42 poison damage over 2 seconds
+s690	of Blight	+4 poison damage over 2 seconds
+s691	of Venom	+7 poison damage over 2 seconds
+s692	of Pestilence	+13 poison damage over 2 seconds
+s693	of Anthrax	+21 poison damage over 2 seconds
+s694	of Frost	Adds 3-[4-5] cold damage
+s695	of the Icicle	Adds 5-[8-13] cold damage
+s696	of the Glacier	Adds 11-[16-22] cold damage
+s697	of Winter	Adds [16-19]-[27-35] cold damage
+s698	of Frost	Adds 2-[3-4] cold damage
+s699	of the Icicle	Adds 4-[6-10] cold damage
+s700	of the Glacier	Adds 8-[12-16] cold damage
+s701	of Winter	Adds [12-14]-[20-26] cold damage
+s702	of Frost	Adds 1-2 cold damage
+s703	of the Icicle	Adds 2-[3-5] cold damage
+s704	of the Glacier	Adds 4-[6-8] cold damage
+s705	of Winter	Adds [6-7]-[10-13] cold damage
+s706	of Flame	Adds [2-3]-[5-6] fire damage
+s707	of Fire	Adds 5-[8-13] fire damage
+s708	of Burning	Adds [9-15]-[19-24] fire damage
+s709	of Incineration	Adds [16-22]-[27-41] fire damage
+s710	of Flame	Adds 2-4 fire damage
+s711	of Fire	Adds 4-[6-10] fire damage
+s712	of Burning	Adds [6-10]-[14-18] fire damage
+s713	of Incineration	Adds [12-16]-[20-30] fire damage
+s714	of Flame	Adds 1-2 fire damage
+s715	of Fire	Adds 2-[3-5] fire damage
+s716	of Burning	Adds [3-5]-[7-9] fire damage
+s717	of Incineration	Adds [6-8]-[10-15] fire damage
+s718	of Shock	Adds 1-[8-14] lightning damage
+s719	of Lightning	Adds 1-[16-32] lightning damage
+s720	of Thunder	Adds 1-[27-43] lightning damage
+s721	of Storms	Adds 1-[46-68] lightning damage
+s722	of Shock	Adds 1-[6-10] lightning damage
+s723	of Lightning	Adds 1-[12-18] lightning damage
+s724	of Thunder	Adds 1-[20-32] lightning damage
+s725	of Storms	Adds 1-[34-50] lightning damage
+s726	of Shock	Adds 1-[3-5] lightning damage
+s727	of Lightning	Adds 1-[6-9] lightning damage
+s728	of Thunder	Adds 1-[10-16] lightning damage
+s729	of Storms	Adds 1-[17-25] lightning damage
+s730	of Dexterity	+1 to Dexterity
+s731	of Dexterity	+1 to Dexterity
+s732	of Strength	+1 to Strength
+s733	of Strength	+1 to Strength
+s734	of Thorns	Attacker Takes Damage of 1
+s735	of Frost	+1 cold damage
+s736	of Flame	Adds 1-2 fire damage
+s737	of Blight	+2 poison damage over 2 seconds
+s738	of Shock	Adds 1-3 lightning damage
+s739	of Regeneration	Replenish Life +4
+s740	of Energy	+1 to Energy
+s741	of Light	+10 to Attack Rating / +1 to Light Radius
+s742	of the Leech	2-3% Life stolen per hit
+s743	of the Locust	4-5% Life stolen per hit
+s744	of the Lamprey	6% Life stolen per hit
+s745	of the Bat	2-3% Mana stolen per hit
+s746	of the Wraith	4-5% Mana stolen per hit
+s747	of the Vampire	6% Mana stolen per hit
+s749	of Sturdiness	Experience: +3-4% / Magic and Gold Find: +10-15% / Monsters have +50-100% Enhanced Defense
+s750	of Stability	Experience: +4-5% / Magic and Gold Find: +25-30% / Monsters have +100-150% Enhanced Defense
+s751	of Vigor	Experience: +5-6% / Magic and Gold Find: +40-45% / Monsters have +150-200% Enhanced Defense
+s752	of Crimson	Experience: +3-4% / Monster Density: +13-18% / Monsters have 4-6% Cold Absorb
+s753	of Crimson	Experience: +4-5% / Monster Density: +18-23% / Monsters have 6-8% Cold Absorb
+s754	of Crimson	Experience: +5-6% / Monster Density: +23-25% / Monsters have 8-10% Cold Absorb
+s755	of Tangerine	Experience: +3-4% / Monster Density: +13-18% / Monsters have 4-6% Magic Absorb
+s756	of Tangerine	Experience: +4-5% / Monster Density: +18-23% / Monsters have 6-8% Magic Absorb
+s757	of Tangerine	Experience: +5-6% / Monster Density: +20-25% / Monsters have 8-10% Magic Absorb
+s758	of Opal	Experience: +3-4% / Monster Density: +13-18% / Monsters have 4-6% Lightning Absorb
+s759	of Opal	Experience: +4-5% / Monster Density: +18-23% / Monsters have 6-8% Lightning Absorb
+s760	of Opal	Experience: +5-6% / Monster Density: +20-25% / Monsters have 8-10% Lightning Absorb
+s761	of Azure	Experience: +3-4% / Monster Density: +13-18% / Monsters have 4-6% Fire Absorb
+s762	of Azure	Experience: +4-5% / Monster Density: +18-23% / Monsters have 6-8% Fire Absorb
+s763	of Azure	Experience: +5-6% / Monster Density: +18-25% / Monsters have 8-10% Fire Absorb
+s764	of Protection	Monster Density: +13-15% / Magic and Gold Find: +15-20% / Monsters take 100-200 Reduced Physical Damage
+s765	of Security	Monster Density: +15-18% / Magic and Gold Find: +30-35% / Monsters take 300-400 Reduced Physical Damage
+s766	of Safety	Monster Density: +18-23% / Magic and Gold Find: +45-50% / Monsters take 500-600 Reduced Physical Damage
+s767	of Swiftness	Experience: +3-4% / Monster Density: +15-20% / Monsters have 20-30% increased Velocity
+s768	of Quickness	Experience: +4-5% / Monster Density: +20-25% / Monsters have 30-40% increased Velocity
+s769	of Velocity	Experience: +5-6% / Monster Density: +25-30% / Monsters have 40-50% increased Velocity
+s770	of Regeneration	Experience: +3-4% / Magic and Gold Find: +20-25% / Monsters have +1024-1560 Replenish Life
+s771	of Renewal	Experience: +4-5% / Magic and Gold Find: +35-40% / Monsters have +1560-2048 Replenish Life
+s772	of Rebirth	Experience: +5-6% / Magic and Gold Find: +50-55% / Monsters have +2048-2560 Replenish Life
+s773	of the Leech	Experience: +5-6% / Monster Density: +13-15% / Monsters have 4-8% Life stolen per hit / Monsters have 4-8% Increased Maximum Life
+s774	of the Parasite	Experience: +6-7% / Monster Density: +15-20% / Monsters have 8-12% Life stolen per hit / Monsters have 8-12% Increased Maximum Life
+s775	of the Bloodsucker	Experience: +7-8% / Monster Density: +18-20% / Monsters have 12-16% Life stolen per hit / Monsters have 12-16% Increased Maximum Life
+s776	of Resilience	Monster Density: +15-20% / Magic and Gold Find: +10-15% / Monsters have +40-60% Faster Hit Recovery
+s777	of Hardiness	Monster Density: +20-25% / Magic and Gold Find: +25-30% / Monsters have +60-80% Faster Hit Recovery
+s778	of Fortitude	Monster Density: +25-30% / Magic and Gold Find: +40-45% / Monsters have +80-100% Faster Hit Recovery
+s779	of Health	Experience: +6-8% / Monster Density: +15-20% / Monsters have 5-10% Increased Maximum Life
+s780	of Vitality	Experience: +8-10% / Monster Density: +20-25% / Monsters have 10-15% Increased Maximum Life
+s781	of Vim	Experience: +10-12% / Monster Density: +25-30% / Monsters have 15-20% Increased Maximum Life
+s782	of Imbalance	Experience: +3-4% / Monster Density: +15-20% / Players have -10 to -20% Faster Hit Recovery
+s783	of Inequality	Experience: +4-5% / Monster Density: +20-25% / Players have -20 to -30% Faster Hit Recovery
+s784	of Uneveness	Experience: +5-6% / Monster Density: +25-30% / Players have -30 to -40% Faster Hit Recovery
+s785	of Warding	Experience: +5-6% / Magic and Gold Find: +20-25% / Monsters have 20-40% Curse Duration Reduction
+s786	of Guarding	Experience: +6-7% / Magic and Gold Find: +35-40% / Monsters have 40-60% Curse Duration Reduction
+s787	of Preservation	Experience: +7-8% / Magic and Gold Find: +50-55% / Monsters have 60-80% Curse Duration Reduction
+s788	of Hindrance	Experience: +4-5% / Magic and Gold Find: +15-20% / Players have -10 to -15% to All Resistances
+s789	of Aversion	Experience: +5-6% / Magic and Gold Find: +30-35% / Players have -15 to -20% to All Resistances
+s790	of Permeability	Experience: +6-7% / Magic and Gold Find: +50-55% / Players have -20 to -25% to All Resistances
+s791	of Cracking	Monster Density: +13-18% / Magic and Gold Find: +15-20% / Players have -20 to -30% Enhanced Defense
+s792	of Crumbling	Monster Density: +15-18% / Magic and Gold Find: +30-35% / Players have -30 to -40% Enhanced Defense
+s793	of Disintegration	Monster Density: +18-20% / Magic and Gold Find: +45-50% / Players have -40 to -50% Enhanced Defense
+s794	of Fumbling	Monster Density: +13-18% / Magic and Gold Find: +15-20% / Players have -10 to -20% Chance to Block
+s795	of Bumbling	Monster Density: +18-23% / Magic and Gold Find: +30-35% / Players have -20 to -30% Chance to Block
+s796	of Blundering	Monster Density: +23-25% / Magic and Gold Find: +40-50% / Players have -30 to -40% Chance to Block
+s797	of Defending	Physical Damage Taken Reduced by 8-14%
+s798	of Defending	Physical Damage Taken Reduced by 5-10%
+s799	of Protecting	Physical Damage Taken Reduced by 14-20%
+s800	of Guardianship	Physical Damage Taken Reduced by 20-25%
+s801	of Savagery	+5-10% Chance of Deadly Strike
+s802	of Devastation	+10-15% Chance of Deadly Strike
+s803	of Havoc	+15-20% Chance of Deadly Strike
+s804	of Destruction	+20-25% Chance of Deadly Strike
+s805	of Desolation	+25-30% Chance of Deadly Strike
+s806	of Bleeding	+10% Chance of Open Wounds / +8-12 Open Wounds Damage Per Second
+s807	of Siphoning	+10% Chance of Open Wounds / +15-20 Open Wounds Damage Per Second
+s808	of Gory	+10% Chance of Open Wounds / +33-46 Open Wounds Damage Per Second
+s809	of Sanguinary	+10% Chance of Open Wounds / +122-172 Open Wounds Damage Per Second
+s810	of Hematic	+10% Chance of Open Wounds / +235-325 Open Wounds Damage Per Second
+s811	of Chipping	+5-10% Chance of Crushing Blow
+s812	of Crumbling	+10-15% Chance of Crushing Blow
+s813	of Breaking	+15-20% Chance of Crushing Blow
+s814	of Crushing	+20-25% Chance of Crushing Blow
+s815	of Pulverizing	+25-30% Chance of Crushing Blow
+s816	of the Apprentice	+10% Faster Cast Rate
+s817	of the Apprentice	+10% Faster Cast Rate
+s818	of the Magus	+20% Faster Cast Rate
+s819	of the Squid	+61-80 to Life
+s820	of the Whale	+81-100 to Life
+s821	of the Kraken	+0-74 to Life (Based on Character Level), 0.75 per level
+s822	of Clarity	+60-120 to Attack Rating / +4 to Light Radius
+s823	of Divinity	+120-240 to Attack Rating / +5 to Light Radius
+s824	of the Dawn	10% Bonus to Attack Rating / +5 to Light Radius
+s825	of Pacing	+10% Faster Run/Walk
+s826	of Haste	+20% Faster Run/Walk
+s827	of Evisceration	+41-63 to Maximum Damage
+s828	of Carnage	+11-14 to Maximum Damage
+s834	of the Bear	Knockback
+s835	of the Lamprey	6-9% Life stolen per hit
+s836	of the Vampire	6-9% Mana stolen per hit
+s840	of the Smith	
+s841	of the Smith	
+s842	of the Smith	
+s843	of the Armorer	
+s844	of the Armorer	
+s845	of the Armorer	
+s847	of Radiance	+30-60 to Attack Rating / +3 to Light Radius
+s848	of the Fox	+6-10 to Life
+s849	of Might	+3-5 to Strength
+s850	of the Wolf	+11-20 to Life
+s851	of the Wolf	+11-20 to Life
+s852	of the Dawn	10% Bonus to Attack Rating / +5-8 to Light Radius
+s853	of Fireball	14% Chance to cast level 18 Fire Ball on casting
+s854	of Fireball	14% Chance to cast level 24 Fire Ball on casting
+s855	of Fireball	14% Chance to cast level 30 Fire Ball on casting
+s856	of Fireball	16% Chance to cast level 18 Fire Ball on striking
+s857	of Fireball	16% Chance to cast level 24 Fire Ball on striking
+s858	of Fireball	16% Chance to cast level 30 Fire Ball on striking
+s859	of Lightning	14% Chance to cast level 18 Lightning Fusillade on casting
+s860	of Lightning	14% Chance to cast level 24 Lightning Fusillade on casting
+s861	of Lightning	14% Chance to cast level 30 Lightning Fusillade on casting
+s862	of Lightning	16% Chance to cast level 18 Lightning Fusillade on striking
+s863	of Lightning	16% Chance to cast level 24 Lightning Fusillade on striking
+s864	of Lightning	16% Chance to cast level 30 Lightning Fusillade on striking
+s865	of Nova	14% Chance to cast level 18 Nova on casting
+s866	of Nova	14% Chance to cast level 24 Nova on casting
+s867	of Nova	14% Chance to cast level 30 Nova on casting
+s868	of Nova	16% Chance to cast level 18 Nova on striking
+s869	of Nova	16% Chance to cast level 24 Nova on striking
+s870	of Nova	16% Chance to cast level 30 Nova on striking
+s871	of Chain Lightning	12% Chance to cast level 18 Chain Lightning on casting
+s872	of Chain Lightning	12% Chance to cast level 24 Chain Lightning on casting
+s873	of Chain Lightning	12% Chance to cast level 30 Chain Lightning on casting
+s874	of Chain Lightning	14% Chance to cast level 18 Chain Lightning on striking
+s875	of Chain Lightning	14% Chance to cast level 24 Chain Lightning on striking
+s876	of Chain Lightning	14% Chance to cast level 30 Chain Lightning on striking
+s877	of Charged Bolt	18% Chance to cast level 18 Charged Bolt on casting
+s878	of Charged Bolt	18% Chance to cast level 24 Charged Bolt on casting
+s879	of Charged Bolt	18% Chance to cast level 30 Charged Bolt on casting
+s880	of Charged Bolt	20% Chance to cast level 18 Charged Bolt on striking
+s881	of Charged Bolt	20% Chance to cast level 24 Charged Bolt on striking
+s882	of Charged Bolt	20% Chance to cast level 30 Charged Bolt on striking
+s883	of Frost Nova	16% Chance to cast level 18 Frost Nova on casting
+s884	of Frost Nova	16% Chance to cast level 24 Frost Nova on casting
+s885	of Frost Nova	16% Chance to cast level 30 Frost Nova on casting
+s886	of Frost Nova	18% Chance to cast level 18 Frost Nova on striking
+s887	of Frost Nova	18% Chance to cast level 24 Frost Nova on striking
+s888	of Frost Nova	18% Chance to cast level 30 Frost Nova on striking
+s889	of Ice Barrage	10% Chance to cast level 18 Ice Barrage on casting
+s890	of Ice Barrage	10% Chance to cast level 24 Ice Barrage on casting
+s891	of Ice Barrage	10% Chance to cast level 30 Ice Barrage on casting
+s892	of Ice Barrage	12% Chance to cast level 18 Ice Barrage on striking
+s893	of Ice Barrage	12% Chance to cast level 24 Ice Barrage on striking
+s894	of Ice Barrage	12% Chance to cast level 30 Ice Barrage on striking
+s895	of Damage Amplification	10% Chance to cast level 23 Amplify Damage on striking
+s896	of Damage Amplification	12% Chance to cast level 31 Amplify Damage on striking
+s897	of Swords	Attacker Takes Damage of 200-400
+s901	of Damage Amplification	8% Chance to cast level 15 Amplify Damage on casting
+s902	of Damage Amplification	10% Chance to cast level 23 Amplify Damage on casting
+s903	of Damage Amplification	12% Chance to cast level 31 Amplify Damage on casting
+s904	of Lower Resist	8% Chance to cast level 5 Lower Resist on striking
+s905	of Lower Resist	10% Chance to cast level 10 Lower Resist on striking
+s906	of Lower Resist	12% Chance to cast level 15 Lower Resist on striking
+s907	of Lower Resist	8% Chance to cast level 5 Lower Resist on casting
+s908	of Lower Resist	10% Chance to cast level 10 Lower Resist on casting
+s909	of Lower Resist	12% Chance to cast level 15 Lower Resist on casting
+s911	of Hypothermia	Adds [63-118]-[238-365] cold damage
+s912	of Ashes	Adds [152-214]-[228-302] fire damage
+s913	of Maelstrom	Adds [1-6]-[303-403] lightning damage
+s914	of Life	+10 to Life
+s915	of Life	+15 to Life
+s916	of Life	+20 to Life
+s917	of Balance	+5% Faster Hit Recovery
+s918	of Sturdiness	Experience: +6-8% / Magic and Gold Find: +20-30% / Monsters have +75-150% Enhanced Defense
+s919	of Stability	Experience: +8-10% / Magic and Gold Find: +50-60% / Monsters have +150-225% Enhanced Defense
+s920	of Vigor	Experience: +10-12% / Magic and Gold Find: +80-90% / Monsters have +225-300% Enhanced Defense
+s921	of Crimson	Experience: +6-8% / Monster Density: +26-36% / Monsters have 6-9% Cold Absorb
+s922	of Crimson	Experience: +8-10% / Monster Density: +36-46% / Monsters have 9-12% Cold Absorb
+s923	of Crimson	Experience: +10-12% / Monster Density: +46-50% / Monsters have 12-15% Cold Absorb
+s924	of Tangerine	Experience: +6-8% / Monster Density: +26-36% / Monsters have 6-9% Magic Absorb
+s925	of Tangerine	Experience: +8-10% / Monster Density: +36-46% / Monsters have 9-12% Magic Absorb
+s926	of Tangerine	Experience: +10-12% / Monster Density: +40-50% / Monsters have 12-15% Magic Absorb
+s927	of Opal	Experience: +6-8% / Monster Density: +26-36% / Monsters have 6-9% Lightning Absorb
+s928	of Opal	Experience: +8-10% / Monster Density: +36-46% / Monsters have 9-12% Lightning Absorb
+s929	of Opal	Experience: +10-12% / Monster Density: +40-50% / Monsters have 12-15% Lightning Absorb
+s930	of Azure	Experience: +6-8% / Monster Density: +26-36% / Monsters have 6-9% Fire Absorb
+s931	of Azure	Experience: +8-10% / Monster Density: +36-46% / Monsters have 9-12% Fire Absorb
+s932	of Azure	Experience: +10-12% / Monster Density: +36-50% / Monsters have 12-15% Fire Absorb
+s933	of Protection	Monster Density: +26-30% / Magic and Gold Find: +30-40% / Monsters take 150-300 Reduced Physical Damage
+s934	of Security	Monster Density: +30-36% / Magic and Gold Find: +60-70% / Monsters take 450-600 Reduced Physical Damage
+s935	of Safety	Monster Density: +36-46% / Magic and Gold Find: +90-100% / Monsters take 750-900 Reduced Physical Damage
+s936	of Swiftness	Experience: +6-8% / Monster Density: +30-40% / Monsters have 30-45% increased Velocity
+s937	of Quickness	Experience: +8-10% / Monster Density: +40-50% / Monsters have 45-60% increased Velocity
+s938	of Velocity	Experience: +10-12% / Monster Density: +50-60% / Monsters have 60-75% increased Velocity
+s939	of Regeneration	Experience: +6-8% / Magic and Gold Find: +40-50% / Monsters have +1536-2340 Replenish Life
+s940	of Renewal	Experience: +8-10% / Magic and Gold Find: +70-80% / Monsters have +2340-3072 Replenish Life
+s941	of Rebirth	Experience: +10-12% / Magic and Gold Find: +100-110% / Monsters have +3072-3840 Replenish Life
+s942	of the Leech	Experience: +10-12% / Monster Density: +26-30% / Monsters have 8-16% Life stolen per hit / Monsters have 8-16% Increased Maximum Life
+s943	of the Parasite	Experience: +12-14% / Monster Density: +30-40% / Monsters have 16-24% Life stolen per hit / Monsters have 16-24% Increased Maximum Life
+s944	of the Bloodsucker	Experience: +14-16% / Monster Density: +36-40% / Monsters have 24-32% Life stolen per hit / Monsters have 24-32% Increased Maximum Life
+s945	of Resilience	Monster Density: +30-40% / Magic and Gold Find: +20-30% / Monsters have +60-90% Faster Hit Recovery
+s946	of Hardiness	Monster Density: +40-50% / Magic and Gold Find: +50-60% / Monsters have +90-120% Faster Hit Recovery
+s947	of Fortitude	Monster Density: +50-60% / Magic and Gold Find: +80-90% / Monsters have +120-150% Faster Hit Recovery
+s948	of Health	Experience: +12-16% / Monster Density: +30-40% / Monsters have 10-20% Increased Maximum Life
+s949	of Vitality	Experience: +16-20% / Monster Density: +40-50% / Monsters have 20-30% Increased Maximum Life
+s950	of Vim	Experience: +20-24% / Monster Density: +50-60% / Monsters have 30-40% Increased Maximum Life
+s951	of Imbalance	Experience: +6-8% / Monster Density: +30-40% / Players have -15 to -30% Faster Hit Recovery
+s952	of Inequality	Experience: +8-10% / Monster Density: +40-50% / Players have -30 to -45% Faster Hit Recovery
+s953	of Uneveness	Experience: +10-12% / Monster Density: +50-60% / Players have -45 to -60% Faster Hit Recovery
+s954	of Warding	Experience: +10-12% / Magic and Gold Find: +40-50% / Monsters have 30-60% Curse Duration Reduction
+s955	of Guarding	Experience: +12-14% / Magic and Gold Find: +70-80% / Monsters have 60-90% Curse Duration Reduction
+s956	of Preservation	Experience: +14-16% / Magic and Gold Find: +100-110% / Monsters have 90-120% Curse Duration Reduction
+s957	of Hindrance	Experience: +8-10% / Magic and Gold Find: +30-40% / Players have -15 to -23% to All Resistances
+s958	of Aversion	Experience: +10-12% / Magic and Gold Find: +60-70% / Players have -23 to -30% to All Resistances
+s959	of Permeability	Experience: +12-14% / Magic and Gold Find: +100-110% / Players have -30 to -38% to All Resistances
+s960	of Cracking	Monster Density: +26-36% / Magic and Gold Find: +30-40% / Players have -30 to -45% Enhanced Defense
+s961	of Crumbling	Monster Density: +30-36% / Magic and Gold Find: +60-70% / Players have -45 to -60% Enhanced Defense
+s962	of Disintegration	Monster Density: +36-40% / Magic and Gold Find: +90-100% / Players have -60 to -75% Enhanced Defense
+s963	of Fumbling	Monster Density: +26-36% / Magic and Gold Find: +30-40% / Players have -15 to -30% Chance to Block
+s964	of Bumbling	Monster Density: +36-46% / Magic and Gold Find: +60-70% / Players have -30 to -45% Chance to Block
+s965	of Blundering	Monster Density: +46-50% / Magic and Gold Find: +80-100% / Players have -45 to -60% Chance to Block
+s966	of the Smith	
+s967	of the Smith	
+s968	of the Smith	
+s969	of the Armorer	
+s970	of the Armorer	
+s971	of the Armorer	
+s972	of the Archmage	+30% Faster Cast Rate
+s973	of Life Everlasting	Physical Damage Taken Reduced by 10-25
+s974	of Fortification	Magic Damage Taken Reduced by 12-16
+s975	of the Archmage	+40% Faster Cast Rate
+s976	of Atlus	+21-30 to Strength
+s977	of Energy	+1-3 to Energy
+s978	of the Mind	+4-6 to Energy
+s979	of Brilliance	+7-10 to Energy
+s980	of Sorcery	+11-15 to Energy
+s981	of Wizardry	+16-20 to Energy
+s982	of Enlightenment	+21-30 to Energy
+s983	of Balance	+10% Faster Hit Recovery
+s984	of Overcharge	+2-6% to Lightning Skill Damage
+s985	of Conductivity	+6-12% to Lightning Skill Damage
+s986	of the Maelstrom	+12-20% to Lightning Skill Damage
+s987	of Icewind	+2-6% to Cold Skill Damage
+s988	of Deepfreeze	+6-12% to Cold Skill Damage
+s989	of Hoarfrost	+12-20% to Cold Skill Damage
+s990	of Ashes	+2-6% to Fire Skill Damage
+s991	of Searing	+6-12% to Fire Skill Damage
+s992	of Hellfire	+12-20% to Fire Skill Damage
+s993	of Overcharge	+6-12% to Lightning Skill Damage
+s994	of Conductivity	+12-20% to Lightning Skill Damage
+s995	of the Maelstrom	+20-30% to Lightning Skill Damage
+s996	of Icewind	+6-12% to Cold Skill Damage
+s997	of Deepfreeze	+12-20% to Cold Skill Damage
+s998	of Hoarfrost	+20-30% to Cold Skill Damage
+s999	of Ashes	+6-12% to Fire Skill Damage
+s1000	of Searing	+12-20% to Fire Skill Damage
+s1001	of Hellfire	+20-30% to Fire Skill Damage
+s1002	of Disease	+2-6% to Poison Skill Damage
+s1003	of Contagion	+6-12% to Poison Skill Damage
+s1004	of Pox	+12-20% to Poison Skill Damage
+s1005	of the Oracle	+2-6% To Magic Skill Damage
+s1006	of the Warlock	+6-12% To Magic Skill Damage
+s1007	of the Eldritch	+12-20% To Magic Skill Damage
+s1008	of the Apprentice	+10% Faster Cast Rate
+s1009	of Pacing	+10% Faster Run/Walk
+s1010	of Haste	+20% Faster Run/Walk
+s1011	of Speed	+30% Faster Run/Walk
+s1015	of Insight	Regenerate Mana 5-10%
+s1016	of Focus	Regenerate Mana 10-20%
+s1017	of Tranquility	Regenerate Mana 20-30%
+s1018	of Insight	Regenerate Mana 10-20%
+s1019	of Focus	Regenerate Mana 20-30%
+s1020	of Tranquility	Regenerate Mana 30-40%
+s1021	of Regeneration	Replenish Life +5-10
+s1022	of Regeneration	Replenish Life +10-20
+s1023	of Regeneration	Replenish Life +20-30
+s1024	of Regeneration	Replenish Life +10-20
+s1025	of Regeneration	Replenish Life +20-30
+s1026	of Regeneration	Replenish Life +30-40
+s1027	of Control	6-12% Increased Chance of Blocking
+s1028	of Discipline	12-16% Increased Chance of Blocking
+s1029	of Momentum	+10% Faster Block Rate
+s1030	of Evasion	+20% Faster Block Rate
+s1031	of Protecting	Physical Damage Taken Reduced by 10-15%
+s1032	of Infamy	+20% Increased Attack Speed
+s1033	of Temper	+16-20 to Maximum Damage
+s1034	of Razor-sharpness	+11-16 to Minimum Damage
+s1035	of Wind	+14-16 to Dexterity
+s1036	of Crusade	+15% Faster Hit Recovery
+s1037	of the Phoenix	Replenish Life +9-13
+s1038	of the Genius	+14-16 to Energy
+s1039	of Prime	+21-30 to Life
+s1040	of the Titan	+14-16 to Strength
+s1041	of Crystalising	Adds [7-8]-[21-25] cold damage
+s1042	of Carbonising	Adds [41-55]-[71-90] fire damage
+s1043	of Electrocuting	Adds 1-[141-180] lightning damage
+s1044	of Finesse	+3-5% Faster Cast Rate
+s1045	of Nirvana	Regenerate Mana 5-10%
+s1046	of Chalybeous	Increase Maximum Mana 3-8%
+s1047	of Puncture	+3-5% Chance to Pierce
+s1049	of Wind	+7-10 to Dexterity
+s1050	of Crusade	+15% Faster Hit Recovery
+s1051	of Prime	+46-50 to Life
+s1052	of the Titan	+7-10 to Strength
+s1053	of the Cheetah	+10% Faster Run/Walk
+s1054	of Temper	+4-5 to Maximum Damage
+s1055	of Crystalising	Adds [20-24]-[36-44] cold damage
+s1056	of Carbonising	Adds [23-29]-[42-56] fire damage
+s1057	of Electrocuting	Adds 1-[69-91] lightning damage
+s1058	of the Genius	+7-10 to Energy
+s1060	of Incidence	+1-5% to Skill Frequency
+s1061	of Occurrence	+6-10% to Skill Frequency
+s1062	of Prevalence	+11-20% to Skill Frequency
+s1064	of Occultism	+3-5% to Curse Effect
+s1065	of Influence	+5-7% to Aura Effect
+s1066	of the Nimbleness	+5% Faster Cast Rate

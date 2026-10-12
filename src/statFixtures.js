@@ -3,6 +3,7 @@
 import {readFileSync} from "node:fs";
 import {parseTbl} from "./tblFile.js";
 import {STAT_TABLES, buildStatData} from "./statData.js";
+import {AFFIX_TABLE_COLUMNS, describeAffixes, itemTypeNames, readAffixes} from "./affixData.js";
 
 const STANDARD = new URL("../public/data/standard/", import.meta.url);
 
@@ -83,4 +84,18 @@ export function tblBytes(nodes, hashSize = 8) {
         offset += s.length;
     }
     return bytes;
+}
+
+// An affix table: every row defaults to spawnable, frequency 1, group 1, level 1, rare, itype1 "weap".
+// null is a blank line.
+export function affixTableText(rows) {
+    return tableText(AFFIX_TABLE_COLUMNS, rows.map((row) => (row === null ? {} : {
+        spawnable: "1", frequency: "1", group: "1", level: "1", rare: "1", itype1: "weap", ...row,
+    })));
+}
+
+// The real affix rows, described: what the affix-data plugin computes.
+export function realAffixData() {
+    const texts = Object.fromEntries(["MagicPrefix", "MagicSuffix", "ItemTypes"].map((name) => [name, readExcel(name)]));
+    return describeAffixes(readAffixes(texts), realStatData(), itemTypeNames(texts.ItemTypes));
 }
