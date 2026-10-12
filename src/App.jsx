@@ -10,6 +10,7 @@ import {QUERY_TABS, VALID_TAB_KEYS} from "./tabList.js";
 import ItemBuilderPanel from "./ItemBuilderPanel.jsx";
 import {useItemBuilder} from "./useItemBuilder.js";
 import {useAffixes} from "./useAffixes.js";
+import {viaFor} from "./affixData.js";
 import {usePager} from "./pager.js";
 import {calculateDrops} from "./dropCalcEngine.js";
 import {loadModel} from "./dropCalcLoad.js";
@@ -855,6 +856,11 @@ function FiltersBar({
                         affixTypeValue = "",
                         setAffixTypeValue = () => {
                         },
+                        showStat = false,
+                        statValue = "",
+                        setStatValue = () => {
+                        },
+                        statOptions = [],
                         showRuneCount = false,
                         runeCountValue = "",
                         setRuneCountValue = () => {
@@ -886,13 +892,14 @@ function FiltersBar({
     // Mobile folds everything but the search box behind a "Filters (n)" button. n counts folded
     // filters that are set (truthy), plus extraActiveCount (the Rune filter's selection).
     const [foldOpen, setFoldOpen] = React.useState(false);
-    const hasFolded = showType || showSockets || showRuneCount || showTier || showAffixType || showUber || showHellforged || showHighlight;
+    const hasFolded = showType || showSockets || showRuneCount || showTier || showAffixType || showStat || showUber || showHellforged || showHighlight;
     const activeCount = [
         showType && typeValue,
         showSockets && socketsValue,
         showRuneCount && runeCountValue,
         showTier && tierValue,
         showAffixType && affixTypeValue,
+        showStat && statValue,
         showUber && uberValue,
         showHellforged && hellforgedValue,
         showHighlight && highlightOnly,
@@ -962,6 +969,16 @@ function FiltersBar({
                     options={affixTypeOptions}
                     placeholder="All affix types"
                     className="filterSelMid"
+                />)}
+
+                {/* Stat (direct and indirect sources) – affixes tab only */}
+                {showStat && (<SearchableSelect
+                    value={statValue}
+                    onChange={setStatValue}
+                    options={statOptions}
+                    placeholder="Any stat"
+                    className="filterSelWide"
+                    ariaLabel="Stat"
                 />)}
 
                 {/* Uber boss toggle (unchanged) */}
@@ -2050,7 +2067,7 @@ const AFFIX_COLUMNS = [
     {key: "reqLevel", tip: "affixRequiredLevel"},
 ];
 
-function AffixesPanel({data, loading, error, sort, onChangeSort, multi, onChangeMulti, onRetry}) {
+function AffixesPanel({data, loading, error, sort, onChangeSort, multi, onChangeMulti, onRetry, statValue}) {
     const wrapperRef = React.useRef(null);
 
     // Normalised data coming from global filters/search
@@ -2179,7 +2196,10 @@ function AffixesPanel({data, loading, error, sort, onChangeSort, multi, onChange
             >
                 {current.map((it, idx) => (<tr key={`${pager.page}-${idx}-${it.key}`}>
                     <td>{n(it?.name)}</td>
-                    <td>{affixDisplayString(it)}</td>
+                    <td>
+                        {affixDisplayString(it)}
+                        {viaFor(it, statValue) && <div className="affixVia">via {viaFor(it, statValue)}</div>}
+                    </td>
                     <td>{has(it?.level) ? it.level : ""}</td>
                     <td>{has(it?.group) ? it.group : ""}</td>
                     <td>{it?.rare ? "Yes" : "No"}</td>
@@ -2511,6 +2531,12 @@ export default function App() {
         error: affixFile.error,
         data: affixFile.data?.affixes ?? NO_AFFIXES,
     }), [affixFile.status, affixFile.error, affixFile.data]);
+    // The Stat filter's options: "Any stat", then the stats under Items and Maps headings.
+    const statOptions = useMemo(() => {
+        const stats = affixFile.data?.stats ?? [];
+        const under = (group) => stats.filter((s) => s.group === group).map((s) => ({value: s.key, label: s.label}));
+        return [{value: "", label: "Any stat"}, {group: "Items"}, ...under("Items"), {group: "Maps"}, ...under("Maps")];
+    }, [affixFile.data]);
     const isMobile = useIsMobile();
     const [dropCalculatorRequest, setDropCalculatorRequest] = useState(null);
 
@@ -2530,6 +2556,7 @@ export default function App() {
     const [pendingSacredMatch, setPendingSacredMatch] = useState(null);
     const [highlightOnly, setHighlightOnly] = useState(false);
     const [affixTypeValue, setAffixTypeValue] = useState("");
+    const [statValue, setStatValue] = useState("");
     const [runeCountValue, setRuneCountValue] = useState("");
     const [selectedRunes, setSelectedRunes] = useState([]);
     const [showRuneFilterBar, setShowRuneFilterBar] = useState(false);
@@ -2538,7 +2565,7 @@ export default function App() {
     // Jumps that change the filters and select a row in the same update store their own signature.
     const filterState = {
         tab, search, tierValue, typeValue, socketsValue, uberValue, hellforgedValue, highlightOnly,
-        affixTypeValue, runeCountValue, selectedRunes,
+        affixTypeValue, statValue, runeCountValue, selectedRunes,
     };
     const filterSig = activeSig(filterState);
     const [active, setActive] = useState({sig: filterSig, index: 0});
@@ -2576,6 +2603,7 @@ export default function App() {
             setHellforgedValue(false);
             setHighlightOnly(false);
             setAffixTypeValue("");
+            setStatValue("");
             setRuneCountValue("");
             setSelectedRunes([]);
         }
@@ -2888,6 +2916,8 @@ export default function App() {
                 } else if (affixTypeValue === "Prefix") {
                     if (it?.suffix) return false;
                 }
+
+                if (statValue && !(it?.statKeys ?? []).some((k) => k.key === statValue)) return false;
             }
 
             if (tab === "corruptions") {
@@ -2933,7 +2963,7 @@ export default function App() {
 
         // 3) Other tabs: just return filtered list as before
         return base;
-    }, [items, tab, search, tierValue, typeValue, socketsValue, uberValue, hellforgedValue, highlightOnly, affixTypeValue, runeCountValue, selectedRunes]);
+    }, [items, tab, search, tierValue, typeValue, socketsValue, uberValue, hellforgedValue, highlightOnly, affixTypeValue, statValue, runeCountValue, selectedRunes]);
 
     // Mobile list rows expand in place. An expansion belongs to one `filtered` array, so any tab,
     // search or filter change (a new array) collapses it, with no reset effect to race the jumps.
@@ -3419,6 +3449,10 @@ export default function App() {
                         showAffixType={tab === "affixes"}
                         affixTypeValue={affixTypeValue}
                         setAffixTypeValue={setAffixTypeValue}
+                        showStat
+                        statValue={statValue}
+                        setStatValue={setStatValue}
+                        statOptions={statOptions}
                         showHellforged={tab === "uniques"}
                     />
                     <InfoPanel
@@ -3439,6 +3473,7 @@ export default function App() {
                 </div>
                 <AffixesPanel
                     onRetry={affixFile.retry}
+                    statValue={statValue}
                     data={filtered}
                     loading={affixes.loading}
                     error={affixes.error}

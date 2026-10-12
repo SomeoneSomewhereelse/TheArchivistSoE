@@ -1081,6 +1081,13 @@ button.btn {
     border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 
+/* Stat filter: a row that reaches the chosen stat only through a group line ("via All Resistances"). */
+.affixVia {
+    margin-top: 2px;
+    font-size: 13px;
+    color: var(--muted);
+}
+
 .affixAttr {
     white-space: pre-wrap;
 }
