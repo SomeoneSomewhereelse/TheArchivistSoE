@@ -4,7 +4,9 @@
 **Branch:** `item-builder-stat-summing`
 **Status:** designed and approved section by section in brainstorming (2026-10-11 and 2026-10-12). The in-game checks
 it listed as pending were all closed by the user on 2026-10-15 (see "Verification log") and the spec was revised to
-match. Next: an independent review (one solo reviewer on Opus 5.5), then the user's approval, then planning.
+match. An independent review (one solo reviewer on Opus 5.5, 2026-10-15) found 2 blocking and 7 should-fix issues
+and a set of minors; all are folded in below. One new in-game check came out of it (V1, the two-handed damage pair).
+Next: V1, then the user's approval, then planning.
 
 ## Intent
 
@@ -90,8 +92,9 @@ src/
   statData.js          + trimStatData(dict, codes), statDataFromJson(json); CharStats BlockFactor; TOOLTIP_STRINGS
   statEngine.js        ctx = {ilvl, base}; exported sumEntries; base-aware funcs 5/6/7/14; source-aware dgrp; deferred fixes
   baseLines.js         NEW: the base-line formulas (defense, block, damage, quantity, durability, requirements)
-  itemTooltip.js       NEW: buildTooltip(model, ctx, build) → the tooltip's lines
-  ItemTooltip.jsx      NEW: renders those lines (props only)
+  itemTooltip.js       NEW: engineBase(model, base), expandPicks(picks, dict, ctx), buildTooltip(model, ctx, build)
+  ItemTooltip.jsx      NEW: calls buildTooltip and renders its lines (props only, inside its own ErrorBoundary)
+  ErrorBoundary.jsx    + an optional fallback prop
   itemBuilderData.js   ItemBuilder.json version 3: base fields, type fields, statDict
   itemBuilderRules.js  build.eth, canEthereal, the ethereal eligibility rule, resolveBuild cleaning
   itemBuilderHash.js   e=1
@@ -134,8 +137,13 @@ SoE the builder's four charm bases have types `scha`, `mcha`, `lcha` and `ocha`,
 
 **`statDict`.** The plugin builds the full dictionary (`buildStatData`) as it does for `Affixes.json`, then
 `trimStatData(dict, codes)` keeps only what the builder's affixes reach: their `Properties.txt` codes, the stats
-those codes write (plus every member of each `dgrp` they touch, and the pair stats the damage lines read), the
-skills their params name, the CharStats class rows, and the strings all of these use plus `TOOLTIP_STRINGS`.
+those codes write (plus every member of each `dgrp` they touch), **`ENGINE_STATS`**, the skills their params name,
+the CharStats class rows, and the strings all of these use plus `TOOLTIP_STRINGS`. `ENGINE_STATS` (exported by
+`statEngine.js`) lists the stats the engine writes or reads by name rather than through a `Properties.txt` stat
+column: funcs 5, 6 and 7 have empty stat columns (`dmg-min`, `dmg-max`, `dmg%`), so `mindamage`/`maxdamage`,
+`secondary_mindamage`/`secondary_maxdamage`, `item_throw_mindamage`/`item_throw_maxdamage`,
+`item_mindamage_percent`/`item_maxdamage_percent`, the element pairs' stats and `coldlength`/`poisonlength` are
+named there.
 Measured before this spec: 147 codes, 139 stats, 15 skills, 183 strings, 55,720 bytes, **7,864 bytes gzipped**.
 `ItemBuilder.json` is 631,747 bytes (58,913 gzipped) today, so it grows by about 13%.
 
@@ -143,7 +151,8 @@ Measured before this spec: 147 codes, 139 stats, 15 skills, 183 strings, 55,720 
   lookup in the browser. A trimmed string table is final: it holds the resolved value of each key (patch →
   expansion → base already applied).
 - **Loud check (build time):** after trimming, every builder affix is described at ilvl 1 and 99 with both
-  dictionaries and the lines must be identical. Any missing code, stat, skill or string throws, naming it.
+  dictionaries, with no base and with one representative base of each kind (1H only, 2H only, 1-or-2-handed,
+  throwable, non-weapon), and the lines must be identical. Any missing code, stat, skill or string throws, naming it.
 - **CharStats** gains `BlockFactor` (column 32, in `STAT_TABLE_COLUMNS`).
 - **`TOOLTIP_STRINGS`** (beside `HARDCODED_STRINGS`, and read by `tools/extract-base-strings.mjs` too): `ItemStats1h`
   "Defense:", `ItemStats1r` "Chance to Block: " (SoE patch), `ItemStats1l` "One-Hand Damage:", `ItemStats1m`
@@ -156,16 +165,22 @@ Measured before this spec: 147 codes, 139 stats, 15 skills, 183 strings, 55,720 
   `modrepo/` copies) and committed; the Blizzard tables never are. Labels are trimmed and joined to their value
   with one space.
 - The engine and dictionary code enter the app bundle for the first time: `statEngine.js` is 21,940 bytes
-  (6,754 gzipped) today. There is no code splitting.
+  (6,754 gzipped) today, `statData.js` adds about 2.5 KB gzipped, and the new modules a little more: about 10 KB
+  gzipped of code in all. There is no code splitting.
 
 ### Engine changes (`statEngine.js`)
 
-**Context.** `ctx = {ilvl, base}`. `base` is null on the Affixes tab, whose output is unchanged (the golden
-snapshot `affixLines.golden.txt` must not move). In the builder, `base` is `engineBase(model, base)`:
-`{isWeapon, dmg1, dmg2, dmgThrow, throwable, txtMaxDamage, sockCap}`, built once per base.
+**Context.** `ctx = {ilvl, base}`, where `ilvl` keeps the engine's existing `{min, max}` shape: the builder passes
+`{min: n, max: n}`. `base` is null on the Affixes tab, whose output is unchanged (the golden snapshot
+`affixLines.golden.txt` must not move). In the builder, `base` is `engineBase(model, base)` (in `itemTooltip.js`):
+`{isWeapon, dmg1, dmg2, dmgThrow, throwable, txtMaxDamage, cells, gemsockets, maxSock}`, built once per base;
+`maxSock` is the type's `[MaxSock1, MaxSock25, MaxSock40]`, and the socket cap is computed in func 14 from it and
+`ctx.ilvl`.
 
 **ilvl.** The builder's ilvl (`rollContext`'s `ilvl`; for crafted items the crafted item level), **not raised to
-qlvl**. This drives the 7 ilvl-dependent mods (charges and procs) and the socket band. Verified for charges (E1: an
+qlvl**. This drives the 7 ilvl-dependent mods (charges and procs) and the socket band. The slots card keeps today's
+lines, which show charges over every ilvl the affix can roll at, so a charges line can differ between the slots card
+(a range) and the tooltip (the exact ilvl). That is intended: the card describes the affix, the tooltip the item. Verified for charges (E1: an
 Archon Staff of Teleportation made at `lvl=1` shows "Level 1 Teleport (29/33 Charges)"). The socket band reads the
 same stored item level (`ITEMS_GetMaxSockets`), so it follows.
 
@@ -176,50 +191,77 @@ same stored item level (`ITEMS_GetMaxSockets`), so it follows.
 - write `item_throw_mindamage`/`item_throw_maxdamage` if its type is throwable;
 - on a non-weapon base, write all three;
 - with no base (the Affixes tab), only `mindamage`/`maxdamage`, as today.
-- `describe` suppresses a `secondary_*` line when the matching 1H stat exists, so a 1-or-2-hander prints once.
+- `describe` suppresses a `secondary_*` line when the matching 1H stat exists, so a 1-or-2-hander prints once. The
+  suppression runs before the pairs are taken.
+- **The two-handed pair.** On a 2H-only base (120 in SoE) funcs 5/6 write only `secondary_*`, and today the
+  "Adds a-b damage" branch reads only `mindamage`/`maxdamage`. So a rare two-handed axe with *of Excellence* and *of
+  Evisceration* would print two lines where a one-handed weapon prints one. Which the game does is check **V1**
+  (pending). If the game prints "Adds a-b damage", `secondary_*` gets the same pair branch; if two lines, it
+  doesn't. The pair branch takes a flag either way, so V1 changes one line of code and its test.
 
 **Func 7 (Enhanced Damage %)**, D2MOO `ITEMMODS_PropertyFunc07`: on a weapon, a roll `r` falls back to **+1 maximum
 damage** (func 6's path) when `trunc(txtMaxDamage × r / 100) ≤ 0`, where `txtMaxDamage` = max(Weapons.txt `maxdam`,
 `2handmaxdam`). The fallback compares against the txt value, before ethereal.
 
-- **Always fallback** (every roll falls back): the mod becomes a plain +1 maximum damage. SoE has 53 such
-  (affix, base) pairs.
-- **Mixed** (some rolls fall back): 189 pairs in SoE. Example: *Jagged* (10–20%) on a Hand Axe (txt max 6) falls
+- **Always fallback** (every roll falls back): the mod becomes a plain +1 maximum damage.
+- **Mixed** (some rolls fall back).
+- Counts: over every builder weapon base × every ED row, 53 always and 189 mixed; over the pairs that can actually
+  roll (item types and excluded types applied), 8 always and 34 mixed, all from p186–p188 and p257–p259 on low-tier
+  one-handed, throwing and bow bases. Example: *Jagged* (10–20%) on a Hand Axe (txt max 6) falls
   back for rolls 10–16 and gives ED for 17–20. The mod expands to two entries, each flagged `byRoll`: ED 17–20% and
   +1 maximum damage. The modifier lines read "+17-20% Enhanced Damage" and "+1 to Maximum Damage", each followed
   by a muted **"(by roll)"**. The base damage line is exact at both ends (see `sumEnds` below).
+- **Several mixed mods on one item.** *Jagged* (p186, group 105) and *Sharp* (p257, group 111) are both 10–20% and
+  can both be on a rare Hand Axe. `byRoll` entries are never added across mods. Per stat, the tooltip prints one
+  `byRoll` line whose range runs from the smallest single-mod value to the sum of every mod's maximum: "+17-40%
+  Enhanced Damage (by roll)" and "+1-2 to Maximum Damage (by roll)". The real outcomes (no ED, 17–20% or 34–40%;
+  +0, +1 or +2) all fall inside, and the tag says the line depends on the rolls. A `byRoll` line also prints beside
+  a plain line of the same stat (*Jagged* with *Cruel*: "+201-300% Enhanced Damage" and "+17-20% Enhanced Damage (by
+  roll)") where the game prints one sum; keeping them apart is what lets the tag stay honest.
 - The lowest dmg% row is *Cinnabar* (p195, 5–10).
 
 **Func 14 (sockets)**, D2MOO `ITEMMODS_PropertyFunc14` with `ITEMS_GetMaxSockets`: `n` = the param when the mod has
-no roll (min ≤ 0), else the roll. On SoE's five socket rows (p420 *Mechanist's* 1–2; p421, p760, p761
-*Artificer's* param 3; p422 *Jeweler's* param 4) this is the same as "the param wins when set". `n` is clamped to
-`base.sockCap` = min(`invwidth × invheight`, `gemsockets`, the type's `MaxSock1`/`MaxSock25`/`MaxSock40` for ilvl
-≤ 25 / 26–40 / > 40). Sockets are a SET, not an add. A cap of 0 means no socket line. With no base, today's
+no roll (min ≤ 0), else the roll; the engine already does this (`statEngine.js` func 14). On the builder's four socket
+rows (p420 *Mechanist's* 1–2; p421 and p760 *Artificer's* param 3; p422 *Jeweler's* param 4) this is the same as "the
+param wins when set". New: with a base, `n` is clamped at each end to the cap = min(`cells` (`invwidth ×
+invheight`), `gemsockets`, `maxSock` for ilvl ≤ 25 / 26–40 / > 40). Sockets are a SET, not an add; summing is still
+safe because every socket row is in group 122, so two never meet. A cap of 0 drops the entry. With no base, today's
 behaviour.
 
-**Sources and `sumEntries`.** Every entry carries `src`, a set of `"pick:mod"` tags (pick index in the build, mod
-index in the affix). `sumEntries(entries)` merges entries per (stat, layer): it adds `min` and `max` and unions the
-`src` sets; `byRoll` entries are kept apart from plain ones. It is exported and is the only summing path.
+**Sources and `sumEntries`.** `expandPicks(picks, dict, ctx)` (in `itemTooltip.js`) calls `expandMods` once per
+mod and attaches `src`, a set holding one `"pick:mod"` tag (pick index in the build, mod index in the affix);
+`expandMods` itself is unchanged in shape, so its existing tests still compare `{stat, layer, min, max}`.
+`sumEntries(entries)` (exported from `statEngine.js`, and now step 1 of `describe`, which already sums per (stat,
+layer) internally) merges entries per (stat, layer): it adds `min` and `max` and unions the `src` sets. `byRoll`
+entries are merged apart from plain ones, by the rule under func 7. An entry with no `src` (the Affixes tab, and
+`affixData.js`'s single-stat lookups) counts as one shared source, so folding there is exactly today's.
 
 **Source-aware `dgrp` folding.** A `dgrp` group prints as one line only when all members are present, their values
 are equal (today's rule) **and their `src` sets are identical**. "All Resistances +10" from one mod folds;
-four resistances from four affixes that happen to show the same range don't, because they roll independently.
+four resistances from four affixes that happen to show the same range don't, because they roll independently. The
+review checked every affix row: no row spreads a full group over several mods, so none of the 168 folding rows
+changes and the golden snapshot holds.
 
 **`sumEnds(picks, ctx)`.** For the base lines, each mod is collapsed to one roll (min = max = its min, then its max),
 expanded and summed: two exact totals, `low` and `high`, with the func-7 fallback resolved per end. Base lines use
 these, never the ranged entries. Per-level stats are never folded into base lines (1.14d doesn't); they stay
-modifier lines. Every term is monotone in its roll, so the two ends bound every roll.
+modifier lines. Every term is monotone in its roll, so the two ends bound every roll. One theoretical exception: on a
+1-or-2-handed base whose smaller pair is below `txtMaxDamage`, the first ED roll past the fallback can add 0 where the
+fallback added 1. No pair that can roll in SoE hits it; `sumEnds` documents it and a test pins the current data.
 
 **Deferred fixes folded in** (from the engine's final review):
 
 1. The Enhanced Damage line merges `item_mindamage_percent` and `item_maxdamage_percent` only when min% == max%.
 2. Negative per-level values print through `span()` ("-1 to -99", not "-99 to -1").
-3. A `dgrp` member with no `descfunc` throws a named error (stat and group) instead of a bare `TypeError`.
-4. The repair label uses its "1 in # seconds" form only for that string; the ED label prints "-#%" when negative.
-5. The socket rule above (the param when there is no roll).
-6. `statEngine.test.js` "func 3 and func 8 reuse the previous slot" uses a stubbed property whose reused value
+3. A `dgrp` member with no `descfunc` throws a named error (stat and group) instead of a bare `TypeError` (the crash
+   site is `affixData.js`'s via-lookup, `describe([...])[0]` on a member that prints no line).
+4. Labels follow the form the value prints in. Repair: `ModStre9t` "Repairs # durability per second" when the value
+   prints per second, `ModStre9u` "Repairs # durability in # seconds" otherwise (today the label is always the
+   second). ED: "-#% Enhanced Damage" when negative. Today's affix rows print neither form, so no Stat filter option
+   changes.
+5. `statEngine.test.js` "func 3 and func 8 reuse the previous slot" uses a stubbed property whose reused value
    differs from the roll, so the test can fail.
-7. `strModMinDamage` leaves `HARDCODED_STRINGS` if it is still unused after the funcs 5/6 change.
+6. `strModMinDamage` leaves `HARDCODED_STRINGS` if it is still unused after the funcs 5/6 change.
 
 **Overlapping pair ranges** (Snowflake p614/p618/p622, *of Frost* s176): keep today's rule (the single form only when
 every roll gives min ≥ max). It is an approximation and is documented as one.
@@ -243,9 +285,10 @@ the high end and shown as one value when they're equal, "lo-hi" otherwise.
 **Chance to Block** (`shld` types: `shie`, `head`, `ashd`; **always shown** on them):
 
 - `block` = Armor.txt `block` + Σ affix `block` (func 1 on `toblock`). Ethereal doesn't change it.
-- Per class: min(**80**, `block` + CharStats `BlockFactor`). Classes with equal BlockFactor share one entry, ordered
-  by BlockFactor, highest first: Pal 30, Ama/Asn/Bar 25, Dru/Nec/Sor 20, using the Arreat Summit abbreviations
-  (a fixed map from class to abbreviation, which fails loudly on an unknown class).
+- Per class: min(**80**, `block` + CharStats `BlockFactor`). Classes with equal BlockFactor share one entry. Entries
+  are ordered by BlockFactor, highest first, and the classes inside one entry alphabetically by abbreviation: Pal 30,
+  Ama/Asn/Bar 25, Dru/Nec/Sor 20, using the Arreat Summit abbreviations (a fixed map from class to abbreviation,
+  which fails loudly on an unknown class).
 - `shie`: "Chance to Block: 42% (Pal: 72%, Ama/Asn/Bar: 67%, Dru/Nec/Sor: 62%)". `ashd` shows Pal only and `head`
   Nec only: "Chance to Block: 30% (Pal: 60%)".
 - The first number is the item's own block (Arreat's bracket). Every number is capped at 80.
@@ -271,7 +314,9 @@ so the tooltip shows the maximum twice, as charges are shown full. Hidden when `
 item is indestructible (*of Ages*), and on throwables. Ethereal doesn't halve it in PD2 ("Ethereal items no longer
 have half durability"). No builder affix uses `dur` or `dur%`, so the value is the txt durability.
 
-**Class restriction:** "(Paladin Only)" etc. from CharStats `StrClassOnly`, for class-only bases.
+**Class restriction:** "(Paladin Only)" etc. from CharStats `StrClassOnly`, for class-only bases: the builder's
+class code (`baseClass`, from ItemTypes `Class`, e.g. `pal`) goes through `CLASS_NAMES` to the CharStats row whose
+`class` is that name.
 
 **Requirements** (Required Dexterity, then Required Strength):
 
@@ -279,8 +324,8 @@ have half durability"). No builder affix uses `dur` or `dur%`, so the value is t
   No clamp. The line is hidden when the base is 0 or the total ≤ 0. Verified (U3).
 - **Required Level** = `requiredLevel(base, picked)` (the card's value), hidden when ≤ 1.
 
-**Colours:** labels white. Defense is blue when the affixes change it; damage is blue when the merged value exceeds
-the base. With ethereal alone, the numbers stay white (verified, U1). Block's numbers are blue only when an affix
+**Colours:** labels white. Defense is blue when the affixes change it from `B`; damage is blue when the merged value
+exceeds `b`. Both compare with the ethereal-adjusted base. With ethereal alone, the numbers stay white (verified, U1). Block's numbers are blue only when an affix
 adds block (`block`), white otherwise (verified, U11: PD2 folds the viewer's BlockFactor into the number but colours
 it by the `block` property alone). Durability, requirements and the charm line are white.
 
@@ -301,12 +346,15 @@ it by the `block` property alone). Durability, requirements and the charm line a
    rare, orange for crafted). Layout and colours verified (R1).
 2. Defense, Chance to Block, Throw Damage, One/Two-Hand Damage, Quantity, the charm line, Durability, class
    restriction, Required Dexterity, Required Strength, Required Level (above).
-3. **Modifiers:** `describe(sumEntries(all picks' entries), ctx)`, in the engine's priority order, blue.
-   `byRoll` lines get the muted "(by roll)" tag.
-4. **Crafted note** (*added while writing the spec; awaiting the user's yes or no*): for crafted items, a muted line "Plus the recipe's
-   fixed modifiers", matching the card's existing sub-line, since those mods aren't modelled.
+3. **Modifiers:** `describe(sumEntries(expandPicks(picks, dict, ctx)), dict)`, in the engine's priority order,
+   blue, **minus the `item_numsockets` line**, which `describe` prints as "Socketed (n)" and which the footer prints
+   instead. `byRoll` lines get the muted "(by roll)" tag.
+4. **Crafted note** (*added while writing the spec; awaiting the user's yes or no*): for crafted items, a line "Plus
+   the recipe's fixed modifiers", matching the card's existing sub-line, since those mods aren't modelled. Muted and
+   italic, so a screenshot can't pass it off as a game line.
 5. **Footer:** "Ethereal (Cannot Be Repaired)", "Socketed (n)", or both joined by ", " (1.14d
-   `INV_FormatEtherealSocketedText`), blue, at the very bottom. Verified (U2).
+   `INV_FormatEtherealSocketedText`), blue, at the very bottom. Verified (U2). The socket count is the clamped
+   `item_numsockets` value: one number, or a range for *Mechanist's* ("Socketed (1-2)"). It is the only socket line.
 
 **Charm line:** on a base whose type has `Charm` = 1, "Keep in Inventory to Gain Bonus" (`Charmdes`, from the
 expansion table) between Quantity and Durability, white. Verified (C1): SoE prints this text, not its patch table's
@@ -317,14 +365,15 @@ unused `Charmdes_PD2` "Active in Charm Inventory".
 ### Ethereal
 
 - **Eligibility:** `base.canEthereal` (above). Ethereal applies to magic, rare and crafted.
-  For crafted, it means the craft ran on an ethereal base: SoE's CubeMain pairs every equipment craft as a `noe` row
-  and an `eth` row that adds an `ethereal` mod (343 `noe`, 301 `eth`). Verified (U9): a crafted ethereal helm
+  For crafted, it means the craft ran on an ethereal base: most of SoE's equipment crafts come as a `noe` row and an
+  `eth` row that adds an `ethereal` mod (343 `noe` rows, 301 `eth`). Verified (U9): a crafted ethereal helm
   keeps the ×5/4 defense and full maximum durability.
 - **Effects (PD2):** base defense and each base damage end ×5/4 by truncation; Str and Dex −10; durability unchanged;
   sockets and block unchanged; the footer line.
 - **Indestructible conflict:** `indestruct` (*of Ages*, s404) can't be on an ethereal item (the game's ethereal
   check fails once an item is indestructible, and affixes roll first; U5: SoE's ethereal cube recipe refuses an
-  *of Ages* shield). With `eth` on, *of Ages* rows are ineligible.
+  *of Ages* shield). With `eth` on, *of Ages* rows can't be picked (see UI); `canRoll` and the roll odds don't
+  change.
 - **Verified:** bows and crossbows can't be ethereal (the user). The ×1.25-by-truncation rule and the maxac+1 → ×5/4
   → ED order were checked numerically against PD2 wiki items, then in game end to end on the drop path (U4), the
   func-23 cube path (U5) and crafting (U9).
@@ -336,23 +385,32 @@ unused `Charmdes_PD2` "Active in Charm Inventory".
 - An "Ethereal" toggle button (`btn`, `aria-pressed`) in `.ibControls` after the quality buttons, shown only when a
   base is chosen and it has `canEthereal`.
 - State: `build.eth` (boolean). The URL carries `e=1` only when it's on.
-- `resolveBuild` resets `eth` to false when the base can't be ethereal. From a link that counts as `fixed` (the
-  existing "Some settings in the link were invalid and were reset." notice). From a base change in the controls,
-  `useItemBuilder` shows "Ethereal was turned off: <base> can't be ethereal."
-- *of Ages* gets a new row state, `ethereal`, shown as "Not on ethereal items" in the place of "Group taken by …".
-  Turning Ethereal on with *of Ages* picked drops it through `resolveBuild`, and the existing `controlNotice` says
-  "1 affix no longer fits and was removed." The toggle is never disabled.
+- `resolveBuild` resets `eth` to false when the base can't be ethereal and returns a separate `ethOff` flag beside
+  `dropped` and `fixed`. From a link, `ethOff` counts as `fixed` (the existing "Some settings in the link were invalid
+  and were reset." notice), and so does any `e` value other than `1`. From the controls, `setBuild` passes `ethOff`
+  to `controlNotice(dropped, ethOff)`, which says "Ethereal was turned off: <base> can't be ethereal.", followed by
+  the existing affix sentence when picks were dropped too.
+- `rowState(affix, picked, caps, eth)` returns a new state, `ethereal`, for any row with an `indestruct` mod (matched
+  by code, not by row key) while `eth` is on. `AffixRow` shows it as "Not on ethereal items" in the place of "Group
+  taken by …" and treats it as locked, like `group` and `full`. `canRoll` is unchanged, so the list and the roll odds
+  don't move. Turning Ethereal on with *of Ages* picked drops it through `resolveBuild` (a pick whose row state would
+  be `ethereal`), and the existing `controlNotice` says "1 affix no longer fits and was removed." The toggle is never
+  disabled.
 
 **Tooltip card.**
 
-- `<section className="ibTooltip">` inside `.ibCardCol`, after `.ibOdds`, wrapped in its own `ErrorBoundary`. It
-  shows whenever a base is chosen, with or without picks. The slots card, its breakdown and the list are unchanged.
+- `<section className="ibTooltip">` inside `.ibCardCol`, after `.ibOdds`. `ItemTooltip` receives `model`, `ctx` and
+  `build` and calls `buildTooltip` while rendering, so a throw happens inside its own `ErrorBoundary`. The boundary
+  gets a new optional `fallback` prop (a short "The tooltip couldn't be built." message instead of the tab-wide
+  "failed to load" panel) and the build's query string as `resetKey`, so the next change retries. It shows whenever a
+  base is chosen, with or without picks. The slots card, its breakdown and the list are unchanged.
 - Because `.ibCardCol` is one flex item on phones, the phone order needs no new mobile CSS. If a mobile rule turns
   out to be needed, the 980px, 720px and 480px blocks are searched for copies first.
 - Look: the same dark panel and gold border as `.ibOdds`, lines centred like the game's tooltip, colours from the
   card's tokens (`--c-blue`, `--ib-rare`, `--ib-crafted`), a muted colour for the placeholder, the "(by roll)" tag
   and the crafted note. `overflow-wrap: anywhere`, so the long block line wraps at 390px.
-- The "(by roll)" tag has a `title`: "The low rolls add +1 maximum damage instead on this base."
+- The "(by roll)" tag has a `title`: "Depends on the roll: on this base, low rolls add maximum damage instead of
+  Enhanced Damage."
 - The tooltip is plain text in reading order, not `aria-hidden`.
 
 **Unchanged:** the pinned bar, the roll odds (no ethereal note), the Affixes tab, the link version.
@@ -402,8 +460,8 @@ Ama/Asn/Bar: 80%, Dru/Nec/Sor: 80%)".
   missing from the trimmed dictionary (with the trimmed-vs-full line check); a class with no abbreviation. Each
   throws a named error and fails the build, as today.
 - **Browser:** `statDataFromJson` validates the shape it gets. The engine keeps its named errors, plus the new
-  `dgrp` member error. If `buildTooltip` throws, the tooltip card's `ErrorBoundary` shows a short failure message;
-  the rest of the builder keeps working.
+  `dgrp` member error. If `buildTooltip` throws, the tooltip card's `ErrorBoundary` shows its `fallback`; the rest of
+  the builder keeps working, and the next build change retries.
 
 ## Testing and verification
 
@@ -411,18 +469,24 @@ Ama/Asn/Bar: 80%, Dru/Nec/Sor: 80%)".
 
 - **`baseLines.test.js`:** the worked examples above; the PD2 wiki items (Skullder's Ire 759–876, Purgatory
   1632–1836, Warlord's Trust 71–92 to 209–269, Ethereal Edge 242–271 to 430–481); the Aegis at the cap for every
-  class; `ashd` and `head` showing one class; Hand Axe + Jagged; a 1-or-2-handed sword's "(Bar)" line; a throwable
+  class; `ashd` and `head` showing one class; the order inside a block entry; Hand Axe + Jagged; a 1-or-2-handed sword's "(Bar)" line; a throwable
   (throw line, quantity, no durability); requirement lines hidden at ≤ 0 (the ethereal Buckler of Ease, U3).
-- **`itemTooltip.test.js`:** line order and kinds; the magic name with either affix missing; the rare and crafted
+- **`itemTooltip.test.js`:** line order and kinds; `changed` (defense and damage blue from affixes, white with
+  ethereal alone; block blue only with a `block` affix); the class-restriction line on a Paladin shield and a
+  Necromancer head; exactly one socket line, in the footer, with "Socketed (1-2)" for *Mechanist's*; a rare Hand
+  Axe with *Jagged* and *Sharp* ("+17-40% Enhanced Damage (by roll)", "+1-2 to Maximum Damage (by roll)"); the magic name with either affix missing; the rare and crafted
   placeholder; the crafted note; the charm line on the four charm bases only; the footer in all three forms; the socket cap, and no socket line at cap 0; durability
   hidden on indestructible items and throwables; Required Level hidden at ≤ 1.
 - **`statData.test.js`:** `trimStatData` then a JSON round trip through `statDataFromJson` describes every builder
-  affix at ilvl 1 and 99 exactly as the full dictionary does; BlockFactor is read.
+  affix at ilvl 1 and 99, with no base and with each kind of base, exactly as the full dictionary does; every
+  `ENGINE_STATS` name survives the trim; BlockFactor is read.
 - **`statEngine.test.js`:** funcs 5/6 for each kind of base (1H, 2H, 1-or-2, throwable, non-weapon, no base); func 7
-  always-fallback, mixed (`byRoll`) and plain; func 14's param, roll and clamp; `sumEntries`; `sumEnds`; source-aware
-  `dgrp` folding; each deferred fix; the fixed "func 3 and func 8" test.
-- **`itemBuilderRules.test.js` / `itemBuilderHash.test.js`:** `eth` cleaning; the `e=1` round trip; old links open
-  non-ethereal; the *of Ages* rule and its drop notice; the base-change notice.
+  always-fallback, mixed (`byRoll`) and plain; the 2H pair (both V1 outcomes behind the flag); func 14's param, roll
+  and clamp by ilvl band; `sumEntries` (including several `byRoll` mods); `sumEnds`; source-aware `dgrp` folding,
+  and entries with no `src` folding as today; each deferred fix; the fixed "func 3 and func 8" test.
+- **`itemBuilderRules.test.js` / `itemBuilderHash.test.js`:** `eth` cleaning and `ethOff`; the `e=1` round trip;
+  `e=0` and `e=x` count as fixed; old links open non-ethereal; the `ethereal` row state (locked, `canRoll` and the
+  odds unchanged) and the *of Ages* drop notice; the base-change notice alone and combined with dropped picks.
 - **Golden snapshot:** `affixLines.golden.txt` stays unchanged. A diff means the no-base path changed: stop and
   report it rather than accept it.
 
@@ -438,7 +502,7 @@ Ama/Asn/Bar: 80%, Dru/Nec/Sor: 80%)".
 
 - `compare-desktop.mjs` before and after, then `diff-shots.mjs`: only the Item Builder tab may differ.
 - `npm run lint` at 0 problems, `npm test`, `npm run build`.
-- Report the size growth: about 8 KB gzipped of data in `ItemBuilder.json`, about 7 KB gzipped of engine in the bundle.
+- Report the size growth: about 8 KB gzipped of data in `ItemBuilder.json`, about 10 KB gzipped of code in the bundle.
 
 ### Documentation
 
@@ -485,6 +549,12 @@ template is in the vault's `rare-names-report.md`.
 | R2 | Crafted items use the same name pools, always two words | **TEST crafted ring**, **TEST crafted amulet** | As expected |
 | R3 | Mythic Jewels get the jewel name pools | **TEST rare mythic jewel** | As expected |
 | C1 | Which charm line SoE prints | Any magic Grand Charm | "Keep in Inventory to Gain Bonus" |
+
+### Pending
+
+| ID | Question | Recipe | Expected |
+|---|---|---|---|
+| V1 | On a two-handed-only weapon, do +min and +max damage print as one "Adds a-b damage" line, as on a one-handed weapon? | Two rows with `output` mods (property funcs 5/6 run as on any item): `output="gix,nor"` (Giant Axe, 2H only, 22–45) and `output="hax,nor"` (Hand Axe, 1H; normal quality, so no random affixes add damage), each with `mod 1=dmg-min`, `mod 1 min=5`, `mod 1 max=5`, `mod 2=dmg-max`, `mod 2 min=10`, `mod 2 max=10` (chance 100) | The Hand Axe prints "Adds 5-10 damage". The Giant Axe prints either the same (pair branch for `secondary_*`) or "+5 to Minimum Damage" and "+10 to Maximum Damage" (no pair branch) |
 
 ### Noted, not changed
 
