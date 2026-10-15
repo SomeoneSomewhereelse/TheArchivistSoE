@@ -2,10 +2,9 @@
 
 **Date:** 2026-10-12
 **Branch:** `item-builder-stat-summing`
-**Status:** **Draft: pending in-game checks.** Designed section by section in brainstorming (2026-10-11 and
-2026-10-12) and approved section by section. Every rule that rests on an unverified behaviour is marked
-**⏳ pending &lt;ID&gt;** where it is used, and is listed in the "Verification log". Once the user closes them, the spec is
-revised, gets an independent review (one solo reviewer on Opus 5.5), and is then locked for planning.
+**Status:** designed and approved section by section in brainstorming (2026-10-11 and 2026-10-12). The in-game checks
+it listed as pending were all closed by the user on 2026-10-15 (see "Verification log") and the spec was revised to
+match. Next: an independent review (one solo reviewer on Opus 5.5), then the user's approval, then planning.
 
 ## Intent
 
@@ -21,14 +20,15 @@ it adds the base-item lines the engine never had. It also adds **ethereal** item
 ### Success criteria
 
 - With a base chosen, the builder shows a tooltip in the game's line order: name, Defense, Chance to Block, damage,
-  Quantity, Durability, class restriction, requirements, modifiers, and the ethereal/socketed line.
+  Quantity, the charm line, Durability, class restriction, requirements, modifiers, and the ethereal/socketed line.
 - Modifier lines are the engine's lines over **summed** stats (per stat and layer, the game's way), with no English
   parsed anywhere. The base lines are computed from the game tables with the game's formulas and rounding.
 - Each line shows one summed range: low = every minimum roll, high = every maximum roll.
 - Ethereal can be switched on for every base that can be ethereal in SoE, with PD2's rules.
 - The Affixes tab is unchanged (its golden snapshot doesn't move). Every tab other than Item Builder is
   pixel-identical before and after.
-- Every rule not settled by the sources or an in-game test is named, with a test recipe.
+- Every rule rests on a named source or an in-game test; the ones that rest on neither are listed under "Noted, not
+  changed".
 
 ### Out of scope
 
@@ -128,8 +128,9 @@ build time: the base's type chain reaches `weap` or `armo`, `nodurability` = 0, 
 excludes the 42 `bow`/`xbow`/`abow` bases and both Phase Blades (`7cr`, `7cr2`, `nodurability` = 1), and every
 Misc base (quivers descend from `misc`). The Misc bases need no ethereal columns.
 
-**Type fields.** Each `ItemTypes.txt` type gains `throwable` (`Throwable` = 1) and `maxSock`
-(`[MaxSock1, MaxSock25, MaxSock40]`). The game reads both from the item's own type record (`type`), not the chain.
+**Type fields.** Each `ItemTypes.txt` type gains `throwable` (`Throwable` = 1), `charm` (`Charm` = 1) and `maxSock`
+(`[MaxSock1, MaxSock25, MaxSock40]`). The game reads them from the item's own type record (`type`), not the chain. In
+SoE the builder's four charm bases have types `scha`, `mcha`, `lcha` and `ocha`, all with `Charm` = 1.
 
 **`statDict`.** The plugin builds the full dictionary (`buildStatData`) as it does for `Affixes.json`, then
 `trimStatData(dict, codes)` keeps only what the builder's affixes reach: their `Properties.txt` codes, the stats
@@ -149,7 +150,8 @@ Measured before this spec: 147 codes, 139 stats, 15 skills, 183 strings, 55,720 
   "Two-Hand Damage:", `ItemStats1n` "Throw Damage:", `ItemStast1k` "to" (the game's own spelling of the key),
   `ItemStats1i` "Quantity:", `ItemStats1d` "Durability:", `ItemStats1j` "of", `ItemStats1f` "Required Dexterity:",
   `ItemStats1e` "Required Strength:", `ItemStats1p` "Required Level:", `strEtherealDisplay` "Ethereal (Cannot Be
-  Repaired)", `strSocketedDisplay` "Socketed". `src/baseStrings.json` is regenerated with
+  Repaired)", `strSocketedDisplay` "Socketed", `Charmdes` "Keep in Inventory to Gain Bonus" (expansion table).
+  `src/baseStrings.json` is regenerated with
   `node tools/extract-base-strings.mjs <string.tbl> <expansionstring.tbl>` from the user's own tables (the vault's
   `modrepo/` copies) and committed; the Blizzard tables never are. Labels are trimmed and joined to their value
   with one space.
@@ -163,7 +165,9 @@ snapshot `affixLines.golden.txt` must not move). In the builder, `base` is `engi
 `{isWeapon, dmg1, dmg2, dmgThrow, throwable, txtMaxDamage, sockCap}`, built once per base.
 
 **ilvl.** The builder's ilvl (`rollContext`'s `ilvl`; for crafted items the crafted item level), **not raised to
-qlvl**. This drives the 7 ilvl-dependent mods (charges and procs) and the socket band. **⏳ pending E1.**
+qlvl**. This drives the 7 ilvl-dependent mods (charges and procs) and the socket band. Verified for charges (E1: an
+Archon Staff of Teleportation made at `lvl=1` shows "Level 1 Teleport (29/33 Charges)"). The socket band reads the
+same stored item level (`ITEMS_GetMaxSockets`), so it follows.
 
 **Funcs 5 and 6 (+min, +max damage)**, D2MOO `ITEMMODS_PropertyFunc05/06`:
 
@@ -262,7 +266,8 @@ the high end and shown as one value when they're equal, "lo-hi" otherwise.
 
 **Quantity** (throwables and quivers): "Quantity: " + `maxstack`, shown full. No affix changes quantity.
 
-**Durability:** "Durability: 86 of 86" (max of max). Hidden when `nodurability` = 1 or `durability` ≤ 0, when the
+**Durability:** "Durability: 86 of 86" (max of max). A new item's current durability is random (seen in U4 and U9),
+so the tooltip shows the maximum twice, as charges are shown full. Hidden when `nodurability` = 1 or `durability` ≤ 0, when the
 item is indestructible (*of Ages*), and on throwables. Ethereal doesn't halve it in PD2 ("Ethereal items no longer
 have half durability"). No builder affix uses `dur` or `dur%`, so the value is the txt durability.
 
@@ -271,12 +276,13 @@ have half durability"). No builder affix uses `dur` or `dur%`, so the value is t
 **Requirements** (Required Dexterity, then Required Strength):
 
 - **req = base + pct(base, Σ`ease`) − 10 if ethereal** (percent first, then −10; D2MOO `ITEMS_CheckRequirements`).
-  No clamp. The line is hidden when the base is 0 or the total ≤ 0. **⏳ pending U3.**
+  No clamp. The line is hidden when the base is 0 or the total ≤ 0. Verified (U3).
 - **Required Level** = `requiredLevel(base, picked)` (the card's value), hidden when ≤ 1.
 
-**Colours** (1.14d rules): labels white. Defense is blue when the affixes change it; damage is blue when the merged
-value exceeds the base. With ethereal alone, the numbers stay white. **⏳ pending U1.** Block's value is blue when
-an affix adds block. **⏳ pending U11.** Durability and requirements are white.
+**Colours:** labels white. Defense is blue when the affixes change it; damage is blue when the merged value exceeds
+the base. With ethereal alone, the numbers stay white (verified, U1). Block's numbers are blue only when an affix
+adds block (`block`), white otherwise (verified, U11: PD2 folds the viewer's BlockFactor into the number but colours
+it by the `block` property alone). Durability, requirements and the charm line are white.
 
 ### Name and modifier lines (`itemTooltip.js`)
 
@@ -292,20 +298,19 @@ an affix adds block. **⏳ pending U11.** Durability and requirements are white.
 
 1. **Name.** Magic: "Prefix Base Suffix" from the picked names (either may be absent), in blue. Rare/crafted: a muted
    "Random Name" placeholder (`placeholder`, in the quality colour), then the base name (`baseName`, yellow for
-   rare, orange for crafted). **⏳ pending R1** (layout and colours).
-2. Defense, Chance to Block, Throw Damage, One/Two-Hand Damage, Quantity, Durability, class restriction, Required
-   Dexterity, Required Strength, Required Level (above).
+   rare, orange for crafted). Layout and colours verified (R1).
+2. Defense, Chance to Block, Throw Damage, One/Two-Hand Damage, Quantity, the charm line, Durability, class
+   restriction, Required Dexterity, Required Strength, Required Level (above).
 3. **Modifiers:** `describe(sumEntries(all picks' entries), ctx)`, in the engine's priority order, blue.
    `byRoll` lines get the muted "(by roll)" tag.
-4. **Crafted note** (*added while writing; not yet discussed*): for crafted items, a muted line "Plus the recipe's
+4. **Crafted note** (*added while writing the spec; awaiting the user's yes or no*): for crafted items, a muted line "Plus the recipe's
    fixed modifiers", matching the card's existing sub-line, since those mods aren't modelled.
 5. **Footer:** "Ethereal (Cannot Be Repaired)", "Socketed (n)", or both joined by ", " (1.14d
-   `INV_FormatEtherealSocketedText`), blue, at the very bottom. **⏳ pending U2.**
+   `INV_FormatEtherealSocketedText`), blue, at the very bottom. Verified (U2).
 
-**Charm line** (*added while writing; not yet discussed*): the game prints a charm line between Quantity and
-Durability. SoE's patch
-table has both `Charmdes` "Keep in Inventory to Gain Bonus" and `Charmdes_PD2` "Active in Charm Inventory". If the
-user wants the line, the spec will name the key after check **C1**; until then it is not shown.
+**Charm line:** on a base whose type has `Charm` = 1, "Keep in Inventory to Gain Bonus" (`Charmdes`, from the
+expansion table) between Quantity and Durability, white. Verified (C1): SoE prints this text, not its patch table's
+unused `Charmdes_PD2` "Active in Charm Inventory".
 
 **Not shown:** attack speed, Smite/Kick, the viewer's Dexterity or level, unidentified, superior and low quality.
 
@@ -313,14 +318,16 @@ user wants the line, the spec will name the key after check **C1**; until then i
 
 - **Eligibility:** `base.canEthereal` (above). Ethereal applies to magic, rare and crafted.
   For crafted, it means the craft ran on an ethereal base: SoE's CubeMain pairs every equipment craft as a `noe` row
-  and an `eth` row that adds an `ethereal` mod (343 `noe`, 301 `eth`). **⏳ pending U9.**
+  and an `eth` row that adds an `ethereal` mod (343 `noe`, 301 `eth`). Verified (U9): a crafted ethereal helm
+  keeps the ×5/4 defense and full maximum durability.
 - **Effects (PD2):** base defense and each base damage end ×5/4 by truncation; Str and Dex −10; durability unchanged;
   sockets and block unchanged; the footer line.
 - **Indestructible conflict:** `indestruct` (*of Ages*, s404) can't be on an ethereal item (the game's ethereal
-  check fails once an item is indestructible, and affixes roll first). With `eth` on, *of Ages* rows are
-  ineligible.
+  check fails once an item is indestructible, and affixes roll first; U5: SoE's ethereal cube recipe refuses an
+  *of Ages* shield). With `eth` on, *of Ages* rows are ineligible.
 - **Verified:** bows and crossbows can't be ethereal (the user). The ×1.25-by-truncation rule and the maxac+1 → ×5/4
-  → ED order were checked numerically against PD2 wiki items. The drop path end to end is **⏳ pending U4**.
+  → ED order were checked numerically against PD2 wiki items, then in game end to end on the drop path (U4), the
+  func-23 cube path (U5) and crafting (U9).
 
 ### UI
 
@@ -405,9 +412,9 @@ Ama/Asn/Bar: 80%, Dru/Nec/Sor: 80%)".
 - **`baseLines.test.js`:** the worked examples above; the PD2 wiki items (Skullder's Ire 759–876, Purgatory
   1632–1836, Warlord's Trust 71–92 to 209–269, Ethereal Edge 242–271 to 430–481); the Aegis at the cap for every
   class; `ashd` and `head` showing one class; Hand Axe + Jagged; a 1-or-2-handed sword's "(Bar)" line; a throwable
-  (throw line, quantity, no durability); requirement lines hidden at ≤ 0 (the Buckler of Ease, marked pending U3).
+  (throw line, quantity, no durability); requirement lines hidden at ≤ 0 (the ethereal Buckler of Ease, U3).
 - **`itemTooltip.test.js`:** line order and kinds; the magic name with either affix missing; the rare and crafted
-  placeholder; the crafted note; the footer in all three forms; the socket cap, and no socket line at cap 0; durability
+  placeholder; the crafted note; the charm line on the four charm bases only; the footer in all three forms; the socket cap, and no socket line at cap 0; durability
   hidden on indestructible items and throwables; Required Level hidden at ≤ 1.
 - **`statData.test.js`:** `trimStatData` then a JSON round trip through `statDataFromJson` describes every builder
   affix at ilvl 1 and 99 exactly as the full dictionary does; BlockFactor is read.
@@ -455,36 +462,38 @@ pointer to this spec; the stat-engine bullet notes that the engine now also runs
 | Ethereal −10 Str/Dex, durability not halved | PD2 wiki (Item Bases, General Changes) |
 | BlockFactor Pal 30, Ama/Asn/Bar 25, Dru/Nec/Sor 20 | SoE CharStats.txt; PD2 wiki Item Bases |
 
-### Pending (to close before the spec is locked)
+### Closed in game (the user, 2026-10-15)
 
-All recipes are rows added to SoE's `CubeMain.txt`, run with `Diablo II.exe -direct -txt`. `pre=`/`suf=` N is the
+All recipes were rows added to SoE's `CubeMain.txt`, run with `Diablo II.exe -direct -txt`. `pre=`/`suf=` N is the
 **0-based data row** (file line − 2). Rows used: Holy `pre=149`, Cruel `pre=194`, of Ease `suf=370`, of
 Evisceration `suf=203`, of Deflecting `suf=173`. A CubeMain row has 105 tab-separated columns; the Node one-liner
 template is in the vault's `rare-names-report.md`.
 
-| ID | Question | Recipe | Expected |
+| ID | Question | Recipe | Result |
 |---|---|---|---|
-| E1 | Do charges, procs and the socket band use the stored ilvl, not raised to qlvl? | A staff below its qlvl with *of Teleportation* (output `lvl` under the staff's qlvl) | Charge level and count follow the output `lvl`, not the qlvl |
-| U1 | Are ethereal-only numbers white in PD2 (and the normal item's name grey)? | `output="uit,nor,eth"` and `output="uit,nor"`, `lvl=99`, `input 1="key"` | Eth Defense = trunc(rolled × 1.25) in white; grey name |
-| U2 | The one-line "Ethereal (Cannot Be Repaired), Socketed (4)" in PD2: text, position, colour | `output="uit,nor,eth,sock=4"` | That text, blue, at the bottom |
-| U3 | Requirements: percent then −10, no clamp, line hidden at ≤ 0 | `output="buc,mag,eth,suf=370"` and `output="buc,mag,eth"` | With Ease: 12 + trunc(−2.4) − 10 = 0 → no Required Strength line. Without: "Required Strength: 2" |
-| U4 | PD2's drop path for magic ethereal items | `output="uit,mag,eth,pre=149,suf=370"` and `output="7wa,mag,eth,pre=194,suf=203"`, `lvl=99`, a few times | Defense in 336–372, Durability 86 of 86, Str 115; damage within 111–148 to 375–507, Durability 78 of 78, Str 128, Dex 49 |
-| U5 | The func-23 path (Lightsong, the crafted `ethereal` mod): same ×1.25, durability unchanged, refuses indestructible | `input 1="shld,noe"`, `input 2="key"`, `output="useitem"`, `mod 1=ethereal` (chance 100, min 1, max 1); cube a Holy Monarch, then a shield with *of Ages* | Defense rises to the ethereal value, Durability stays 86; the *of Ages* shield comes out unchanged |
-| U7 | Sazabi's Cobalt Redeemer (`indestruct` listed before `ethereal`) | `output="Sazabi's Cobalt Redeemer"` | Not ethereal by the vanilla rule; if ethereal, PD2 changed func 23 or the order |
-| U8 | Indestructible + ethereal tooltip | `output="Ethereal Edge"` | No Durability line; "Indestructible"; the ethereal footer; 2H 242–271 to 430–481 |
-| U9 | A crafted ethereal output keeps ×1.25 and full durability | Ethereal magic helm + jewel + r06 + perfect sapphire (SoE CubeMain line 1779) | Ethereal crafted helm with trunc(1.25 × base) defense, full durability |
-| U11 | Does the PD2 client fold BlockFactor into the tooltip, and colour it like 1.14d? | Any shield, viewed on a Paladin and a Sorceress | 22 + 30 = 52 (blue) and 22 + 20 = 42 |
-| R1 | Rare/crafted names: two lines, name on top, both in the quality colour | **TEST rare ring** / **TEST crafted ring** (vault template) | "Prefix Suffix" over "Ring", yellow / orange |
-| R2 | Crafted items use the same name pools and always get two words | **TEST crafted ring**, **TEST crafted amulet**, about 10 each | No one-word names, no words outside the ring/amulet lists |
-| R3 | Mythic Jewels get the jewel name pools | **TEST rare mythic jewel**, about 10 | Suffix ∈ {Eye, Gyre, Whorl, Talisman, Heart, Scarab} |
-| C1 | Which charm line PD2/SoE prints, if the charm line is wanted | Any magic Grand Charm | "Keep in Inventory to Gain Bonus" or "Active in Charm Inventory" |
+| E1 | Do charges and procs use the stored ilvl, not raised to qlvl? | Archon Staff of Teleportation, output `lvl=1` | "Level 1 Teleport (29/33 Charges)": the stored ilvl |
+| U1 | Are ethereal-only numbers white in PD2? | `output="uit,nor,eth"` and `output="uit,nor"`, `lvl=99`, `input 1="key"` | Both white |
+| U2 | The one-line "Ethereal (Cannot Be Repaired), Socketed (4)": text, position, colour | `output="uit,nor,eth,sock=4"` | As expected: that text, blue, at the bottom |
+| U3 | Requirements: percent then −10, no clamp, line hidden at ≤ 0 | `output="buc,mag,eth,suf=370"` and `output="buc,mag,eth"` | As expected: no Required Strength line with Ease; "Required Strength: 2" without |
+| U4 | PD2's drop path for magic ethereal items | `output="uit,mag,eth,pre=149,suf=370"` and `output="7wa,mag,eth,pre=194,suf=203"`, `lvl=99` | As expected (Defense in 336–372, Str 115; damage within 111–148 to 375–507, Str 128, Dex 49). Current durability is random; show max of max |
+| U5 | The func-23 path: same ×1.25, durability unchanged, refuses indestructible | `input 1="shld,noe"`, `input 2="key"`, `output="useitem"`, `mod 1=ethereal` | As expected; the recipe doesn't accept the *of Ages* shield |
+| U7 | Sazabi's Cobalt Redeemer (`indestruct` listed before `ethereal`) | `output="Sazabi's Cobalt Redeemer"` | As expected: not ethereal |
+| U8 | Indestructible + ethereal tooltip | `output="Ethereal Edge"` | As expected: no Durability line, "Indestructible", the ethereal footer, 2H 242–271 to 430–481 |
+| U9 | A crafted ethereal output keeps ×1.25 and full durability | Ethereal magic helm + jewel + r06 + perfect sapphire (CubeMain line 1779) | As expected; current durability is random, as in U4 |
+| U11 | Does PD2 fold BlockFactor into the tooltip, and how is it coloured? | Any shield, on a Paladin and a Sorceress | Folded; white unless the `block` property modifies it |
+| R1 | Rare/crafted names: two lines, name on top, quality colour | **TEST rare ring** / **TEST crafted ring** | As expected |
+| R2 | Crafted items use the same name pools, always two words | **TEST crafted ring**, **TEST crafted amulet** | As expected |
+| R3 | Mythic Jewels get the jewel name pools | **TEST rare mythic jewel** | As expected |
+| C1 | Which charm line SoE prints | Any magic Grand Charm | "Keep in Inventory to Gain Bonus" |
 
 ### Noted, not changed
 
 - **Rare Mythic Jewel affix count.** Vanilla gives a rare jewel 3–4 affixes only when the base type is exactly
   `jewl`; Mythic Jewel's type is `mjwg`, so vanilla would give it the ordinary rare's 4–6. The builder assumes the
-  jewel's cap of 4. Check it with R3's recipe (count the affixes); if it holds, a separate fix changes `capsFor`.
+  jewel's cap of 4. R3 checked the name pools only; counting the affixes over several **TEST rare mythic jewel**
+  transmutes settles it. If they reach 5 or 6, a separate fix changes `capsFor`.
 - **Crafted required level.** The builder's `requiredLevel` (and so the tooltip's) is the highest of the base's and
   the affixes' requirements. Vanilla adds 10 + 3 per affix to crafted items. Whether PD2/SoE does is unchecked; the
   tooltip follows the card until it is.
+- **The charm line's colour** is assumed white; C1 checked its text only. Cosmetic.
 - **"Storm" twice in RareSuffix** and the unreachable Warp and Rift rows: names only, not shown by the builder.
