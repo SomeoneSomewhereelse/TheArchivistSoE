@@ -1,5 +1,5 @@
 // Writes src/baseStrings.json: the base game's strings (string.tbl, expansionstring.tbl) for every key the
-// committed tables or the stat engine can ask for. Run it with your own copies of the two tables, extracted
+// committed tables, the stat engine or the item tooltip can ask for. Run it with your own copies of the two tables, extracted
 // from Diablo II's MPQs (data\local\lng\eng\), when a data update makes the build's string check fail:
 //   node tools/extract-base-strings.mjs <string.tbl> <expansionstring.tbl>
 // Keys the patch table also has are kept, so a later SoE patch that drops one still builds. Blizzard's
@@ -7,7 +7,7 @@
 import {readFileSync, writeFileSync} from "node:fs";
 import {parseTxt} from "../src/dropCalcData.js";
 import {parseTbl} from "../src/tblFile.js";
-import {HARDCODED_STRINGS} from "../src/statData.js";
+import {HARDCODED_STRINGS, TOOLTIP_STRINGS} from "../src/statData.js";
 
 const [stringPath, expansionPath] = process.argv.slice(2);
 if (!stringPath || !expansionPath) throw new Error("usage: node tools/extract-base-strings.mjs <string.tbl> <expansionstring.tbl>");
@@ -22,7 +22,7 @@ const SOURCES = {
     CharStats: ["StrAllSkills", "StrSkillTab1", "StrSkillTab2", "StrSkillTab3", "StrClassOnly"],
     Skilldesc: ["str name"],
 };
-const keys = new Set(HARDCODED_STRINGS);
+const keys = new Set([...HARDCODED_STRINGS, ...TOOLTIP_STRINGS]);
 for (const [name, columns] of Object.entries(SOURCES)) {
     for (const row of table(name)) {
         for (const c of columns) {
