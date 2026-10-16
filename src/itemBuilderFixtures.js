@@ -2,7 +2,7 @@
 // import this module.
 import {readFileSync} from "node:fs";
 import {ITEM_BUILDER_TABLES, ITEM_BUILDER_VERSION, buildItemBuilderJson, prepareItemBuilder} from "./itemBuilderData.js";
-import {readExcel, realAffixData} from "./statFixtures.js";
+import {readExcel, realAffixData, realStatData} from "./statFixtures.js";
 
 export {affixTableText, tableText} from "./statFixtures.js";
 
@@ -12,6 +12,9 @@ export function readJson(path) {
     return JSON.parse(readFileSync(new URL(path, DATA), "utf8"));
 }
 
+// A valid, empty statDict, for models whose tests don't describe anything.
+export const EMPTY_STAT_DICT = Object.freeze({properties: [], stats: [], classes: [], skills: [], strings: {}});
+
 // Everything the plugin passes to buildItemBuilderJson, from the real files.
 export function readItemBuilderInputs() {
     return {
@@ -19,11 +22,14 @@ export function readItemBuilderInputs() {
         affixes: realAffixData().rows,
         weaponsJson: readJson("Weapons.json"),
         armorsJson: readJson("Armors.json"),
+        dict: realStatData(),
     };
 }
 
+let realModel = null;
 export function realItemBuilderModel() {
-    return prepareItemBuilder({...buildItemBuilderJson(readItemBuilderInputs()), linkVersion: 1});
+    realModel ??= prepareItemBuilder({...buildItemBuilderJson(readItemBuilderInputs()), linkVersion: 1});
+    return realModel;
 }
 
 const affix = (key, fields) => ({
@@ -32,29 +38,32 @@ const affix = (key, fields) => ({
     lines: [`${key} stat`], sort: {property: "x", max: 1}, ...fields,
 });
 
+const type = (chain, fields = {}) => ({chain, class: null, rare: true, throwable: false, charm: false, maxSock: [0, 0, 0], ...fields});
+
 // A small model covering every rule: classes, magic-only rows, max levels, exclusions, a group shared
 // by a prefix and a suffix (2), a jewel, a magic-only charm and a magic-lvl circlet.
-export function tinyModel() {
-    return prepareItemBuilder({
+export function tinyModelJson() {
+    return {
         version: ITEM_BUILDER_VERSION,
         linkVersion: 3,
+        statDict: EMPTY_STAT_DICT,
         types: {
-            weap: {chain: ["weap"], class: null, rare: true},
-            "1han": {chain: ["1han", "weap"], class: null, rare: true},
-            axe: {chain: ["axe", "mele", "weap"], class: null, rare: true},
-            orb: {chain: ["orb", "weap", "sorc", "clas"], class: "sor", rare: true},
-            amul: {chain: ["amul", "misc"], class: null, rare: true},
-            jewl: {chain: ["jewl", "sock", "misc"], class: null, rare: true},
-            lcha: {chain: ["lcha", "char", "misc"], class: null, rare: false},
-            circ: {chain: ["circ", "helm", "armo"], class: null, rare: true},
+            weap: type(["weap"]),
+            "1han": type(["1han", "weap"]),
+            axe: type(["axe", "mele", "weap"]),
+            orb: type(["orb", "weap", "sorc", "clas"], {class: "sor"}),
+            amul: type(["amul", "misc"]),
+            jewl: type(["jewl", "sock", "misc"]),
+            lcha: type(["lcha", "char", "misc"], {rare: false, charm: true}),
+            circ: type(["circ", "helm", "armo"]),
         },
         bases: [
-            {code: "axe", name: "Test Axe", group: "Axes", tier: "Normal", qlvl: 30, magicLvl: 0, levelreq: 10, types: ["axe", "1han"]},
+            {code: "axe", name: "Test Axe", group: "Axes", tier: "Normal", qlvl: 30, magicLvl: 0, levelreq: 10, types: ["axe", "1han"], canEthereal: true},
             {code: "orb", name: "Test Orb", group: "Sorceress Orbs", tier: "Normal", qlvl: 50, magicLvl: 1, levelreq: 20, types: ["orb"]},
             {code: "amu", name: "Amulet", group: "Amulets", tier: null, qlvl: 1, magicLvl: 0, levelreq: 0, types: ["amul"]},
             {code: "jew", name: "Jewel", group: "Jewels", tier: null, qlvl: 1, magicLvl: 0, levelreq: 0, types: ["jewl"]},
             {code: "cm3", name: "Grand Charm", group: "Grand Charms", tier: null, qlvl: 1, magicLvl: 0, levelreq: 0, types: ["lcha"]},
-            {code: "ci3", name: "Diadem", group: "Circlets", tier: "Elite", qlvl: 85, magicLvl: 18, levelreq: 64, types: ["circ"]},
+            {code: "ci3", name: "Diadem", group: "Circlets", tier: "Elite", qlvl: 85, magicLvl: 18, levelreq: 64, types: ["circ"], canEthereal: true},
         ],
         affixes: [
             affix("p0", {name: "Sharp", group: 1, itypes: ["weap", "amul", "jewl"],
@@ -72,6 +81,9 @@ export function tinyModel() {
             affix("s2", {name: "of Mana", group: 11, itypes: ["weap", "amul", "jewl"]}),
             affix("s3", {name: "of Speed", group: 12, itypes: ["weap", "amul", "jewl"]}),
             affix("s4", {name: "of Req", group: 13, itypes: ["weap", "amul"], levelreq: 40, classLevelReq: {class: "sor", level: 30}}),
+            affix("s5", {name: "of Ages", group: 14, itypes: ["circ"], mods: [{code: "indestruct", param: "", min: null, max: null}]}),
         ],
-    });
+    };
 }
+
+export const tinyModel = () => prepareItemBuilder(tinyModelJson());

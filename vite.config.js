@@ -99,7 +99,7 @@ function affixData() {
     writeIfChanged(path.join(standard(), AFFIXES_FILE), JSON.stringify(affixesJson({ rows, stats })))
 
     const [weaponsJson, armorsJson] = ITEM_BUILDER_JSON_FILES.map((f) => JSON.parse(readFileSync(path.join(dataDir, f), 'utf8')))
-    const json = buildItemBuilderJson({ texts, affixes: rows, weaponsJson, armorsJson })
+    const json = buildItemBuilderJson({ texts, affixes: rows, weaponsJson, armorsJson, dict })
     const versionFile = path.join(root, 'src', 'itemBuilderVersion.json')
     const fingerprint = linkFingerprint(json)
     const stored = existsSync(versionFile) ? JSON.parse(readFileSync(versionFile, 'utf8')) : null

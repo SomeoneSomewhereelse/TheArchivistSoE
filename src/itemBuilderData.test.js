@@ -1,6 +1,6 @@
 import {describe, expect, it} from "vitest";
-import {ITEM_BUILDER_VERSION, buildBases, buildItemBuilderJson, buildTypes, checkColumns, linkFingerprint, prepareItemBuilder, resolveLinkVersion} from "./itemBuilderData.js";
-import {readItemBuilderInputs, tableText} from "./itemBuilderFixtures.js";
+import {BASE_DEFAULTS, ITEM_BUILDER_VERSION, buildBases, buildItemBuilderJson, buildTypes, checkColumns, linkFingerprint, prepareItemBuilder, resolveLinkVersion} from "./itemBuilderData.js";
+import {EMPTY_STAT_DICT, readItemBuilderInputs, tableText} from "./itemBuilderFixtures.js";
 
 describe("checkColumns", () => {
     it("names the missing table and the missing columns", () => {
@@ -65,7 +65,7 @@ describe("buildBases", () => {
     it("keeps spawnable bases the wiki lists, with qlvl, magic lvl and types from the .txt", () => {
         const bases = buildBases(texts, weaponsJson, [], types);
         const orb = bases.find((b) => b.code === "ob1");
-        expect(orb).toEqual({code: "ob1", name: "Eagle Orb", group: "Sorceress Orbs", tier: "Normal", qlvl: 1, magicLvl: 1, levelreq: 0, types: ["orb"]});
+        expect(orb).toEqual({...BASE_DEFAULTS, code: "ob1", name: "Eagle Orb", group: "Sorceress Orbs", tier: "Normal", qlvl: 1, magicLvl: 1, levelreq: 0, types: ["orb"]});
         expect(bases.map((b) => b.code)).not.toContain("zzz");
         expect(bases.map((b) => b.code)).not.toContain("pot");
     });
@@ -125,17 +125,27 @@ describe("linkFingerprint and resolveLinkVersion", () => {
 });
 
 describe("prepareItemBuilder", () => {
+    const file = (fields) => ({version: ITEM_BUILDER_VERSION, linkVersion: 2, types: {}, affixes: [], bases: [], statDict: EMPTY_STAT_DICT, ...fields});
+
     it("indexes bases and affixes and groups bases in order", () => {
-        const model = prepareItemBuilder({version: ITEM_BUILDER_VERSION, linkVersion: 2, types: {}, affixes: [{key: "p0"}],
-            bases: [{code: "a", group: "Axes"}, {code: "b", group: "Orbs"}, {code: "c", group: "Axes"}]});
+        const model = prepareItemBuilder(file({affixes: [{key: "p0"}],
+            bases: [{code: "a", group: "Axes"}, {code: "b", group: "Orbs"}, {code: "c", group: "Axes"}]}));
         expect(model.groups.map((g) => [g.label, g.bases.map((b) => b.code)])).toEqual([["Axes", ["a", "c"]], ["Orbs", ["b"]]]);
         expect(model.baseByCode.get("b").code).toBe("b");
         expect(model.affixByKey.get("p0").key).toBe("p0");
         expect(model.linkVersion).toBe(2);
     });
 
-    it("rejects an unknown file version", () => {
+    it("fills each base's left-out fields with their defaults and rebuilds the stat dictionary", () => {
+        const model = prepareItemBuilder(file({bases: [{code: "a", group: "Axes", minac: 5}],
+            statDict: {...EMPTY_STAT_DICT, strings: {ItemStats1h: "Defense:"}}}));
+        expect(model.baseByCode.get("a")).toEqual({...BASE_DEFAULTS, code: "a", group: "Axes", minac: 5});
+        expect(model.dict.string("ItemStats1h")).toBe("Defense:");
+    });
+
+    it("rejects an unknown file version or a malformed stat dictionary", () => {
         expect(() => prepareItemBuilder({version: 99})).toThrow("ItemBuilder.json: unsupported version 99");
+        expect(() => prepareItemBuilder(file({statDict: undefined}))).toThrow("ItemBuilder.json: statDict: malformed");
     });
 });
 
@@ -165,9 +175,29 @@ describe("the real data", () => {
     });
 
     it("has the type tree the rules rely on", () => {
-        expect(json.types.orb).toEqual({chain: ["orb", "weap", "sorc", "clas"], class: "sor", rare: true});
+        expect(json.types.orb).toEqual({chain: ["orb", "weap", "sorc", "clas"], class: "sor", rare: true, throwable: false, charm: false, maxSock: [2, 3, 3]});
+        expect([json.types.taxe.throwable, json.types.scha.charm, json.types.axe.maxSock]).toEqual([true, true, [4, 5, 6]]);
         expect(json.types.lcha.rare).toBe(false);
         expect(json.types.ocha.rare).toBe(false);
         expect(json.types.mjwg.chain).toContain("jewl");
+    });
+
+    it("gives bases their tooltip fields, leaving defaults out of the file", () => {
+        const byCode = new Map(json.bases.map((b) => [b.code, b]));
+        expect(byCode.get("hax")).toMatchObject({dmg1: [3, 6], durability: 56, gemsockets: 2, invwidth: 1, invheight: 3, canEthereal: true});
+        expect("minac" in byCode.get("hax") || "dmg2" in byCode.get("hax")).toBe(false);
+        expect(byCode.get("uit")).toMatchObject({minac: 133, maxac: 148, block: 22, reqstr: 156, durability: 86, gemsockets: 4, canEthereal: true});
+        expect(byCode.get("bsw")).toMatchObject({dmg1: [7, 19], dmg2: [20, 28], twoHanded: true, oneOrTwo: true});
+        expect(byCode.get("tax")).toMatchObject({dmg1: [4, 7], dmgThrow: [7, 8], reqdex: 40, maxstack: 100});
+        expect(byCode.get("aqv")).toMatchObject({nodurability: true, maxstack: 350});
+        expect(byCode.get("7cr").canEthereal).toBeUndefined(); // Phase Blade: nodurability
+        const bows = json.bases.filter((b) => b.types.some((t) => ["bow", "xbow", "abow"].includes(t)));
+        expect([bows.length, bows.filter((b) => b.canEthereal).length]).toEqual([42, 0]);
+        expect(json.bases.filter((b) => b.canEthereal && !b.types.some((t) => json.types[t].chain.includes("weap") || json.types[t].chain.includes("armo")))).toEqual([]);
+    });
+
+    it("carries the trimmed stat dictionary", () => {
+        expect(json.statDict.strings.ItemStats1r).toBe("Chance to Block: ");
+        expect(JSON.stringify(json.statDict).length).toBeLessThan(80_000);
     });
 });

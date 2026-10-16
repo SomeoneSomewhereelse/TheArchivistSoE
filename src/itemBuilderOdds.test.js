@@ -2,7 +2,7 @@ import {describe, expect, it} from "vitest";
 import {prepareItemBuilder, ITEM_BUILDER_VERSION} from "./itemBuilderData.js";
 import {affixCountRange, allowedQualities, eligibleAffixes, EMPTY_BUILD, rollContext} from "./itemBuilderRules.js";
 import {affixWeight, formatOdds, rollOdds} from "./itemBuilderOdds.js";
-import {realItemBuilderModel} from "./itemBuilderFixtures.js";
+import {EMPTY_STAT_DICT, realItemBuilderModel} from "./itemBuilderFixtures.js";
 
 const affix = (key, fields) => ({
     key, suffix: key.startsWith("s"), name: key, level: 1, maxLevel: null, levelreq: 1, rare: true, classSpecific: null,
@@ -15,6 +15,7 @@ function oddsModel(affixes) {
     return prepareItemBuilder({
         version: ITEM_BUILDER_VERSION,
         linkVersion: 1,
+        statDict: EMPTY_STAT_DICT,
         types: {
             weap: {chain: ["weap"], class: null, rare: true},
             axe: {chain: ["axe", "weap"], class: null, rare: true},

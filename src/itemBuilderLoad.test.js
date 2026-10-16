@@ -1,7 +1,7 @@
 import {afterEach, describe, expect, it, vi} from "vitest";
 import {ITEM_BUILDER_FILE, ITEM_BUILDER_VERSION} from "./itemBuilderData.js";
 
-const JSON_OK = {version: ITEM_BUILDER_VERSION, linkVersion: 1, types: {}, bases: [], affixes: []};
+const JSON_OK = {version: ITEM_BUILDER_VERSION, linkVersion: 1, types: {}, bases: [], affixes: [], statDict: {properties: [], stats: [], classes: [], skills: [], strings: {}}};
 const ok = (json) => ({ok: true, status: 200, json: async () => json});
 
 // A fresh module per test, so the module-level cache starts empty.

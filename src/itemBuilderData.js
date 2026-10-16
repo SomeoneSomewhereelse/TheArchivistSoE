@@ -1,23 +1,29 @@
 // The Item Builder's data: the affix rows (src/affixData.js, described by the stat engine), the base items
 // (Weapons, Armor, Misc.txt, with display names from Weapons/Armors.json) and the item-type tree
 // (ItemTypes.txt), cut down to what the builder uses. Pure, so it runs in Vite, Vitest and the browser: the
-// affix-data plugin (vite.config.js) writes ItemBuilder.json with buildItemBuilderJson, and the browser
-// prepares it with prepareItemBuilder.
+// affix-data plugin (vite.config.js) writes ItemBuilder.json with buildItemBuilderJson, including the stat
+// engine's trimmed dictionary, and the browser prepares it with prepareItemBuilder.
 import {parseTxt} from "./dropCalcData.js";
+import {checkBlockClasses} from "./baseLines.js";
+import {checkTrimmedStatData} from "./itemTooltip.js";
+import {statDataFromJson, trimStatData} from "./statData.js";
 
 export const ITEM_BUILDER_FILE = "ItemBuilder.json";
-export const ITEM_BUILDER_VERSION = 2;
+export const ITEM_BUILDER_VERSION = 3;
 export const ITEM_BUILDER_TABLES = ["Weapons", "Armor", "Misc", "ItemTypes"];
 export const ITEM_BUILDER_JSON_FILES = ["Weapons.json", "Armors.json"];
 
 const BASE_COLUMNS = ["code", "type", "type2", "level", "levelreq", "spawnable"];
 
+const SLOT_COLUMNS = ["gemsockets", "invwidth", "invheight", "stackable", "maxstack"];
+
 // Per table, the columns the builder reads. A missing one fails the build.
 export const TABLE_COLUMNS = {
-    Weapons: [...BASE_COLUMNS, "magic lvl"],
-    Armor: [...BASE_COLUMNS, "magic lvl"],
-    Misc: BASE_COLUMNS,
-    ItemTypes: ["Code", "Equiv1", "Equiv2", "Class", "Rare"],
+    Weapons: [...BASE_COLUMNS, "magic lvl", "mindam", "maxdam", "2handmindam", "2handmaxdam", "minmisdam", "maxmisdam",
+        "2handed", "1or2handed", "reqstr", "reqdex", "durability", "nodurability", ...SLOT_COLUMNS],
+    Armor: [...BASE_COLUMNS, "magic lvl", "minac", "maxac", "block", "reqstr", "durability", "nodurability", ...SLOT_COLUMNS],
+    Misc: [...BASE_COLUMNS, "nodurability", ...SLOT_COLUMNS],
+    ItemTypes: ["Code", "Equiv1", "Equiv2", "Class", "Rare", "Throwable", "Charm", "MaxSock1", "MaxSock25", "MaxSock40"],
 };
 
 const cell = (v) => (v ?? "").trim();
@@ -44,7 +50,8 @@ export const builderAffix = (row) => Object.fromEntries(BUILDER_AFFIX_FIELDS.map
 // ---- Item types ---------------------------------------------------------------------------------
 
 // Every ItemTypes.txt code with its equivalence chain (Equiv1/Equiv2 followed recursively, the type
-// itself first), its class (ItemTypes "Class") and whether it can be rare.
+// itself first), its class (ItemTypes "Class"), whether it can be rare, whether it is throwable or a charm, and
+// its socket caps by ilvl band.
 export function buildTypes(text) {
     const byCode = new Map(parseTxt(text).filter((r) => cell(r.Code)).map((r) => [cell(r.Code), r]));
     const types = {};
@@ -58,7 +65,14 @@ export function buildTypes(text) {
             chain.push(c);
             queue.push(cell(byCode.get(c).Equiv1), cell(byCode.get(c).Equiv2));
         }
-        types[code] = {chain, class: cell(row.Class) || null, rare: cell(row.Rare) === "1"};
+        types[code] = {
+            chain,
+            class: cell(row.Class) || null,
+            rare: cell(row.Rare) === "1",
+            throwable: cell(row.Throwable) === "1",
+            charm: cell(row.Charm) === "1",
+            maxSock: [int(row.MaxSock1), int(row.MaxSock25), int(row.MaxSock40)],
+        };
     }
 
     return types;
@@ -93,7 +107,17 @@ export const MISC_BASES = {
     cqv2: "Bolts", cqv3: "Bolts",
 };
 
-function toBase(row, name, tier, types) {
+// The tooltip's base fields and their defaults. ItemBuilder.json leaves out a field equal to its default;
+// prepareItemBuilder puts them back. A damage pair whose two values are 0 is null.
+export const BASE_DEFAULTS = Object.freeze({
+    minac: 0, maxac: 0, block: 0, dmg1: null, dmg2: null, dmgThrow: null, twoHanded: false, oneOrTwo: false,
+    reqstr: 0, reqdex: 0, durability: 0, nodurability: false, gemsockets: 0, invwidth: 0, invheight: 0, maxstack: 0,
+    canEthereal: false,
+});
+
+const compactBase = (base) => Object.fromEntries(Object.entries(base).filter(([key, value]) => !(key in BASE_DEFAULTS) || value !== BASE_DEFAULTS[key]));
+
+function toBase(table, row, name, tier, types) {
     const code = cell(row.code);
     const type = cell(row.type);
     const type2 = cell(row.type2);
@@ -104,8 +128,35 @@ function toBase(row, name, tier, types) {
     if (!group) {
         throw new Error(`base ${code} ("${name}"): no optgroup label for type "${type}" (add it to GROUP_LABELS in src/itemBuilderData.js)`);
     }
-    return {code, name, group, tier, qlvl: int(row.level), magicLvl: int(row["magic lvl"]), levelreq: int(row.levelreq),
-        types: type2 ? [type, type2] : [type]};
+    const weapon = table === "Weapons";
+    const armor = table === "Armor";
+    const pair = (a, b) => (weapon && (int(row[a]) || int(row[b])) ? [int(row[a]), int(row[b])] : null);
+    const typeCodes = type2 ? [type, type2] : [type];
+    const chain = new Set(typeCodes.flatMap((t) => types[t].chain));
+    const durability = weapon || armor ? int(row.durability) : 0;
+    const nodurability = cell(row.nodurability) === "1";
+    return {
+        code, name, group, tier, qlvl: int(row.level), magicLvl: int(row["magic lvl"]), levelreq: int(row.levelreq), types: typeCodes,
+        minac: armor ? int(row.minac) : 0,
+        maxac: armor ? int(row.maxac) : 0,
+        block: armor ? int(row.block) : 0,
+        dmg1: pair("mindam", "maxdam"),
+        dmg2: pair("2handmindam", "2handmaxdam"),
+        dmgThrow: pair("minmisdam", "maxmisdam"),
+        twoHanded: weapon && cell(row["2handed"]) === "1",
+        oneOrTwo: weapon && cell(row["1or2handed"]) === "1",
+        reqstr: weapon || armor ? int(row.reqstr) : 0,
+        reqdex: weapon ? int(row.reqdex) : 0,
+        durability,
+        nodurability,
+        gemsockets: int(row.gemsockets),
+        invwidth: int(row.invwidth),
+        invheight: int(row.invheight),
+        maxstack: cell(row.stackable) === "1" ? int(row.maxstack) : 0,
+        // Spec "Ethereal": weapons and armor with durability. Excludes bows, crossbows and Phase Blades
+        // (nodurability) and every Misc base.
+        canEthereal: (chain.has("weap") || chain.has("armo")) && !nodurability && durability > 0,
+    };
 }
 
 // Spawnable weapons and armor the wiki lists (Weapons/Armors.json, not dontDisplay), plus MISC_BASES.
@@ -117,7 +168,7 @@ export function buildBases(texts, weaponsJson, armorsJson, types) {
         for (const row of parseTxt(texts[table])) {
             const entry = listed.get(cell(row.code));
             if (cell(row.spawnable) !== "1" || !entry) continue;
-            bases.push(toBase(row, entry.displayName || entry.name, entry.itemTier ?? null, types));
+            bases.push(toBase(table, row, entry.displayName || entry.name, entry.itemTier ?? null, types));
         }
     }
 
@@ -125,7 +176,7 @@ export function buildBases(texts, weaponsJson, armorsJson, types) {
     for (const [code, name] of Object.entries(MISC_BASES)) {
         const row = misc.get(code);
         if (!row) throw new Error(`Misc.txt: base ${code} ("${name}") is missing`);
-        bases.push(toBase(row, name, null, types));
+        bases.push(toBase("Misc", row, name, null, types));
     }
 
     return bases.sort((a, b) => GROUP_ORDER.get(a.group) - GROUP_ORDER.get(b.group)
@@ -134,21 +185,33 @@ export function buildBases(texts, weaponsJson, armorsJson, types) {
 
 // ---- The file -----------------------------------------------------------------------------------
 
-// inputs: {texts: {[table]: .txt content}, affixes: describeAffixes' rows, weaponsJson, armorsJson}. Throws on
-// bad data. The plugin adds linkVersion.
-export function buildItemBuilderJson({texts, affixes, weaponsJson, armorsJson}) {
+// inputs: {texts: {[table]: .txt content}, affixes: describeAffixes' rows, weaponsJson, armorsJson, dict: the
+// full stat dictionary}. Throws on bad data, a class with no block abbreviation, or a trimmed dictionary that
+// describes any affix differently. The plugin adds linkVersion.
+export function buildItemBuilderJson({texts, affixes, weaponsJson, armorsJson, dict}) {
     for (const table of ITEM_BUILDER_TABLES) checkColumns(table, texts[table]);
     const types = buildTypes(texts.ItemTypes);
     const bases = buildBases(texts, weaponsJson, armorsJson, types);
-    return {version: ITEM_BUILDER_VERSION, types, bases, affixes: affixes.map(builderAffix)};
+    checkBlockClasses(dict.classes);
+    const statDict = trimStatData(dict, affixes.flatMap((a) => a.mods));
+    checkTrimmedStatData({full: dict, trimmed: statDataFromJson(JSON.parse(JSON.stringify(statDict))), affixes, types, bases});
+    return {version: ITEM_BUILDER_VERSION, types, bases: bases.map(compactBase), affixes: affixes.map(builderAffix), statDict};
 }
 
-// The loaded file, indexed for the rules and grouped for the base picker.
+// The loaded file, indexed for the rules and grouped for the base picker; bases get their defaults back and
+// the stat dictionary is rebuilt for the tooltip (model.dict).
 export function prepareItemBuilder(json) {
     if (json?.version !== ITEM_BUILDER_VERSION) throw new Error(`${ITEM_BUILDER_FILE}: unsupported version ${json?.version}`);
+    let dict;
+    try {
+        dict = statDataFromJson(json.statDict);
+    } catch (e) {
+        throw new Error(`${ITEM_BUILDER_FILE}: ${e.message}`);
+    }
+    const bases = json.bases.map((b) => ({...BASE_DEFAULTS, ...b}));
     const groups = [];
     const byLabel = new Map();
-    for (const base of json.bases) {
+    for (const base of bases) {
         let group = byLabel.get(base.group);
         if (!group) {
             group = {label: base.group, bases: []};
@@ -159,8 +222,10 @@ export function prepareItemBuilder(json) {
     }
     return {
         ...json,
+        bases,
+        dict,
         groups,
-        baseByCode: new Map(json.bases.map((b) => [b.code, b])),
+        baseByCode: new Map(bases.map((b) => [b.code, b])),
         affixByKey: new Map(json.affixes.map((a) => [a.key, a])),
     };
 }
