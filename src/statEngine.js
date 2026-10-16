@@ -36,10 +36,54 @@ export function chargesAt(min, level) {
     return Math.min(255, Math.max(1, n));
 }
 
+// The damage stats funcs 5 and 6 write (D2MOO ITEMMODS_PropertyFunc05/06): with no base (the Affixes tab)
+// the one-handed pair; on a weapon, the one-handed pair if it has one-handed damage or no two-handed damage,
+// the two-handed pair if it has two-handed damage or no one-handed damage, and the throw pair if its type is
+// throwable; on any other base, all three.
+const DAMAGE_STATS = {
+    min: ["mindamage", "secondary_mindamage", "item_throw_mindamage"],
+    max: ["maxdamage", "secondary_maxdamage", "item_throw_maxdamage"],
+};
+function damageStats(base, end) {
+    const [one, two, thrown] = DAMAGE_STATS[end];
+    if (!base) return [one];
+    if (!base.isWeapon) return [one, two, thrown];
+    return [
+        ...(base.dmg1 || !base.dmg2 ? [one] : []),
+        ...(base.dmg2 || !base.dmg1 ? [two] : []),
+        ...(base.throwable ? [thrown] : []),
+    ];
+}
+
+// D2MOO ITEMMODS_PropertyFunc07: on a weapon, a roll r with trunc(txtMaxDamage * r / 100) <= 0 adds +1
+// maximum damage (func 6's path) instead of Enhanced Damage. txtMaxDamage is the base's larger txt maximum,
+// before ethereal. Whether a roll falls back is monotone in r, so a range splits in two at most. Returns the
+// ED range that stays ED (or null), whether some roll adds +1 instead, and whether both happen ("mixed":
+// then both parts are byRoll).
+function edFallback(base, roll) {
+    if (!base?.isWeapon) return {ed: roll, plusMax: false, mixed: false};
+    const falls = (r) => Math.trunc((base.txtMaxDamage * r) / 100) <= 0;
+    if (!falls(roll.min)) return {ed: roll, plusMax: false, mixed: false};
+    if (falls(roll.max)) return {ed: null, plusMax: true, mixed: false};
+    let first = roll.min;
+    while (falls(first)) first++;
+    return {ed: {min: first, max: roll.max}, plusMax: true, mixed: true};
+}
+
+// D2MOO ITEMS_GetMaxSockets: a base's socket cap at item level ilvl, the smallest of its inventory cells,
+// its gem sockets and its type's MaxSock for the ilvl band (1-25, 26-40, 41+).
+export function socketCap(base, ilvl) {
+    const band = ilvl <= 25 ? 0 : ilvl <= 40 ? 1 : 2;
+    return Math.min(base.cells, base.gemsockets, base.maxSock[band]);
+}
+
 // mods: [{code, param, min, max}] (min and max may be null). ctx.ilvl: {min, max}, the item levels to
-// describe; values that depend on it (charges, proc levels) become ranges over it. Returns the entries
-// and the codes Properties.txt doesn't define, which give no stats (as in the game). Throws on a
-// property func the engine doesn't implement, a stat missing from ItemStatCost.txt or an unknown skill.
+// describe; values that depend on it (charges, proc levels, the socket band) become ranges over it. ctx.base:
+// the item's engine base (src/itemTooltip.js engineBase: {isWeapon, dmg1, dmg2, dmgThrow, throwable,
+// txtMaxDamage, cells, gemsockets, maxSock}), or null on the Affixes tab, whose output it never changes.
+// Returns the entries and the codes Properties.txt doesn't define, which give no stats (as in the game).
+// Throws on a property func the engine doesn't implement, a stat missing from ItemStatCost.txt or an
+// unknown skill.
 export function expandMods(mods, dict, ctx = {}) {
     const entries = [];
     const unknown = [];
@@ -79,17 +123,20 @@ export function expandMods(mods, dict, ctx = {}) {
                     break;
                 case 5:
                     value = reuse;
-                    push("mindamage", 0, value);
+                    for (const stat of damageStats(ctx.base, "min")) push(stat, 0, value);
                     break;
                 case 6:
                     value = reuse;
-                    push("maxdamage", 0, value);
+                    for (const stat of damageStats(ctx.base, "max")) push(stat, 0, value);
                     break;
-                case 7:
+                case 7: {
                     value = reuse;
-                    push("item_mindamage_percent", 0, value);
-                    push("item_maxdamage_percent", 0, value);
+                    const {ed, plusMax, mixed} = edFallback(ctx.base, value);
+                    const tag = mixed ? {byRoll: true} : {};
+                    if (ed) for (const stat of ["item_mindamage_percent", "item_maxdamage_percent"]) push(stat, 0, ed, tag);
+                    if (plusMax) for (const stat of damageStats(ctx.base, "max")) push(stat, 0, fixed(1), tag);
                     break;
+                }
                 case 10:
                     // A skill tab: param = class * 3 + tab, stored as class * 8 + tab.
                     value = reuse;
@@ -105,9 +152,15 @@ export function expandMods(mods, dict, ctx = {}) {
                     break;
                 }
                 case 14: {
-                    // Sockets: the roll, or the param when there is none (the per-base cap is the summing spec's).
+                    // Sockets: the roll, or the param when there is none; with a base, clamped to its cap at the
+                    // item level (a cap of 0 drops the entry). Sockets SET, not add; every socket row is in group
+                    // 122, so two never meet and summing stays safe.
                     const n = reuse.min > 0 ? reuse : fixed(param);
                     value = {min: Math.max(1, n.min), max: Math.max(1, n.max)};
+                    if (ctx.base) {
+                        const [lo, hi] = levels();
+                        value = {min: Math.min(value.min, socketCap(ctx.base, lo)), max: Math.min(value.max, socketCap(ctx.base, hi))};
+                    }
                     push(slot.stat, 0, value);
                     break;
                 }
@@ -316,6 +369,31 @@ export function describe(entries, dict) {
     return lines.sort((a, b) => b.priority - a.priority || a.order - b.order);
 }
 
+// The base lines' totals (src/baseLines.js): every mod collapsed to its lowest roll, then to its highest,
+// expanded and summed per stat (layer 0): two exact totals, with the func-7 fallback resolved at each end.
+// Only mods whose funcs take the roll (1-3, 5-8) count; the others (charges, procs, sockets) never feed a
+// base line, and the base lines read only their own stats, never the per-level ones. Every term is monotone in its roll, so the two ends bound every roll,
+// with one theoretical exception: on a 1-or-2-handed base whose smaller pair is below txtMaxDamage, the
+// first ED roll past the fallback can add 0 where the fallback added 1. No pair that can roll in SoE hits
+// it (src/itemTooltip.test.js pins the current data).
+const ROLL_FUNCS = new Set([1, 2, 3, 5, 6, 7, 8]);
+export function sumEnds(mods, dict, ctx) {
+    const rolled = mods.filter((m) => dict.properties.get(String(m.code).toLowerCase())?.every((s) => ROLL_FUNCS.has(s.func)));
+    const at = (end) => {
+        const collapsed = rolled.map((m) => {
+            const r = span(m.min ?? 0, m.max ?? 0);
+            const v = end === "low" ? r.min : r.max;
+            return {...m, min: v, max: v};
+        });
+        const totals = new Map();
+        for (const e of expandMods(collapsed, dict, ctx).entries) {
+            if (e.layer === 0) totals.set(e.stat, (totals.get(e.stat) ?? 0) + e.min);
+        }
+        return totals;
+    };
+    return {low: at("low"), high: at("high")};
+}
+
 // Summed entries (each (stat, layer) at most once) -> lines, unsorted.
 function describeSummed(summed, dict) {
     const live = new Map();
@@ -329,6 +407,12 @@ function describeSummed(summed, dict) {
         const pieces = displayPieces(text);
         if (pieces.length) lines.push({...line, pieces, label: displayPieces(labelText).join(" ")});
     };
+
+    // A 1-or-2-handed weapon carries both pairs from the same mods; the game prints the one-handed one.
+    // This runs before the pairs are taken.
+    for (const [one, two] of [["mindamage", "secondary_mindamage"], ["maxdamage", "secondary_maxdamage"]]) {
+        if (at0(one) && at0(two)) take(two);
+    }
 
     // 1. The damage pairs, printed as one line when both halves are present. Single value when min >= max
     // (the game prints the max), else "Adds a-b". Poison converts frames: (v * frames + 128) >> 8 over
@@ -354,14 +438,17 @@ function describeSummed(summed, dict) {
     }
     take("coldlength", "poisonlength");
 
-    // Physical damage: "Adds a-b damage" only when min is below max; otherwise each prints its own line.
-    const lo = at0("mindamage");
-    const hi = at0("maxdamage");
-    if (lo && hi && lo.max < hi.min) {
+    // Physical damage: "Adds a-b damage" only when min is below max, for the one-handed pair and for the
+    // two-handed one (V1: a Giant Axe with +5 min and +10 max prints "Adds 5-10 damage", as a Hand Axe does);
+    // otherwise each prints its own line.
+    for (const [min, max] of [["mindamage", "maxdamage"], ["secondary_mindamage", "secondary_maxdamage"]]) {
+        const lo = at0(min);
+        const hi = at0(max);
+        if (!lo || !hi || lo.max >= hi.min) continue;
         const fmt = requireString(dict, "strModMinDamageRange", "damage pair");
         add({text: fill(fmt, [rangeText(lo, {bracket: true}), rangeText(hi, {bracket: true})]), labelText: fill(fmt, ["#", "#"]),
-            key: "damage", priority: stat("mindamage").priority, order: stat("mindamage").id, stats: ["mindamage", "maxdamage"], value: lo});
-        take("mindamage", "maxdamage");
+            key: "damage", priority: stat(min).priority, order: stat(min).id, stats: [min, max], value: lo});
+        take(min, max);
     }
 
     // Enhanced damage: min% and max% print "+X% Enhanced Damage" together only when they are equal;

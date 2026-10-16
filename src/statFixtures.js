@@ -99,3 +99,13 @@ export function realAffixData() {
     const texts = Object.fromEntries(["MagicPrefix", "MagicSuffix", "ItemTypes"].map((name) => [name, readExcel(name)]));
     return describeAffixes(readAffixes(texts), realStatData(), itemTypeNames(texts.ItemTypes));
 }
+
+// Engine bases (the shape of src/itemTooltip.js engineBase) for the engine's tests, one per kind funcs 5-7
+// tell apart, with SoE's numbers: Hand Axe, Giant Axe, Bastard Sword, Throwing Axe, Monarch.
+export const ENGINE_TEST_BASES = {
+    oneHanded: {isWeapon: true, dmg1: [3, 6], dmg2: null, dmgThrow: null, throwable: false, txtMaxDamage: 6, cells: 3, gemsockets: 2, maxSock: [4, 5, 6]},
+    twoHanded: {isWeapon: true, dmg1: null, dmg2: [22, 45], dmgThrow: null, throwable: false, txtMaxDamage: 45, cells: 6, gemsockets: 6, maxSock: [4, 5, 6]},
+    oneOrTwo: {isWeapon: true, dmg1: [7, 19], dmg2: [20, 28], dmgThrow: null, throwable: false, txtMaxDamage: 28, cells: 4, gemsockets: 4, maxSock: [3, 4, 6]},
+    throwable: {isWeapon: true, dmg1: [4, 7], dmg2: null, dmgThrow: [7, 8], throwable: true, txtMaxDamage: 7, cells: 2, gemsockets: 1, maxSock: [2, 3, 3]},
+    nonWeapon: {isWeapon: false, dmg1: null, dmg2: null, dmgThrow: null, throwable: false, txtMaxDamage: 0, cells: 6, gemsockets: 4, maxSock: [3, 3, 4]},
+};

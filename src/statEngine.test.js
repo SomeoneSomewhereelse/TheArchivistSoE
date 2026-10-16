@@ -1,6 +1,6 @@
 import {describe, expect, it} from "vitest";
-import {chargesAt, checkEntries, describe as describeEntries, displayPieces, entryKey, expandMods, fill, rangeText, skillLevelAt, sumEntries} from "./statEngine.js";
-import {realStatData} from "./statFixtures.js";
+import {chargesAt, checkEntries, describe as describeEntries, displayPieces, entryKey, expandMods, fill, rangeText, skillLevelAt, socketCap, sumEnds, sumEntries} from "./statEngine.js";
+import {ENGINE_TEST_BASES as B, realStatData} from "./statFixtures.js";
 
 const dict = realStatData();
 const mod = (code, min = null, max = null, param = "") => ({code, param, min, max});
@@ -350,5 +350,74 @@ describe("describe: the deferred fixes", () => {
         expect(lines([E("item_replenish_durability", 3, 3)])).toEqual([["Repairs 1 durability in 33 seconds", "Repairs # durability in # seconds"]]);
         expect(lines([E("item_mindamage_percent", -20, -10), E("item_maxdamage_percent", -20, -10)])).toEqual([
             ["-10 to -20% Enhanced Damage", "-#% Enhanced Damage"]]);
+    });
+});
+
+const on = (base, ilvl = 99) => ({ilvl: {min: ilvl, max: ilvl}, base});
+const withRoll = (mods, ctx) => expand(mods, ctx).entries.map((e) => [e.stat, e.min, e.max, !!e.byRoll]);
+
+describe("expandMods with a base", () => {
+    const damage = [mod("dmg-min", 5, 5), mod("dmg-max", 10, 10)];
+
+    it("funcs 5 and 6 write the pairs each kind of base carries", () => {
+        const stats = (base) => entries(damage, on(base)).map((e) => e.stat);
+        expect(stats(null)).toEqual(["mindamage", "maxdamage"]);
+        expect(stats(B.oneHanded)).toEqual(["mindamage", "maxdamage"]);
+        expect(stats(B.twoHanded)).toEqual(["secondary_mindamage", "secondary_maxdamage"]);
+        expect(stats(B.oneOrTwo)).toEqual(["mindamage", "secondary_mindamage", "maxdamage", "secondary_maxdamage"]);
+        expect(stats(B.throwable)).toEqual(["mindamage", "item_throw_mindamage", "maxdamage", "item_throw_maxdamage"]);
+        expect(stats(B.nonWeapon)).toEqual(["mindamage", "secondary_mindamage", "item_throw_mindamage", "maxdamage", "secondary_maxdamage", "item_throw_maxdamage"]);
+    });
+
+    it("prints +min and +max as one line on every kind of base (V1: a Giant Axe shows 'Adds 5-10 damage')", () => {
+        for (const base of Object.values(B)) expect(text(damage, on(base))).toEqual(["Adds 5-10 damage"]);
+        expect(text([mod("dmg-min", 3, 3)], on(B.twoHanded))).toEqual(["+3 to Minimum Damage"]);
+    });
+
+    it("func 7 falls back to +1 maximum damage for rolls with trunc(txtMax * r / 100) <= 0", () => {
+        // Jagged 10-20% on a Hand Axe (txt max 6): rolls 10-16 fall back, 17-20 give ED.
+        expect(withRoll([mod("dmg%", 10, 20)], on(B.oneHanded))).toEqual([
+            ["item_mindamage_percent", 17, 20, true], ["item_maxdamage_percent", 17, 20, true], ["maxdamage", 1, 1, true]]);
+        // Cinnabar 5-10% always falls back; Cruel 201-300% never does; armor and no base keep plain ED.
+        expect(withRoll([mod("dmg%", 5, 10)], on(B.oneHanded))).toEqual([["maxdamage", 1, 1, false]]);
+        expect(withRoll([mod("dmg%", 201, 300)], on(B.oneHanded))).toEqual([
+            ["item_mindamage_percent", 201, 300, false], ["item_maxdamage_percent", 201, 300, false]]);
+        expect(withRoll([mod("dmg%", 10, 20)], on(B.nonWeapon))).toEqual([
+            ["item_mindamage_percent", 10, 20, false], ["item_maxdamage_percent", 10, 20, false]]);
+        // A throwing weapon takes the +1 on both of its max stats (func 6's path).
+        expect(withRoll([mod("dmg%", 10, 20)], on(B.throwable))).toEqual([
+            ["item_mindamage_percent", 15, 20, true], ["item_maxdamage_percent", 15, 20, true],
+            ["maxdamage", 1, 1, true], ["item_throw_maxdamage", 1, 1, true]]);
+    });
+
+    it("describes Jagged on a Hand Axe as two by-roll lines, and Jagged + Sharp as one range each", () => {
+        expect(shown(expand([mod("dmg%", 10, 20)], on(B.oneHanded)).entries)).toEqual([
+            ["+17-20% Enhanced Damage", true], ["+1 to Maximum Damage", true]]);
+        expect(shown(expand([mod("dmg%", 10, 20), mod("dmg%", 10, 20)], on(B.oneHanded)).entries)).toEqual([
+            ["+17-40% Enhanced Damage", true], ["+1-2 to Maximum Damage", true]]);
+    });
+
+    it("func 14 clamps sockets to the base's cap at the item level; a cap of 0 drops the entry", () => {
+        expect(socketCap(B.oneHanded, 99)).toBe(2); // min(1x3 cells, 2 gem sockets, 6)
+        expect(entries([mod("sock", 1, 2)], on(B.oneHanded))).toEqual([{stat: "item_numsockets", layer: 0, min: 1, max: 2}]);
+        expect(entries([mod("sock", null, null, "4")], on(B.oneHanded))).toEqual([{stat: "item_numsockets", layer: 0, min: 2, max: 2}]);
+        const banded = {...B.nonWeapon, cells: 6, gemsockets: 6, maxSock: [1, 2, 3]};
+        expect([25, 26, 40, 41].map((ilvl) => entries([mod("sock", null, null, "4")], on(banded, ilvl))[0].max)).toEqual([1, 2, 2, 3]);
+        expect(entries([mod("sock", 1, 2)], on({...B.nonWeapon, gemsockets: 0}))).toEqual([]);
+        expect(entries([mod("sock", null, null, "4")])).toEqual([{stat: "item_numsockets", layer: 0, min: 4, max: 4}]); // no base: as before
+    });
+});
+
+describe("sumEnds", () => {
+    it("totals every mod at its lowest roll, then its highest, resolving the func-7 fallback per end", () => {
+        const {low, high} = sumEnds([mod("dmg%", 10, 20)], dict, on(B.oneHanded));
+        expect([...low]).toEqual([["maxdamage", 1]]);
+        expect([...high]).toEqual([["item_mindamage_percent", 20], ["item_maxdamage_percent", 20]]);
+    });
+
+    it("adds every source of a stat and skips mods whose funcs don't take the roll (charges)", () => {
+        const {low, high} = sumEnds([mod("ac%", 81, 100), mod("ease", -20, -20), mod("ac", 5, 10), mod("ac", 1, 2), mod("charged", -30, -6, "54")], dict, on(B.nonWeapon));
+        expect(Object.fromEntries(low)).toEqual({item_armor_percent: 81, item_req_percent: -20, armorclass: 6});
+        expect(Object.fromEntries(high)).toEqual({item_armor_percent: 100, item_req_percent: -20, armorclass: 12});
     });
 });
