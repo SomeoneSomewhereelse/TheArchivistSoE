@@ -5,8 +5,9 @@
 **Status:** designed and approved section by section in brainstorming (2026-10-11 and 2026-10-12). The in-game checks
 it listed as pending were all closed by the user on 2026-10-15 (see "Verification log") and the spec was revised to
 match. An independent review (one solo reviewer on Opus 5.5, 2026-10-15) found 2 blocking and 7 should-fix issues
-and a set of minors; all are folded in below. One new in-game check came out of it (V1, the two-handed damage pair).
-Next: V1, then the user's approval, then planning.
+and a set of minors; all are folded in below. The one new in-game check that came out of it (V1, the two-handed
+damage pair) was closed by the user on 2026-10-16, along with the crafted note (dropped) and the charm line's colour
+(white). Next: the user's approval, then planning.
 
 ## Intent
 
@@ -42,7 +43,7 @@ it adds the base-item lines the engine never had. It also adds **ethereal** item
 - Odds of an ethereal item. The roll-odds line is unchanged: ethereal items also come from cube recipes, so an
   ethereal chance would not be a roll probability.
 - Rare and crafted name pickers or sample names (a placeholder is shown instead).
-- The crafted recipe's fixed mods (the builder doesn't model recipes; see "Name and modifier lines").
+- The crafted recipe's fixed mods (the builder doesn't model recipes), and any note about them on the tooltip.
 - Two deferred stat-engine minors that aren't about summing stay deferred: the Affixes Stat select wrapping long
   labels, and about 1 MB of unused `.txt`/`.tbl` tables copied into `dist/`. Fixing the first would change the
   Affixes tab's pixels; the second is a separate packaging change.
@@ -195,9 +196,9 @@ same stored item level (`ITEMS_GetMaxSockets`), so it follows.
   suppression runs before the pairs are taken.
 - **The two-handed pair.** On a 2H-only base (120 in SoE) funcs 5/6 write only `secondary_*`, and today the
   "Adds a-b damage" branch reads only `mindamage`/`maxdamage`. So a rare two-handed axe with *of Excellence* and *of
-  Evisceration* would print two lines where a one-handed weapon prints one. Which the game does is check **V1**
-  (pending). If the game prints "Adds a-b damage", `secondary_*` gets the same pair branch; if two lines, it
-  doesn't. The pair branch takes a flag either way, so V1 changes one line of code and its test.
+  Evisceration* would print two lines where a one-handed weapon prints one. The game prints one (**V1**: a Giant
+  Axe with +5 minimum and +10 maximum damage shows "Adds 5-10 damage", as a Hand Axe does), so `secondary_*` gets
+  the same pair branch, with the same rule (one line only when min is below max).
 
 **Func 7 (Enhanced Damage %)**, D2MOO `ITEMMODS_PropertyFunc07`: on a weapon, a roll `r` falls back to **+1 maximum
 damage** (func 6's path) when `trunc(txtMaxDamage × r / 100) ≤ 0`, where `txtMaxDamage` = max(Weapons.txt `maxdam`,
@@ -349,15 +350,12 @@ it by the `block` property alone). Durability, requirements and the charm line a
 3. **Modifiers:** `describe(sumEntries(expandPicks(picks, dict, ctx)), dict)`, in the engine's priority order,
    blue, **minus the `item_numsockets` line**, which `describe` prints as "Socketed (n)" and which the footer prints
    instead. `byRoll` lines get the muted "(by roll)" tag.
-4. **Crafted note** (*added while writing the spec; awaiting the user's yes or no*): for crafted items, a line "Plus
-   the recipe's fixed modifiers", matching the card's existing sub-line, since those mods aren't modelled. Muted and
-   italic, so a screenshot can't pass it off as a game line.
-5. **Footer:** "Ethereal (Cannot Be Repaired)", "Socketed (n)", or both joined by ", " (1.14d
+4. **Footer:** "Ethereal (Cannot Be Repaired)", "Socketed (n)", or both joined by ", " (1.14d
    `INV_FormatEtherealSocketedText`), blue, at the very bottom. Verified (U2). The socket count is the clamped
    `item_numsockets` value: one number, or a range for *Mechanist's* ("Socketed (1-2)"). It is the only socket line.
 
 **Charm line:** on a base whose type has `Charm` = 1, "Keep in Inventory to Gain Bonus" (`Charmdes`, from the
-expansion table) between Quantity and Durability, white. Verified (C1): SoE prints this text, not its patch table's
+expansion table) between Quantity and Durability, white. Verified (C1): SoE prints this text, in white, not its patch table's
 unused `Charmdes_PD2` "Active in Charm Inventory".
 
 **Not shown:** attack speed, Smite/Kick, the viewer's Dexterity or level, unidentified, superior and low quality.
@@ -407,8 +405,8 @@ unused `Charmdes_PD2` "Active in Charm Inventory".
 - Because `.ibCardCol` is one flex item on phones, the phone order needs no new mobile CSS. If a mobile rule turns
   out to be needed, the 980px, 720px and 480px blocks are searched for copies first.
 - Look: the same dark panel and gold border as `.ibOdds`, lines centred like the game's tooltip, colours from the
-  card's tokens (`--c-blue`, `--ib-rare`, `--ib-crafted`), a muted colour for the placeholder, the "(by roll)" tag
-  and the crafted note. `overflow-wrap: anywhere`, so the long block line wraps at 390px.
+  card's tokens (`--c-blue`, `--ib-rare`, `--ib-crafted`), a muted colour for the placeholder and the "(by roll)"
+  tag. `overflow-wrap: anywhere`, so the long block line wraps at 390px.
 - The "(by roll)" tag has a `title`: "Depends on the roll: on this base, low rolls add maximum damage instead of
   Enhanced Damage."
 - The tooltip is plain text in reading order, not `aria-hidden`.
@@ -475,13 +473,13 @@ Ama/Asn/Bar: 80%, Dru/Nec/Sor: 80%)".
   ethereal alone; block blue only with a `block` affix); the class-restriction line on a Paladin shield and a
   Necromancer head; exactly one socket line, in the footer, with "Socketed (1-2)" for *Mechanist's*; a rare Hand
   Axe with *Jagged* and *Sharp* ("+17-40% Enhanced Damage (by roll)", "+1-2 to Maximum Damage (by roll)"); the magic name with either affix missing; the rare and crafted
-  placeholder; the crafted note; the charm line on the four charm bases only; the footer in all three forms; the socket cap, and no socket line at cap 0; durability
+  placeholder; no crafted note; the charm line on the four charm bases only; the footer in all three forms; the socket cap, and no socket line at cap 0; durability
   hidden on indestructible items and throwables; Required Level hidden at ≤ 1.
 - **`statData.test.js`:** `trimStatData` then a JSON round trip through `statDataFromJson` describes every builder
   affix at ilvl 1 and 99, with no base and with each kind of base, exactly as the full dictionary does; every
   `ENGINE_STATS` name survives the trim; BlockFactor is read.
 - **`statEngine.test.js`:** funcs 5/6 for each kind of base (1H, 2H, 1-or-2, throwable, non-weapon, no base); func 7
-  always-fallback, mixed (`byRoll`) and plain; the 2H pair (both V1 outcomes behind the flag); func 14's param, roll
+  always-fallback, mixed (`byRoll`) and plain; the 2H pair (`secondary_*` min and max print one "Adds a-b damage" line, V1); func 14's param, roll
   and clamp by ilvl band; `sumEntries` (including several `byRoll` mods); `sumEnds`; source-aware `dgrp` folding,
   and entries with no `src` folding as today; each deferred fix; the fixed "func 3 and func 8" test.
 - **`itemBuilderRules.test.js` / `itemBuilderHash.test.js`:** `eth` cleaning and `ethOff`; the `e=1` round trip;
@@ -548,22 +546,18 @@ template is in the vault's `rare-names-report.md`.
 | R1 | Rare/crafted names: two lines, name on top, quality colour | **TEST rare ring** / **TEST crafted ring** | As expected |
 | R2 | Crafted items use the same name pools, always two words | **TEST crafted ring**, **TEST crafted amulet** | As expected |
 | R3 | Mythic Jewels get the jewel name pools | **TEST rare mythic jewel** | As expected |
-| C1 | Which charm line SoE prints | Any magic Grand Charm | "Keep in Inventory to Gain Bonus" |
-
-### Pending
-
-| ID | Question | Recipe | Expected |
-|---|---|---|---|
-| V1 | On a two-handed-only weapon, do +min and +max damage print as one "Adds a-b damage" line, as on a one-handed weapon? | Two rows with `output` mods (property funcs 5/6 run as on any item): `output="gix,nor"` (Giant Axe, 2H only, 22–45) and `output="hax,nor"` (Hand Axe, 1H; normal quality, so no random affixes add damage), each with `mod 1=dmg-min`, `mod 1 min=5`, `mod 1 max=5`, `mod 2=dmg-max`, `mod 2 min=10`, `mod 2 max=10` (chance 100) | The Hand Axe prints "Adds 5-10 damage". The Giant Axe prints either the same (pair branch for `secondary_*`) or "+5 to Minimum Damage" and "+10 to Maximum Damage" (no pair branch) |
+| C1 | Which charm line SoE prints, and its colour | Any magic Grand Charm | "Keep in Inventory to Gain Bonus", white |
+| V1 | On a two-handed-only weapon, do +min and +max damage print as one "Adds a-b damage" line, as on a one-handed weapon? | Two rows with `output` mods: `output="gix,nor"` (Giant Axe, 2H only) and `output="hax,nor"` (Hand Axe, 1H), each with `mod 1=dmg-min` 5–5, `mod 2=dmg-max` 10–10 (chance 100) | Both print "Adds 5-10 damage" (2026-10-16) |
 
 ### Noted, not changed
 
 - **Rare Mythic Jewel affix count.** Vanilla gives a rare jewel 3–4 affixes only when the base type is exactly
   `jewl`; Mythic Jewel's type is `mjwg`, so vanilla would give it the ordinary rare's 4–6. The builder assumes the
   jewel's cap of 4. R3 checked the name pools only; counting the affixes over several **TEST rare mythic jewel**
-  transmutes settles it. If they reach 5 or 6, a separate fix changes `capsFor`.
+  transmutes settles it. Some affixes print several lines, so the count uses local string tables that end each stat
+  line with the IDs of the affixes that can print it (research vault, never committed). If they reach 5 or 6, a
+  separate fix changes `capsFor`.
 - **Crafted required level.** The builder's `requiredLevel` (and so the tooltip's) is the highest of the base's and
   the affixes' requirements. Vanilla adds 10 + 3 per affix to crafted items. Whether PD2/SoE does is unchecked; the
   tooltip follows the card until it is.
-- **The charm line's colour** is assumed white; C1 checked its text only. Cosmetic.
 - **"Storm" twice in RareSuffix** and the unreachable Warp and Rift rows: names only, not shown by the builder.
