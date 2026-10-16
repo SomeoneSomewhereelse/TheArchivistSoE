@@ -7,7 +7,8 @@ it listed as pending were all closed by the user on 2026-10-15 (see "Verificatio
 match. An independent review (one solo reviewer on Opus 5.5, 2026-10-15) found 2 blocking and 7 should-fix issues
 and a set of minors; all are folded in below. The one new in-game check that came out of it (V1, the two-handed
 damage pair) was closed by the user on 2026-10-16, along with the crafted note (dropped) and the charm line's colour
-(white). Next: the user's approval, then planning.
+(white). On 2026-10-16 the user also confirmed the B1 by-roll range rule and the rare Mythic Jewel cap of 4, and
+approved this spec. Next: the implementation plan.
 
 ## Intent
 
@@ -548,15 +549,10 @@ template is in the vault's `rare-names-report.md`.
 | R3 | Mythic Jewels get the jewel name pools | **TEST rare mythic jewel** | As expected |
 | C1 | Which charm line SoE prints, and its colour | Any magic Grand Charm | "Keep in Inventory to Gain Bonus", white |
 | V1 | On a two-handed-only weapon, do +min and +max damage print as one "Adds a-b damage" line, as on a one-handed weapon? | Two rows with `output` mods: `output="gix,nor"` (Giant Axe, 2H only) and `output="hax,nor"` (Hand Axe, 1H), each with `mod 1=dmg-min` 5–5, `mod 2=dmg-max` 10–10 (chance 100) | Both print "Adds 5-10 damage" (2026-10-16) |
+| J1 | The rare Mythic Jewel affix cap (type `mjwg`, not `jewl`, so vanilla would give 4–6) | Several **TEST rare mythic jewel** transmutes, read with local string tables that tag each stat line with the affix IDs that can print it (research vault, never committed) | At most 4: the builder's jewel cap is right (2026-10-16) |
 
 ### Noted, not changed
 
-- **Rare Mythic Jewel affix count.** Vanilla gives a rare jewel 3–4 affixes only when the base type is exactly
-  `jewl`; Mythic Jewel's type is `mjwg`, so vanilla would give it the ordinary rare's 4–6. The builder assumes the
-  jewel's cap of 4. R3 checked the name pools only; counting the affixes over several **TEST rare mythic jewel**
-  transmutes settles it. Some affixes print several lines, so the count uses local string tables that end each stat
-  line with the IDs of the affixes that can print it (research vault, never committed). If they reach 5 or 6, a
-  separate fix changes `capsFor`.
 - **Crafted required level.** The builder's `requiredLevel` (and so the tooltip's) is the highest of the base's and
   the affixes' requirements. Vanilla adds 10 + 3 per affix to crafted items. Whether PD2/SoE does is unchecked; the
   tooltip follows the card until it is.
