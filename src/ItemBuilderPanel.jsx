@@ -1,8 +1,11 @@
-// The Item Builder tab: base, quality and level controls, the item card, and the affix list. The build
-// comes from useItemBuilder (src/useItemBuilder.js) through props; this component only keeps UI state
-// (search text, copy-link state, whether the card is in view).
+// The Item Builder tab: base, quality, ethereal and level controls, the item card, the roll odds, the item
+// tooltip, and the affix list. The build comes from useItemBuilder (src/useItemBuilder.js) through props;
+// this component only keeps UI state (search text, copy-link state, whether the card is in view).
 import React, {useEffect, useMemo, useRef, useState} from "react";
 import SearchableSelect from "./SearchableSelect.jsx";
+import ErrorBoundary from "./ErrorBoundary.jsx";
+import ItemTooltip from "./ItemTooltip.jsx";
+import {encodeBuildQuery} from "./itemBuilderHash.js";
 import {compareAffixes} from "./sortCompare.js";
 import {CLASS_NAMES} from "./affixData.js";
 import {allowedQualities, countHint, eligibleAffixes, requiredLevel, rollContext, rowState} from "./itemBuilderRules.js";
@@ -83,7 +86,7 @@ function Slots({title, affixes, cap, totalReached, onRemove}) {
 }
 
 function AffixRow({affix, state, onToggle}) {
-    const locked = state.state === "group" || state.state === "full";
+    const locked = state.state === "group" || state.state === "full" || state.state === "ethereal";
     return (
         <button
             type="button"
@@ -102,6 +105,7 @@ function AffixRow({affix, state, onToggle}) {
             </span>
             {state.state === "group" && <span className="ibWhy">Group taken by {state.by.name}</span>}
             {state.state === "full" && <span className="ibWhy">Slots full</span>}
+            {state.state === "ethereal" && <span className="ibWhy">Not on ethereal items</span>}
         </button>
     );
 }
@@ -184,6 +188,12 @@ export default function ItemBuilderPanel({status, error, retry, model, build, no
                         ))}
                     </div>
                 )}
+                {base?.canEthereal && (
+                    <button type="button" className={`btn ibQualityBtn${build.eth ? " active" : ""}`} aria-pressed={build.eth}
+                            onClick={() => update({eth: !build.eth})}>
+                        Ethereal
+                    </button>
+                )}
                 {base && !crafted && <LevelInput label="ilvl" value={build.ilvl} onCommit={(v) => update({ilvl: v})}/>}
                 {base && crafted && (
                     <>
@@ -236,6 +246,12 @@ export default function ItemBuilderPanel({status, error, retry, model, build, no
                         )}
                     </div>
                 )}
+                {base && (
+                    <ErrorBoundary resetKey={encodeBuildQuery(model, build)}
+                                   fallback={<section className="ibTooltip"><p className="ibTooltipError">The tooltip couldn't be built.</p></section>}>
+                        <ItemTooltip model={model} ctx={ctx} build={build}/>
+                    </ErrorBoundary>
+                )}
             </div>
 
             {base && (
@@ -259,7 +275,7 @@ export default function ItemBuilderPanel({status, error, retry, model, build, no
                             {search.trim() ? "No affixes match the search." : `No affixes can roll at alvl ${ctx.alvl}.`}
                         </p>
                     ) : (
-                        rows.map((a) => <AffixRow key={a.key} affix={a} state={rowState(a, picked, caps)} onToggle={toggle}/>)
+                        rows.map((a) => <AffixRow key={a.key} affix={a} state={rowState(a, picked, caps, build.eth)} onToggle={toggle}/>)
                     )}
                 </div>
             </section>

@@ -1,5 +1,6 @@
-// Keeps a render-time throw in one tab's panel from blanking the whole page. The tab bar stays
-// outside it, and `resetKey` (the current tab) clears the failure when the user moves on.
+// Keeps a render-time throw in one panel from blanking the whole page. The tab bar stays outside it, and
+// `resetKey` (the current tab, or the Item Builder's build query) clears the failure when it changes.
+// `fallback`, when given, replaces the tab-wide failure panel (the item tooltip shows a one-line message).
 import React from "react";
 
 export default class ErrorBoundary extends React.Component {
@@ -14,11 +15,12 @@ export default class ErrorBoundary extends React.Component {
     }
 
     componentDidCatch(error, info) {
-        console.error("A tab failed to render", error, info.componentStack);
+        console.error("A panel failed to render", error, info.componentStack);
     }
 
     render() {
         if (!this.state.error) return this.props.children;
+        if (this.props.fallback !== undefined) return this.props.fallback;
 
         return (<div className="helpPanel errorPanel" role="alert">
             <div className="helpTitle">This tab failed to load</div>

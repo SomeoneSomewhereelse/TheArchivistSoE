@@ -2937,3 +2937,57 @@ a.mdLink {
     color: var(--muted);
     font-size: 12px;
 }
+
+/* The item tooltip under the roll odds (src/ItemTooltip.jsx): centred lines like the game's. */
+.ibTooltip {
+    margin-top: 10px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.35));
+    border: 1px solid rgba(202, 161, 74, 0.45);
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+
+.ibTipLine {
+    margin: 0;
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.45;
+}
+
+.ibTipName {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.ibTipBlue,
+.ibTipMagic {
+    color: var(--c-blue);
+}
+
+.ibTipRare {
+    color: var(--ib-rare);
+}
+
+.ibTipCrafted {
+    color: var(--ib-crafted);
+}
+
+.ibTipPlaceholder {
+    font-weight: 400;
+    font-style: italic;
+    opacity: 0.6;
+}
+
+.ibTipByRoll {
+    color: var(--muted);
+    font-size: 12px;
+    cursor: help;
+}
+
+.ibTooltipError {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+}
