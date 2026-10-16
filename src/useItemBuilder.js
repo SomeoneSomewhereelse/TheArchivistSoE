@@ -48,9 +48,9 @@ export function useItemBuilder({tab, query, setQuery}) {
     }
 
     const setBuild = (next) => {
-        const {build, dropped} = resolveBuild(model, next);
+        const {build, dropped, ethOff} = resolveBuild(model, next);
         setQuery(encodeBuildQuery(model, build));
-        setNotice(controlNotice(dropped));
+        setNotice(controlNotice(dropped, ethOff));
     };
 
     return {

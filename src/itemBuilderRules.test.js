@@ -152,8 +152,8 @@ describe("requiredLevel and countHint", () => {
 
 describe("resolveBuild", () => {
     it("keeps a valid build as it is", () => {
-        const raw = {base: "axe", quality: "rare", ilvl: 85, clvl: 99, gilvl: 99, picks: ["p0", "s0"]};
-        expect(resolveBuild(model, raw)).toEqual({build: raw, dropped: 0, fixed: 0});
+        const raw = {base: "axe", quality: "rare", eth: false, ilvl: 85, clvl: 99, gilvl: 99, picks: ["p0", "s0"]};
+        expect(resolveBuild(model, raw)).toEqual({build: raw, dropped: 0, fixed: 0, ethOff: null});
     });
 
     it("defaults missing levels to 99 and resets invalid ones, counting them", () => {
@@ -169,7 +169,7 @@ describe("resolveBuild", () => {
 
     it("drops every pick of an unknown base", () => {
         expect(resolveBuild(model, {base: "nope", quality: "rare", picks: ["p0", "s0"]}))
-            .toEqual({build: {...EMPTY_BUILD}, dropped: 2, fixed: 1});
+            .toEqual({build: {...EMPTY_BUILD}, dropped: 2, fixed: 1, ethOff: null});
     });
 
     it("collapses repeated keys and keeps the earliest picks on a conflict", () => {
@@ -212,5 +212,26 @@ describe("the rules on the real data", () => {
         for (const base of real.bases.filter((b) => b.tier)) {
             expect(allowedQualities(real, base), base.code).toEqual(["magic", "rare", "crafted"]);
         }
+    });
+});
+
+describe("ethereal", () => {
+    it("keeps eth on a base that can be ethereal, and turns it off with the base's name otherwise", () => {
+        expect(resolveBuild(model, {base: "axe", quality: "magic", eth: true})).toMatchObject({build: {eth: true}, ethOff: null, fixed: 0});
+        expect(resolveBuild(model, {base: "jew", quality: "magic", eth: true})).toMatchObject({build: {eth: false}, ethOff: "Jewel", fixed: 0});
+        expect(resolveBuild(model, {base: "axe", quality: "magic"}).build.eth).toBe(false);
+    });
+
+    it("counts a malformed e as a reset setting", () => {
+        expect(resolveBuild(model, {base: "axe", quality: "magic", eth: "invalid"})).toMatchObject({build: {eth: false}, fixed: 1});
+    });
+
+    it("locks of Ages while eth is on, without touching canRoll, and drops it when eth turns on", () => {
+        const ctx = ctxFor({base: "ci3", quality: "magic"});
+        expect(canRoll(A("s5"), ctx)).toBe(true);
+        expect(rowState(A("s5"), [], ctx.caps, true)).toEqual({state: "ethereal"});
+        expect(rowState(A("s5"), [], ctx.caps, false)).toEqual({state: "free"});
+        expect(eligibleAffixes(model, ctx).map((a) => a.key)).toContain("s5"); // the list and the roll odds (which read it) don't move
+        expect(resolveBuild(model, {base: "ci3", quality: "magic", eth: true, picks: ["s5"]})).toMatchObject({build: {eth: true, picks: []}, dropped: 1});
     });
 });

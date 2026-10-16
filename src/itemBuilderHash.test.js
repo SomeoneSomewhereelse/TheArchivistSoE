@@ -12,6 +12,8 @@ describe("encodeBuildQuery", () => {
         expect(encodeBuildQuery(model, build({base: "axe", quality: "magic"}))).toBe("v=3&b=axe");
         expect(encodeBuildQuery(model, build({base: "axe", quality: "rare", ilvl: 85, picks: ["p0", "s0"]})))
             .toBe("v=3&b=axe&q=r&il=85&a=p0-s0");
+        expect(encodeBuildQuery(model, build({base: "axe", quality: "rare", ilvl: 85, eth: true, picks: ["p0", "s0"]})))
+            .toBe("v=3&b=axe&q=r&il=85&e=1&a=p0-s0");
     });
 
     it("writes clvl and ingredient ilvl only for crafted items, and ilvl only otherwise", () => {
@@ -24,8 +26,8 @@ describe("encodeBuildQuery", () => {
 
 describe("parseBuildQuery", () => {
     it("takes the first of repeated parameters and marks malformed values", () => {
-        expect(parseBuildQuery("v=3&b=axe&b=orb&il=50&il=60&q=x&cl=abc&a=p0--s1")).toEqual({
-            version: 3, base: "axe", quality: "invalid", ilvl: 50, clvl: Number.NaN, gilvl: undefined, picks: ["p0", "s1"],
+        expect(parseBuildQuery("v=3&b=axe&b=orb&il=50&il=60&q=x&cl=abc&a=p0--s1&e=1")).toEqual({
+            version: 3, base: "axe", quality: "invalid", ilvl: 50, clvl: Number.NaN, gilvl: undefined, picks: ["p0", "s1"], eth: true,
         });
     });
 
@@ -52,6 +54,7 @@ describe("decodeBuildQuery", () => {
             build({base: "axe", quality: "crafted", clvl: 70, gilvl: 40, picks: ["p0", "p3", "p4", "s0"]}),
             build({base: "jew", quality: "rare", picks: ["p0", "p7", "s0", "s2"]}),
             build({base: "cm3", quality: "magic", ilvl: 20, picks: ["s0"]}),
+            build({base: "axe", quality: "rare", eth: true, picks: ["p0"]}),
         ]) {
             expect(decodeBuildQuery(model, encodeBuildQuery(model, b))).toEqual({build: b, notice: null});
         }
@@ -81,7 +84,7 @@ describe("decodeBuildQuery", () => {
     });
 
     it("produces queries that decode to themselves (so App's cleanup converges)", () => {
-        for (const q of ["v=3", "v=3&b=axe&a=p0-p0", "v=3&b=axe&il=99&q=m", "v=3&b=nope", "v=3&b=axe&a=p7-p0-s1", "v=3&b=cm3&q=r&il=0"]) {
+        for (const q of ["v=3", "v=3&b=axe&a=p0-p0", "v=3&b=axe&il=99&q=m", "v=3&b=nope", "v=3&b=axe&a=p7-p0-s1", "v=3&b=cm3&q=r&il=0", "v=3&b=axe&e=1", "v=3&b=jew&e=1", "v=3&b=axe&e=0"]) {
             const clean = encodeBuildQuery(model, decodeBuildQuery(model, q).build);
             expect(decodeBuildQuery(model, clean).notice, q).toBeNull();
             expect(encodeBuildQuery(model, decodeBuildQuery(model, clean).build), q).toBe(clean);
@@ -98,5 +101,24 @@ describe("notices", () => {
     it("count removed affixes after a control change", () => {
         expect(controlNotice(1)).toBe("1 affix no longer fits and was removed.");
         expect(controlNotice(3)).toBe("3 affixes no longer fit and were removed.");
+    });
+});
+
+describe("ethereal links and notices", () => {
+    it("opens old links non-ethereal and reads e=1", () => {
+        expect(decodeBuildQuery(model, "v=3&b=axe").build.eth).toBe(false);
+        expect(decodeBuildQuery(model, "v=3&b=axe&e=1")).toMatchObject({build: {eth: true}, notice: null});
+    });
+
+    it("resets e=0, e=x and e=1 on a base that can't be ethereal, with the invalid-settings notice", () => {
+        for (const q of ["v=3&b=axe&e=0", "v=3&b=axe&e=x", "v=3&b=jew&e=1"]) {
+            expect(decodeBuildQuery(model, q), q).toMatchObject({build: {eth: false}, notice: "Some settings in the link were invalid and were reset."});
+        }
+    });
+
+    it("says why Ethereal was turned off after a control change, alone or with dropped picks", () => {
+        expect(controlNotice(0, "Short Bow")).toBe("Ethereal was turned off: Short Bow can't be ethereal.");
+        expect(controlNotice(2, "Short Bow")).toBe("Ethereal was turned off: Short Bow can't be ethereal. 2 affixes no longer fit and were removed.");
+        expect(controlNotice(0, null)).toBeNull();
     });
 });

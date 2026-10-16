@@ -14,7 +14,7 @@ export const CAPS = {
 // A base can be crafted when its type chain reaches one of these (circlets through SoE's infusions).
 export const CRAFT_TYPES = ["amul", "ring", "belt", "glov", "boot", "helm", "tors", "shld", "weap", "bowq", "xboq", "circ"];
 
-export const EMPTY_BUILD = Object.freeze({base: null, quality: null, ilvl: 99, clvl: 99, gilvl: 99, picks: Object.freeze([])});
+export const EMPTY_BUILD = Object.freeze({base: null, quality: null, eth: false, ilvl: 99, clvl: 99, gilvl: 99, picks: Object.freeze([])});
 
 const MAGIC_TWO_AFFIX_ILVL = {equipment: 65, jewelry: 85, jewel: 85, charm: 90};
 
@@ -95,9 +95,15 @@ export function eligibleAffixes(model, ctx) {
     return model.affixes.filter((a) => canRoll(a, ctx));
 }
 
-// An eligible row's state next to the picks: a group taken on either side beats a full side.
-export function rowState(affix, picked, caps) {
+// A row that makes the item indestructible (of Ages). It can't be on an ethereal item: the game's ethereal
+// check fails once an item is indestructible, and affixes roll first (U5).
+const makesIndestructible = (affix) => affix.mods.some((m) => String(m.code).toLowerCase() === "indestruct");
+
+// An eligible row's state next to the picks: picked; locked on an ethereal item (eth); a group taken on
+// either side; a full side.
+export function rowState(affix, picked, caps, eth = false) {
     if (picked.some((p) => p.key === affix.key)) return {state: "picked"};
+    if (eth && makesIndestructible(affix)) return {state: "ethereal"};
     const holder = picked.find((p) => p.group === affix.group);
     if (holder) return {state: "group", by: holder};
     const side = picked.filter((p) => p.suffix === affix.suffix).length;
@@ -142,8 +148,10 @@ const validLevel = (v) => Number.isInteger(v) && v >= 1 && v <= 99;
 
 // Turns any build-shaped input (a decoded link, or the current build plus one control change) into a
 // valid build: levels default to 99, an unknown base empties the build, a disallowed quality falls back
-// to the base's first allowed one, and picks are applied in order, each kept only if it can roll and is
-// free next to the picks before it. `fixed` counts reset settings, `dropped` the removed picks.
+// to the base's first allowed one, eth is kept only on a base that can be ethereal, and picks are applied
+// in order, each kept only if it can roll and is free next to the picks before it. `fixed` counts reset
+// settings (a malformed e included), `dropped` the removed picks, and `ethOff` names the base when eth was
+// turned off because the base can't be ethereal (null otherwise).
 export function resolveBuild(model, raw) {
     let fixed = 0;
     let dropped = 0;
@@ -156,11 +164,13 @@ export function resolveBuild(model, raw) {
             fixed++;
         }
     }
+    if (raw.eth === "invalid") fixed++;
+    let eth = raw.eth === true;
 
     const picks = [...new Set(raw.picks ?? [])];
     const base = raw.base ? model.baseByCode.get(raw.base) ?? null : null;
     if (raw.base && !base) fixed++;
-    if (!base) return {build: {...EMPTY_BUILD, ...levels, picks: []}, dropped: dropped + picks.length, fixed};
+    if (!base) return {build: {...EMPTY_BUILD, ...levels, picks: []}, dropped: dropped + picks.length, fixed, ethOff: null};
 
     const allowed = allowedQualities(model, base);
     let quality = raw.quality;
@@ -168,15 +178,20 @@ export function resolveBuild(model, raw) {
         if (quality) fixed++;
         quality = allowed[0];
     }
+    let ethOff = null;
+    if (eth && !base.canEthereal) {
+        eth = false;
+        ethOff = base.name;
+    }
 
-    const build = {base: base.code, quality, ...levels, picks: []};
+    const build = {base: base.code, quality, eth, ...levels, picks: []};
     const ctx = rollContext(model, build);
     const picked = [];
     for (const key of picks) {
         const affix = model.affixByKey.get(key);
-        if (affix && canRoll(affix, ctx) && rowState(affix, picked, ctx.caps).state === "free") picked.push(affix);
+        if (affix && canRoll(affix, ctx) && rowState(affix, picked, ctx.caps, eth).state === "free") picked.push(affix);
         else dropped++;
     }
     build.picks = picked.map((a) => a.key);
-    return {build, dropped, fixed};
+    return {build, dropped, fixed, ethOff};
 }

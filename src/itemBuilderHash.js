@@ -1,6 +1,7 @@
 // The Item Builder's build as a URL query (spec "URL format"): v (link version, always written),
 // b (base), q (m/r/c, left out when it's the base's first allowed quality), il (ilvl, magic/rare),
-// cl and gl (clvl and ingredient ilvl, crafted), a (affix keys in pick order, "-"-separated).
+// cl and gl (clvl and ingredient ilvl, crafted), e (1 when ethereal, left out otherwise), a (affix keys in
+// pick order, "-"-separated).
 // Levels at 99 are left out. Pure, unit-tested in itemBuilderHash.test.js.
 import {allowedQualities, EMPTY_BUILD, resolveBuild} from "./itemBuilderRules.js";
 
@@ -27,6 +28,7 @@ export function parseBuildQuery(query) {
         clvl: level(params.get("cl")),
         gilvl: level(params.get("gl")),
         picks: (params.get("a") ?? "").split("-").filter(Boolean),
+        eth: params.has("e") ? (params.get("e") === "1" ? true : "invalid") : undefined,
     };
 }
 
@@ -42,6 +44,7 @@ export function encodeBuildQuery(model, build) {
     } else if (build.ilvl !== 99) {
         parts.push(`il=${build.ilvl}`);
     }
+    if (build.eth) parts.push("e=1");
     if (build.picks.length) parts.push(`a=${build.picks.join("-")}`);
     return parts.join("&");
 }
@@ -55,8 +58,12 @@ export function linkNotice(dropped, fixed) {
     return parts.length ? parts.join(" ") : null;
 }
 
-export function controlNotice(dropped) {
-    return dropped ? `${affixes(dropped)} no longer ${dropped === 1 ? "fits and was" : "fit and were"} removed.` : null;
+// After a control change: why Ethereal was turned off (ethOff: the base's name), then how many picks fell out.
+export function controlNotice(dropped, ethOff = null) {
+    const parts = [];
+    if (ethOff) parts.push(`Ethereal was turned off: ${ethOff} can't be ethereal.`);
+    if (dropped) parts.push(`${affixes(dropped)} no longer ${dropped === 1 ? "fits and was" : "fit and were"} removed.`);
+    return parts.length ? parts.join(" ") : null;
 }
 
 // A query with no version, or another version, is refused as a whole: the builder opens blank.
@@ -64,6 +71,7 @@ export function decodeBuildQuery(model, query) {
     if (!query) return {build: EMPTY_BUILD, notice: null};
     const raw = parseBuildQuery(query);
     if (raw.version !== model.linkVersion) return {build: EMPTY_BUILD, notice: OLD_LINK_NOTICE};
-    const {build, dropped, fixed} = resolveBuild(model, raw);
-    return {build, notice: linkNotice(dropped, fixed)};
+    const {build, dropped, fixed, ethOff} = resolveBuild(model, raw);
+    // From a link, an e=1 the base can't take is one more invalid setting.
+    return {build, notice: linkNotice(dropped, fixed + (ethOff ? 1 : 0))};
 }
