@@ -191,4 +191,12 @@ describe("review fixes", () => {
     it("itemTypeNames fails loudly when ItemTypes.txt has no ItemType column", () => {
         expect(() => itemTypeNames(tableText(["Code", "Equiv1"], [{Code: "swor"}]))).toThrow(/ItemType/);
     });
+
+    it("describeAffixes names a dgrp member that prints no line of its own", () => {
+        const dict = realStatData();
+        const odd = {...dict, stats: new Map(dict.stats).set("coldresist", {...dict.stats.get("coldresist"), func: 0})};
+        const row = {key: "p0", suffix: false, name: "Odd", level: 1, itypes: [], etypes: [], classSpecific: null,
+            mods: [{code: "res-all", param: "", min: 3, max: 6}]};
+        expect(() => describeAffixes([row], odd, new Map())).toThrow(/stat coldresist \(dgrp 2\) prints no line of its own/);
+    });
 });

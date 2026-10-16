@@ -1,5 +1,5 @@
 import {describe, expect, it} from "vitest";
-import {chargesAt, checkEntries, describe as describeEntries, displayPieces, entryKey, expandMods, fill, rangeText, skillLevelAt} from "./statEngine.js";
+import {chargesAt, checkEntries, describe as describeEntries, displayPieces, entryKey, expandMods, fill, rangeText, skillLevelAt, sumEntries} from "./statEngine.js";
 import {realStatData} from "./statFixtures.js";
 
 const dict = realStatData();
@@ -44,6 +44,11 @@ describe("expandMods", () => {
             ["fireresist", 3, 6], ["lightresist", 3, 6], ["coldresist", 3, 6], ["poisonresist", 3, 6]]);
         expect(entries([mod("map-mon-att-cast-speed", 40, 60)]).map((e) => [e.stat, e.min, e.max])).toEqual([
             ["map_mon_fasterattackrate", 40, 60], ["map_mon_fastercastrate", 40, 60]]);
+        // A stub whose first slot (func 17) takes the param, so the reused value differs from the roll.
+        const stub = {...dict, properties: new Map(dict.properties).set("stub", [
+            {func: 17, stat: "strength", set: 0, val: 0}, {func: 3, stat: "dexterity", set: 0, val: 0}, {func: 8, stat: "vitality", set: 0, val: 0}])};
+        expect(expandMods([mod("stub", 1, 2, "7")], stub, ILVL_99).entries.map((e) => [e.stat, e.min, e.max])).toEqual([
+            ["strength", 7, 7], ["dexterity", 7, 7], ["vitality", 7, 7]]);
     });
 
     it("funcs 5, 6 and 7 write the damage stats their rows leave blank", () => {
@@ -283,5 +288,67 @@ describe("checkEntries", () => {
         expect(problems).toThrow(/CharStats\.txt has no skill tab for layer 33/);
         expect(problems).toThrow(/string "ModStre10b" \(used by the stat engine\)/);
         expect(problems).toThrow(/stat strength scales by a stat other than the character level \(op 3\)/);
+    });
+});
+
+const E = (stat, min, max, extra = {}) => ({stat, layer: 0, min, max, ...extra});
+const shown = (list) => describeEntries(list, dict).map((l) => [l.pieces.join(" "), !!l.byRoll]);
+
+describe("sumEntries", () => {
+    it("adds min to min and max to max per stat and layer, uniting the sources", () => {
+        const [sum] = sumEntries([E("coldresist", 5, 10, {src: new Set(["0:0"])}), E("coldresist", 1, 2, {src: new Set(["1:0"])})]);
+        expect(sum).toMatchObject({stat: "coldresist", layer: 0, min: 6, max: 12});
+        expect([...sum.src].sort()).toEqual(["0:0", "1:0"]);
+        expect(sumEntries([E("coldresist", 5, 10), {...E("coldresist", 1, 1), layer: 3}])).toHaveLength(2);
+    });
+
+    it("sums byRoll entries apart: from the smallest single value to the sum of the maximums (Jagged + Sharp)", () => {
+        const sums = sumEntries([
+            E("item_mindamage_percent", 17, 20, {byRoll: true}), E("item_mindamage_percent", 17, 20, {byRoll: true}),
+            E("item_mindamage_percent", 201, 300)]);
+        expect(sums.map((e) => [e.min, e.max, !!e.byRoll])).toEqual([[17, 40, true], [201, 300, false]]);
+    });
+
+    it("leaves entries without sources without a src", () => {
+        expect(sumEntries([E("strength", 1, 1), E("strength", 2, 2)])[0].src).toBeUndefined();
+    });
+});
+
+describe("describe: sources and by-roll lines", () => {
+    it("describes byRoll entries on their own tagged lines, beside a plain line of the same stat", () => {
+        expect(shown([
+            E("item_mindamage_percent", 201, 300), E("item_maxdamage_percent", 201, 300),
+            E("item_mindamage_percent", 17, 20, {byRoll: true}), E("item_maxdamage_percent", 17, 20, {byRoll: true}),
+            E("maxdamage", 1, 1, {byRoll: true}),
+        ])).toEqual([["+201-300% Enhanced Damage", false], ["+17-20% Enhanced Damage", true], ["+1 to Maximum Damage", true]]);
+    });
+
+    it("folds a dgrp group only when its members share their sources; entries without sources fold as before", () => {
+        const four = ["fireresist", "lightresist", "coldresist", "poisonresist"];
+        expect(shown(four.map((s) => E(s, 5, 5, {src: new Set(["0:0"])})))).toEqual([["All Resistances +5", false]]);
+        expect(shown(four.map((s, i) => E(s, 5, 5, {src: new Set([`${i}:0`])})))).toEqual([
+            ["Cold Resist +5%", false], ["Lightning Resist +5%", false], ["Fire Resist +5%", false], ["Poison Resist +5%", false]]);
+        expect(shown(four.map((s) => E(s, 5, 5)))).toEqual([["All Resistances +5", false]]);
+    });
+});
+
+describe("describe: the deferred fixes", () => {
+    const lines = (list) => describeEntries(list, dict).map((l) => [l.pieces.join(" "), l.label]);
+
+    it("merges Enhanced Damage only when min% equals max%", () => {
+        expect(lines([E("item_mindamage_percent", 10, 20), E("item_maxdamage_percent", 10, 30)])).toEqual([
+            ["Enhanced Minimum Damage", "Enhanced Minimum Damage"], ["Enhanced Maximum Damage", "Enhanced Maximum Damage"]]);
+    });
+
+    it("prints a negative per-level value from the smaller magnitude", () => {
+        expect(lines([E("item_hp_perlevel", -8, -8)])).toEqual([
+            ["-1 to -99 to Life (Based on Character Level), -1 per level", "-# to Life (Based on Character Level), # per level"]]);
+    });
+
+    it("labels repair and negative Enhanced Damage in the form their value prints", () => {
+        expect(lines([E("item_replenish_durability", 100, 100)])).toEqual([["Repairs 1 durability per second", "Repairs # durability per second"]]);
+        expect(lines([E("item_replenish_durability", 3, 3)])).toEqual([["Repairs 1 durability in 33 seconds", "Repairs # durability in # seconds"]]);
+        expect(lines([E("item_mindamage_percent", -20, -10), E("item_maxdamage_percent", -20, -10)])).toEqual([
+            ["-10 to -20% Enhanced Damage", "-#% Enhanced Damage"]]);
     });
 });

@@ -138,6 +138,9 @@ export function describeAffixes(affixes, dict, typeNames) {
                 // Each member of a folded group matches indirectly, tagged with the group line.
                 for (const member of line.stats) {
                     const alone = describe([{stat: member, layer: 0, min: line.value.min, max: line.value.max}], dict)[0];
+                    if (!alone) {
+                        throw new Error(`stat ${member} (dgrp ${line.key.slice("dgrp".length)}) prints no line of its own: it needs a descfunc in ItemStatCost.txt`);
+                    }
                     statKeys.push({key: alone.key, via: line.via});
                     note(alone.key, alone.label, items);
                 }

@@ -224,7 +224,7 @@ function formatStat(d, e, dict, label) {
     let perLevel = "";
     if (d.perLevelShift !== null && d.perLevelShift !== undefined) {
         const unit = 2 ** d.perLevelShift;
-        value = {min: Math.floor(e.min / unit), max: Math.floor(e.max * 99 / unit)};
+        value = span(Math.floor(e.min / unit), Math.floor(e.max * 99 / unit)); // a negative rate prints "-1 to -99"
         perLevel = `, ${label ? "#" : rangeText({min: e.min / unit, max: e.max / unit})} per level`;
     }
 
@@ -247,11 +247,12 @@ function formatStat(d, e, dict, label) {
             return fill(text, [v(value)]);
         case 11: {
             // Repair: 1 durability every (2500 / v + 12) / 25 seconds, or "per second" at 30 frames or less.
-            if (label) return fill(str("ModStre9u"), ["#", "#"]);
-            const frames = Math.trunc(2500 / e.max);
-            return e.max > 0 && frames > 30
-                ? fill(str("ModStre9u"), ["1", String(Math.trunc((frames + 12) / 25))])
-                : fill(str("ModStre9t"), [e.max > 0 ? "1" : "25"]);
+            // The label takes the same form as the value.
+            const frames = e.max > 0 ? Math.trunc(2500 / e.max) : 0;
+            if (e.max > 0 && frames > 30) {
+                return fill(str("ModStre9u"), label ? ["#", "#"] : ["1", String(Math.trunc((frames + 12) / 25))]);
+            }
+            return fill(str("ModStre9t"), [label ? "#" : e.max > 0 ? "1" : "25"]);
         }
         case 13:
             return `${v(value, "signed")} ${str(dict.classes[e.layer].allSkills)}`;
@@ -278,19 +279,47 @@ const ELEMENT_PAIRS = [
     {key: "poisondamage", min: "poisonmindam", max: "poisonmaxdam", length: "poisonlength", single: "strModPoisonDamage", range: "strModPoisonDamageRange"},
 ];
 
-// entries -> lines [{pieces, label, key, priority, order, stats, value, via?}], in the game's order:
+// An entry's sources as one comparable key; entries with no src (the Affixes tab) share one source.
+const srcKey = (e) => (e.src ? [...e.src].sort().join(",") : "");
+
+// Sums entries per (stat, layer), the game's way: min to min and max to max, sources united. byRoll entries
+// (from an Enhanced Damage mod some of whose rolls give +1 maximum damage instead, func 7) sum apart from
+// plain ones and never add across mods: their range runs from the smallest single value to the sum of every
+// maximum, which holds every real outcome.
+export function sumEntries(entries) {
+    const out = new Map();
+    for (const e of entries) {
+        const id = `${e.stat}/${e.layer}${e.byRoll ? "/byRoll" : ""}`;
+        const seen = out.get(id);
+        if (!seen) {
+            out.set(id, {...e});
+            continue;
+        }
+        const merged = {...seen, min: e.byRoll ? Math.min(seen.min, e.min) : seen.min + e.min, max: seen.max + e.max};
+        if (seen.src || e.src) merged.src = new Set([...(seen.src ?? []), ...(e.src ?? [])]);
+        out.set(id, merged);
+    }
+    return [...out.values()];
+}
+
+// entries -> lines [{pieces, label, key, priority, order, stats, value, via?, byRoll?}], in the game's order:
 // descpriority, highest first (ties by stat id). pieces: the display lines, top first; label: the line
 // with "#" for each value; key: the Stat filter key; stats: the stats the line prints (a group line's
-// members); value: its first value's range; via: a group line's name.
+// members); value: its first value's range; via: a group line's name; byRoll: the line depends on the roll
+// (sumEntries). byRoll entries are described on their own, after the plain lines of the same priority.
 export function describe(entries, dict) {
-    // 1. Sum per (stat, layer).
+    const summed = sumEntries(entries);
+    const lines = [
+        ...describeSummed(summed.filter((e) => !e.byRoll), dict),
+        ...describeSummed(summed.filter((e) => e.byRoll), dict).map((line) => ({...line, byRoll: true})),
+    ];
+    return lines.sort((a, b) => b.priority - a.priority || a.order - b.order);
+}
+
+// Summed entries (each (stat, layer) at most once) -> lines, unsorted.
+function describeSummed(summed, dict) {
     const live = new Map();
-    for (const e of entries) {
-        const id = `${e.stat}/${e.layer}`;
-        const seen = live.get(id);
-        live.set(id, seen ? {...seen, min: seen.min + e.min, max: seen.max + e.max} : {...e});
-    }
-    for (const [id, e] of live) if (isZero(e)) live.delete(id);
+    for (const e of summed) if (!isZero(e)) live.set(`${e.stat}/${e.layer}`, e);
 
     const stat = (name) => dict.stats.get(name);
     const at0 = (name) => live.get(`${name}/0`);
@@ -301,9 +330,11 @@ export function describe(entries, dict) {
         if (pieces.length) lines.push({...line, pieces, label: displayPieces(labelText).join(" ")});
     };
 
-    // 2. The damage pairs, printed as one line when both halves are present. Single value when min >= max
+    // 1. The damage pairs, printed as one line when both halves are present. Single value when min >= max
     // (the game prints the max), else "Adds a-b". Poison converts frames: (v * frames + 128) >> 8 over
     // frames / 25 seconds, every source summed (in-game: Septic + of Blight print 27 over 5 seconds).
+    // Overlapping ranges (Snowflake p614/p618/p622, of Frost s176) take the single form only when every roll
+    // gives min >= max: an approximation, since some rolls of the range form would print the single form.
     for (const p of ELEMENT_PAIRS) {
         const lo = at0(p.min);
         const hi = at0(p.max);
@@ -333,21 +364,24 @@ export function describe(entries, dict) {
         take("mindamage", "maxdamage");
     }
 
-    // Enhanced damage: min% and max% together print "+X% Enhanced Damage".
+    // Enhanced damage: min% and max% print "+X% Enhanced Damage" together only when they are equal;
+    // otherwise each prints its own line.
     const ed = at0("item_mindamage_percent");
-    if (ed && at0("item_maxdamage_percent")) {
+    const edMax = at0("item_maxdamage_percent");
+    if (ed && edMax && ed.min === edMax.min && ed.max === edMax.max) {
         const name = requireString(dict, "strModEnhancedDamage", "damage pair");
-        add({text: `${rangeText(ed, {plus: "signed"})}% ${name}`, labelText: `+#% ${name}`, key: "enhanceddamage",
-            priority: stat("item_mindamage_percent").priority, order: stat("item_mindamage_percent").id,
+        add({text: `${rangeText(ed, {plus: "signed"})}% ${name}`, labelText: `${rangeText(ed, {plus: "signed", label: true})}% ${name}`,
+            key: "enhanceddamage", priority: stat("item_mindamage_percent").priority, order: stat("item_mindamage_percent").id,
             stats: ["item_mindamage_percent", "item_maxdamage_percent"], value: ed});
         take("item_mindamage_percent", "item_maxdamage_percent");
     }
 
-    // 3. dgrp groups: one line when every member is present with the same value. The member with the
-    // lowest stat id prints it, at its own priority, as the game's emission loop does.
+    // 2. dgrp groups: one line when every member is present with the same value and the same sources (four
+    // resistances from four affixes roll independently, so they never fold). The member with the lowest
+    // stat id prints it, at its own priority, as the game's emission loop does.
     for (const [group, members] of dict.groups) {
         const values = members.map(at0);
-        if (values.some((e) => !e || e.min !== values[0].min || e.max !== values[0].max)) continue;
+        if (values.some((e) => !e || e.min !== values[0].min || e.max !== values[0].max || srcKey(e) !== srcKey(values[0]))) continue;
         const primary = stat(members[0]);
         const d = {func: primary.groupFunc, val: primary.groupVal, pos: primary.groupPos, neg: primary.groupNeg,
             str2: primary.groupStr2, perLevelShift: null};
@@ -356,7 +390,7 @@ export function describe(entries, dict) {
         take(...members);
     }
 
-    // 4. Everything else, by its own descfunc. Sockets print below every modifier.
+    // 3. Everything else, by its own descfunc. Sockets print below every modifier.
     const rest = [...live.values()].sort((a, b) => stat(a.stat).id - stat(b.stat).id || a.layer - b.layer);
     for (const e of rest) {
         const d = stat(e.stat);
@@ -369,7 +403,7 @@ export function describe(entries, dict) {
         }
     }
 
-    return lines.sort((a, b) => b.priority - a.priority || a.order - b.order);
+    return lines;
 }
 
 // ---- Loud checks ----------------------------------------------------------------------------------------
