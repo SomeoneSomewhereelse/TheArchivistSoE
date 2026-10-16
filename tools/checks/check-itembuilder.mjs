@@ -1,5 +1,5 @@
 // The Item Builder tab end to end: picking, group locks, caps, crafted levels, links, history, level
-// input, Ctrl+F, the roll-odds line, and the phone layout (pinned bar, no horizontal overflow).
+// input, Ctrl+F, the roll-odds line, the item tooltip, the Ethereal toggle, and the phone layout (pinned bar, no horizontal overflow).
 // node check-itembuilder.mjs   (APP_URL = a dev server)
 import {run, checker, BASE, sleep, clickDesktopTab, OVERFLOW_CHECK} from "./cdp.mjs";
 
@@ -175,6 +175,47 @@ await run(async (page) => {
     c.ok(s.notice === "This link was made for older game data and can't be opened." && s.hash === "#/itembuilder" && s.base === "Choose a base item…",
         "an old link opens blank with the old-data notice", JSON.stringify(s));
 
+    // The item tooltip (stat summing spec): a base with no picks, then picks summed into it.
+    const tipLines = () => page.eval(`[...document.querySelectorAll(".ibTooltip .ibTipLine")].map((e) => e.textContent)`);
+    await page.goto(`${BASE}#/itembuilder?v=${v}&b=hax&il=30`);
+    await page.waitFor(`!!document.querySelector(".ibTooltip")`);
+    let tip = await tipLines();
+    c.ok(tip[0] === "Hand Axe" && tip.includes("One-Hand Damage: 3 to 6") && tip.includes("Durability: 56 of 56"),
+        "the tooltip shows a base with no picks", JSON.stringify(tip));
+    await page.click(`.ibRow[data-key="p186"]`); // Jagged, 10-20% Enhanced Damage
+    await sleep(200);
+    tip = await tipLines();
+    c.ok(tip[0] === "Jagged Hand Axe" && tip.includes("One-Hand Damage: 3 to 7")
+        && tip.includes("+17-20% Enhanced Damage (by roll)") && tip.includes("+1 to Maximum Damage (by roll)"),
+        "picking Jagged sums into the damage line and tags the by-roll lines", JSON.stringify(tip));
+    const byRollTitle = await page.eval(`document.querySelector(".ibTipByRoll")?.title ?? ""`);
+    c.ok(/low rolls add maximum damage/.test(byRollTitle), "the (by roll) tag carries its explanation", byRollTitle);
+    const tipBox = await page.eval(`(() => { const t = document.querySelector(".ibTooltip").getBoundingClientRect(); const card = document.querySelector(".ibCard").getBoundingClientRect(); return {below: t.top >= card.bottom, left: Math.round(t.left - card.left), width: Math.round(t.width - card.width)}; })()`);
+    c.ok(tipBox.below && tipBox.left === 0 && tipBox.width === 0, "the tooltip card sits under the card, as wide as it", JSON.stringify(tipBox));
+    await page.screenshot("shots/itembuilder-desktop-tooltip.png");
+
+    // Ethereal: the toggle on an eligible base, of Ages dropped with a notice, e=1 across a reload, off on a bow.
+    const ethBtn = `[...document.querySelectorAll(".ibControls .btn")].find((b) => b.textContent === "Ethereal")`;
+    await page.goto(`${BASE}#/itembuilder?v=${v}&b=uit&a=s404`);
+    await page.waitFor(`!!document.querySelector(".ibTooltip")`);
+    c.ok(await page.eval(`!!${ethBtn}`), "a Monarch shows the Ethereal toggle");
+    await page.eval(`${ethBtn}.click()`);
+    await sleep(300);
+    s = await state(page);
+    c.ok(/&e=1/.test(s.hash) && !/s404/.test(s.hash) && s.notice === "1 affix no longer fits and was removed.",
+        "turning Ethereal on drops of Ages with the notice", JSON.stringify(s));
+    const agesWhy = await page.eval(`document.querySelector('.ibRow[data-key="s404"] .ibWhy')?.textContent ?? null`);
+    c.ok(agesWhy === "Not on ethereal items", "of Ages is greyed while Ethereal is on", String(agesWhy));
+    tip = await tipLines();
+    c.ok(tip.includes("Defense: 166-185") && tip.at(-1) === "Ethereal (Cannot Be Repaired)", "the ethereal tooltip shows x5/4 defense and the footer", JSON.stringify(tip));
+    await page.goto(BASE + s.hash);
+    await page.waitFor(`!!document.querySelector(".ibTooltip")`);
+    c.ok(await page.eval(`${ethBtn}?.getAttribute("aria-pressed") === "true"`), "e=1 survives a reload");
+    await selectBase(page, "sbw"); // Short Bow
+    s = await state(page);
+    c.ok(await page.eval(`!${ethBtn}`) && !/&e=1/.test(s.hash) && /^Ethereal was turned off: Short Bow can't be ethereal\./.test(s.notice ?? ""),
+        "a bow hides the toggle and turns Ethereal off with a notice", JSON.stringify(s));
+
     // Phone (Review Focus 4): skill affixes on an amulet, no overflow, pinned bar.
     await page.mobile();
     await page.goto(BASE + "#/itembuilder");
@@ -203,6 +244,15 @@ await run(async (page) => {
     await sleep(400);
     const bar = await page.eval(`(() => { const b = document.querySelector(".ibPinBar"); return {vis: getComputedStyle(b).visibility, top: Math.round(b.getBoundingClientRect().top)}; })()`);
     c.ok(bar.vis === "visible" && bar.top >= 40 && bar.top <= 80, "the pinned bar shows under the tab row once the card scrolls away", JSON.stringify(bar));
+
+    // Phone order: controls, card, odds, tooltip, list; the long block line wraps without overflow (Review Focus 5).
+    await page.goto(`${BASE}#/itembuilder?v=${v}&b=uow&a=s173`);
+    await page.waitFor(`!!document.querySelector(".ibTooltip")`);
+    const order = await page.eval(`(() => { const r = (s) => document.querySelector(s).getBoundingClientRect(); const [controls, card, odds, tooltip, list] = [".ibControls", ".ibCard", ".ibOdds", ".ibTooltip", ".ibList"].map(r); return controls.bottom <= card.top && card.bottom <= odds.top && odds.bottom <= tooltip.top && tooltip.bottom <= list.top; })()`);
+    const tipOverflow = await page.eval(OVERFLOW_CHECK);
+    c.ok(order && tipOverflow.count === 0 && tipOverflow.scrollWidth <= tipOverflow.vw,
+        "phone order: controls, card, odds, tooltip, list, with no horizontal overflow", JSON.stringify(tipOverflow.offenders));
+    await page.screenshot("shots/itembuilder-phone-tooltip.png");
 
     // Desktop tab click still works after all this (sanity for the More menu entry).
     await page.desktop();
