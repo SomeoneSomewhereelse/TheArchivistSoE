@@ -51,6 +51,7 @@ import OrnateCharmIcon from "./icons/cm4.svg";
 import RuneIcon from "./icons/rune.svg";
 import SacredIcon from "./icons/sacred.svg";
 import FateCardIcon from "./icons/fatecard.svg";
+import {CLEARED_FILTERS} from "./clearedFilters.js";
 import {AFFIX_COLUMNS, AFFIX_SORT_LABELS, clickSort, compareAffixesBy, effectiveSort, parseStoredFlag, parseStoredSort} from "./sortCompare.js";
 import {useHashTab} from "./hashTab.js";
 
@@ -1041,21 +1042,22 @@ function InfoPanel({title, markdownText, isOpen, onToggle, onLink}) {
 
 function ListPanel({
                        title, countLabel, items, activeIndex, setActiveIndex, subLabel, tinyLabel, tab,
-                       mobile = false, expandedIndex = null, onToggleExpanded, renderDetail,
+                       mobile = false, expandedIndex = null, expandedKey = null, onToggleExpanded, renderDetail,
                    }) {
 
     const activeRowRef = React.useRef(null);
     // Desktop highlights the selected row; mobile highlights the expanded one (none by default).
     const focusIndex = mobile ? expandedIndex : activeIndex;
 
-    // On mobile a jump to another tab can open the same row index that was open before; the tab
-    // is a dependency so that still scrolls to it. Desktop only follows the selected row.
-    const scrollTab = mobile ? tab : null;
+    // On mobile a jump (to another tab or within this one) can open the same row index that was open
+    // before; every open/collapse stores a new expandedKey, so that still scrolls to it. Desktop only
+    // follows the selected row.
+    const scrollKey = mobile ? expandedKey : null;
     React.useEffect(() => {
         if (focusIndex === null) return;
         // On mobile, scroll-margin-top lands the opened row just below the pinned top row.
         activeRowRef.current?.scrollIntoView({block: mobile ? "start" : "nearest"});
-    }, [focusIndex, mobile, scrollTab]);
+    }, [focusIndex, mobile, scrollKey]);
 
     return (<div className="listPanel">
         <div className="listHeader">
@@ -2552,10 +2554,26 @@ export default function App() {
     const filterSig = activeSig(filterState);
     const [active, setActive] = useState({sig: filterSig, index: 0});
     if (active.sig !== filterSig) setActive({sig: filterSig, index: 0});
+    // Only the render discarded by the fix-up above sees a stale signature; the committed one never takes the 0.
     const activeIndex = active.sig === filterSig ? active.index : 0;
     const setActiveIndex = (next) => setActive((prev) => ({
         sig: prev.sig, index: typeof next === "function" ? next(prev.index) : next,
     }));
+
+    const resetFilters = () => {
+        const c = CLEARED_FILTERS;
+        setSearch(c.search);
+        setTierValue(c.tierValue);
+        setTypeValue(c.typeValue);
+        setSocketsValue(c.socketsValue);
+        setUberValue(c.uberValue);
+        setHellforgedValue(c.hellforgedValue);
+        setHighlightOnly(c.highlightOnly);
+        setAffixTypeValue(c.affixTypeValue);
+        setStatValue(c.statValue);
+        setRuneCountValue(c.runeCountValue);
+        setSelectedRunes([...c.selectedRunes]);
+    };
 
     // Switching tabs clears the other tabs' searches and resets the filters, except after an internal
     // Markdown app: link, which skips the filter reset once.
@@ -2577,17 +2595,7 @@ export default function App() {
         if (skipFilterReset) {
             setSkipFilterReset(false);
         } else {
-            setSearch("");
-            setTypeValue("");
-            setTierValue("");
-            setSocketsValue("");
-            setUberValue(false);
-            setHellforgedValue(false);
-            setHighlightOnly(false);
-            setAffixTypeValue("");
-            setStatValue("");
-            setRuneCountValue("");
-            setSelectedRunes([]);
+            resetFilters();
         }
     }
 
@@ -3026,13 +3034,7 @@ export default function App() {
 
         setTab("sacreds");
 
-        setSearch("");
-        setTypeValue("");
-        setTierValue("");
-        setSocketsValue("");
-        setUberValue(false);
-        setHellforgedValue(false);
-        setHighlightOnly(false);
+        resetFilters();
 
         setPendingSacredMatch({
             name: name.toLowerCase(), types,
@@ -3043,22 +3045,13 @@ export default function App() {
         const c = n(code);
         if (!c) return;
 
-        setSearch("");
-        setTypeValue("");
-        setTierValue("");
-        setSocketsValue("");
-        setUberValue(false);
-        setHellforgedValue(false);
-        setHighlightOnly(false);
+        resetFilters();
 
         const all = dataset.data;
         const idx = all.findIndex((it) => n(it?.code) === c);
         if (idx >= 0) {
             setActive({
-                sig: activeSig({
-                    ...filterState, search: "", tierValue: "", typeValue: "", socketsValue: "",
-                    uberValue: false, hellforgedValue: false, highlightOnly: false,
-                }),
+                sig: activeSig({...filterState, ...CLEARED_FILTERS}),
                 index: idx,
             });
             setPendingExpandIndex(idx);
@@ -3071,13 +3064,7 @@ export default function App() {
 
         setTab("uniques");
 
-        setSearch("");
-        setTypeValue("");
-        setTierValue("");
-        setSocketsValue("");
-        setUberValue(false);
-        setHellforgedValue(false);
-        setHighlightOnly(false);
+        resetFilters();
         setPendingUniqueCode(c);
     }
 
@@ -3253,7 +3240,7 @@ export default function App() {
                          toggleDamnationMode={toggleDamnationMode}/>
             )}
 
-            <ErrorBoundary resetKey={tab}>
+            <ErrorBoundary resetKey={`${tab}|${damnationMode}`}>
             {tab === "help" ? (<HelpPanel/>) : tab === "calculators" ? (<>
                     <div className="calcWide">
                         <div className="panels">
@@ -3611,6 +3598,7 @@ export default function App() {
                     tinyLabel={tinyLabel}
                     mobile={isMobile}
                     expandedIndex={expandedIndex}
+                    expandedKey={expanded}
                     onToggleExpanded={toggleExpanded}
                     renderDetail={renderTooltip}
                 />

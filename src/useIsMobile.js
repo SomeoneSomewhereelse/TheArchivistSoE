@@ -7,15 +7,26 @@ export function mobileQuery(maxWidth) {
     return `(max-width: ${maxWidth}px)`;
 }
 
+// One stable subscribe function per query: useSyncExternalStore re-subscribes whenever it gets a new one.
+const subscribers = new Map();
+function subscribeTo(query) {
+    let subscribe = subscribers.get(query);
+    if (!subscribe) {
+        subscribe = (notify) => {
+            const mql = window.matchMedia(query);
+            mql.addEventListener("change", notify);
+            return () => mql.removeEventListener("change", notify);
+        };
+        subscribers.set(query, subscribe);
+    }
+    return subscribe;
+}
+
 export function useIsMobile(maxWidth = 980) {
     const query = mobileQuery(maxWidth);
 
     return useSyncExternalStore(
-        (notify) => {
-            const mql = window.matchMedia(query);
-            mql.addEventListener("change", notify);
-            return () => mql.removeEventListener("change", notify);
-        },
+        subscribeTo(query),
         () => window.matchMedia(query).matches,
         () => false,
     );

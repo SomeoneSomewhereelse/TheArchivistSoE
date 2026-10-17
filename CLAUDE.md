@@ -70,7 +70,7 @@ the value. No `eslint-disable`.
 - The stat engine: `src/tblFile.js` (`parseTbl`: `.tbl` string tables, duplicate keys by the game's hash probe), `src/statData.js` (`buildStatData`: the stat dictionary from `Properties`, `ItemStatCost`, `CharStats`, `Skills`, `Skilldesc.txt` and the strings; `HARDCODED_STRINGS`, `TOOLTIP_STRINGS`, `ENGINE_STATS`), `src/statEngine.js` (`expandMods`: mods → stat entries by Properties.txt's funcs; `describe`: entries → the game's lines, each with a Stat filter key and label; `checkEntries`: the loud checks), `src/affixData.js` (`readAffixes`, `describeAffixes`, the `Affixes.json` format, `viaFor`), `src/affixesLoad.js` and `src/useAffixes.js` (the Affixes tab's file). `src/statFixtures.js` is Node-only. Design: `docs/superpowers/specs/2026-10-11-stat-engine-affixes-design.md`. The engine also runs in the browser, for the Item Builder's tooltip: at the build's exact item level, with a base context (funcs 5/6/7/14), `sumEntries` (sources, by-roll lines) and `sumEnds`, over `trimStatData`'s dictionary as rebuilt by `statDataFromJson`.
 - The `affix-data` plugin in `vite.config.js` writes `public/data/standard/Affixes.json` and `ItemBuilder.json` (both gitignored) from the standard `data/global/excel/` tables, `data/local/LNG/ENG/patchstring.tbl`, `src/baseStrings.json` and `Weapons.json`/`Armors.json`. A data update copies the changed `.txt` tables and `patchstring.tbl` from the mod repo (`Lukaszpg/PD2-Sanctuary-of-Exile`, `standard-mode/data/…`) into the same paths, runs the dev server once, and commits `src/itemBuilderVersion.json` if the link version was bumped. If the build fails on a missing string, re-run `node tools/extract-base-strings.mjs <string.tbl> <expansionstring.tbl>` with the game's own tables (never commit those) and commit `src/baseStrings.json`. An upstream merge that brings back `public/data/Affixes.json` is resolved by keeping it deleted.
 - `src/styles.css`: all real styling, about 2,400 lines (`src/App.css` is an unused template leftover; nothing imports it).
-- `src/sortCompare.js` (Affixes sort rules), `src/hashTab.js` (tab ↔ URL hash), `src/pager.js`,
+- `src/clearedFilters.js` (`CLEARED_FILTERS`: every item-list filter at its cleared value; `resetFilters` in `App` and the jump flows all use it, so add a new filter there too), `src/sortCompare.js` (Affixes sort rules), `src/hashTab.js` (tab ↔ URL hash), `src/pager.js`,
   `src/tabList.js`, `src/tiers.js` (the tier filter's Normal → Exceptional → Elite order) and
   `useIsMobile`'s `mobileQuery`: pure helpers, with their tests beside them.
 - `src/main.jsx`: renders `<App/>` inside `React.StrictMode`, so effects double-fire in dev.
@@ -118,7 +118,7 @@ the value. No `eslint-disable`.
 - Keyboard: ↑/↓ move the selection in item lists on desktop (`LIST_TABS`; on mobile and on every other tab
   they're left alone, so they scroll the page), Escape blurs search, Ctrl+F (not Cmd) focuses search. There is no ←/→
   tab switching.
-- A tab's panel renders inside `ErrorBoundary` (its `resetKey` is the tab): a render-time throw shows a failure
+- A tab's panel renders inside `ErrorBoundary` (its `resetKey` is the tab and Damnation mode; `main.jsx` wraps `App` in one more with a page-level `fallback`): a render-time throw shows a failure
   panel instead of a blank page, and the tab bar keeps working.
 - `activeIndex` (the selected list row) is derived from a `{sig, index}` state keyed by the tab and
   filters, so any filter change selects row 0. Jumps that clear filters and select a row in the same
@@ -231,7 +231,7 @@ The harness is committed in `tools/checks/` (Node ≥ 22, no dependencies; outpu
 - `compare-desktop.mjs <label> <url>` takes full-page 1500px screenshots of all 20 tabs into
   `shots/desktop-<label>/`; `diff-shots.mjs <labelA> <labelB>` pixel-diffs two sets.
 - Feature checks: `check-sticky.mjs` (floating table header), `check-multisort.mjs` (Affixes multi-sort),
-  `check-itembuilder.mjs` (Item Builder end to end), `check-select-keyboard.mjs` (SearchableSelect by keyboard), `check-affix-stats.mjs` (Affixes Stat filter) and
+  `check-itembuilder.mjs` (Item Builder end to end), `check-select-keyboard.mjs` (SearchableSelect by keyboard), `check-jumps.mjs` (filters cleared by tab changes and jumps), `check-affix-stats.mjs` (Affixes Stat filter) and
   `diff-affix-lines.mjs` (Node: the engine's lines vs upstream's last `Affixes.json`, a report into the research vault).
 - Drop calculator: `check-dropcalc.mjs` (browser: rows, one fetch per mode, no `.txt`, stale runs, the
   View drop rates link; WARN-only timing budgets `DROPCALC_DESKTOP_TASK_MS`, `DROPCALC_PHONE_TASK_MS`) and

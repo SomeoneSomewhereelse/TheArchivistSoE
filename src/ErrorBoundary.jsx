@@ -1,5 +1,5 @@
 // Keeps a render-time throw in one panel from blanking the whole page. The tab bar stays outside it, and
-// `resetKey` (the current tab, or the Item Builder's build query) clears the failure when it changes.
+// `resetKey` (the current tab and Damnation mode, or the Item Builder's build query) clears the failure when it changes.
 // `fallback`, when given, replaces the tab-wide failure panel (the item tooltip shows a one-line message).
 import React from "react";
 
