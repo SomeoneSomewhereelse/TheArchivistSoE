@@ -50,5 +50,8 @@ export const VALID_TAB_KEYS = [...TAB_GROUPS.flatMap((g) => g.keys), "changelog"
 // The Item Builder's tab key; it keeps its build in the hash query (#/itembuilder?…).
 export const ITEM_BUILDER_TAB = "itembuilder";
 
+// The tabs whose panel is a ListPanel: the only ones where ↑/↓ move a selected row.
+export const LIST_TABS = ["weapons", "armors", "uniques", "runewords", "sacreds", "fatecards"];
+
 // Tabs whose hash may carry a query (useHashTab's third argument).
 export const QUERY_TABS = [ITEM_BUILDER_TAB];

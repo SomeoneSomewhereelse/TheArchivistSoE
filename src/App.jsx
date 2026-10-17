@@ -6,7 +6,7 @@ import StickyHeadTable from "./StickyHeadTable.jsx";
 import AffixSortBar from "./AffixSortBar.jsx";
 import SearchableSelect from "./SearchableSelect.jsx";
 import {MobileTabsBar, TabsBar, TabTitle} from "./tabs.jsx";
-import {QUERY_TABS, VALID_TAB_KEYS} from "./tabList.js";
+import {LIST_TABS, QUERY_TABS, VALID_TAB_KEYS} from "./tabList.js";
 import ItemBuilderPanel from "./ItemBuilderPanel.jsx";
 import {useItemBuilder} from "./useItemBuilder.js";
 import {useAffixes} from "./useAffixes.js";
@@ -3137,6 +3137,9 @@ export default function App() {
 
             // On mobile the arrows have no list selection to move; leave them to scroll the page.
             if (isMobile) return;
+
+            // Tabs without an item list keep the arrows for scrolling.
+            if (!LIST_TABS.includes(tab)) return;
 
             if (e.key === "ArrowDown") {
                 e.preventDefault();

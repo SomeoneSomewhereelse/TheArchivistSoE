@@ -2981,9 +2981,19 @@ a.mdLink {
 }
 
 .ibTipByRoll {
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
     color: var(--muted);
     font-size: 12px;
     cursor: help;
+}
+
+.ibTipByRollNote {
+    display: block;
+    color: var(--muted);
+    font-size: 12px;
 }
 
 .ibTooltipError {

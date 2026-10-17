@@ -170,6 +170,8 @@ export function resolveBuild(model, raw) {
     const picks = [...new Set(raw.picks ?? [])];
     const base = raw.base ? model.baseByCode.get(raw.base) ?? null : null;
     if (raw.base && !base) fixed++;
+    // An e=1 with no base to put it on is one more reset setting (an unknown base is already counted).
+    if (!base && !raw.base && eth) fixed++;
     if (!base) return {build: {...EMPTY_BUILD, ...levels, picks: []}, dropped: dropped + picks.length, fixed, ethOff: null};
 
     const allowed = allowedQualities(model, base);

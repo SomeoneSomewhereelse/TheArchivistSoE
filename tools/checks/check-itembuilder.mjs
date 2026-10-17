@@ -190,6 +190,15 @@ await run(async (page) => {
         "picking Jagged sums into the damage line and tags the by-roll lines", JSON.stringify(tip));
     const byRollTitle = await page.eval(`document.querySelector(".ibTipByRoll")?.title ?? ""`);
     c.ok(/low rolls add maximum damage/.test(byRollTitle), "the (by roll) tag carries its explanation", byRollTitle);
+    // A tap opens the same note under the line (phones have no hover); a second tap closes it.
+    await page.eval(`document.querySelector(".ibTipByRoll").click()`);
+    const noteOpen = await page.eval(`document.querySelector(".ibTipByRollNote")?.textContent ?? ""`);
+    c.ok(/low rolls add maximum damage/.test(noteOpen), "tapping (by roll) opens the explanation", noteOpen);
+    await page.eval(`document.querySelector(".ibTipByRoll").click()`);
+    c.ok(!(await page.eval(`!!document.querySelector(".ibTipByRollNote")`)), "tapping (by roll) again closes it");
+    // The arrow keys are left to the page on this tab (no list to move).
+    const arrowPrevented = await page.eval(`(() => { const e = new KeyboardEvent("keydown", {key: "ArrowDown", cancelable: true, bubbles: true}); document.body.dispatchEvent(e); return e.defaultPrevented; })()`);
+    c.ok(arrowPrevented === false, "ArrowDown is not prevented on the Item Builder tab", String(arrowPrevented));
     const tipBox = await page.eval(`(() => { const t = document.querySelector(".ibTooltip").getBoundingClientRect(); const card = document.querySelector(".ibCard").getBoundingClientRect(); return {below: t.top >= card.bottom, left: Math.round(t.left - card.left), width: Math.round(t.width - card.width)}; })()`);
     c.ok(tipBox.below && tipBox.left === 0 && tipBox.width === 0, "the tooltip card sits under the card, as wide as it", JSON.stringify(tipBox));
     await page.screenshot("shots/itembuilder-desktop-tooltip.png");

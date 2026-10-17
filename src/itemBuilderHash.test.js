@@ -116,6 +116,11 @@ describe("ethereal links and notices", () => {
         }
     });
 
+    it("tells the user an e=1 with no base was reset", () => {
+        expect(decodeBuildQuery(model, "v=3&e=1")).toMatchObject({build: {eth: false}, notice: "Some settings in the link were invalid and were reset."});
+        expect(decodeBuildQuery(model, "v=3&b=nope&e=1").notice).toBe("Some settings in the link were invalid and were reset.");
+    });
+
     it("says why Ethereal was turned off after a control change, alone or with dropped picks", () => {
         expect(controlNotice(0, "Short Bow")).toBe("Ethereal was turned off: Short Bow can't be ethereal.");
         expect(controlNotice(2, "Short Bow")).toBe("Ethereal was turned off: Short Bow can't be ethereal. 2 affixes no longer fit and were removed.");
