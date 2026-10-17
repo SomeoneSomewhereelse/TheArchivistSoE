@@ -115,10 +115,10 @@ the value. No `eslint-disable`.
   `openDropCalculator`, `handleVersionClick` and the jump-to-unique/sacred flows call
   `setTab` directly. Anything that has to follow the current tab should key off the `tab`
   state. The URL-hash sync keys off `tab` too, so every path updates the URL.
-- Keyboard: ↑/↓ move the selection in item lists on desktop (on mobile they're left alone, so
-  they scroll the page), Escape blurs search, Ctrl+F (not Cmd) focuses search. There is no ←/→
+- Keyboard: ↑/↓ move the selection in item lists on desktop (`LIST_TABS`; on mobile and on every other tab
+  they're left alone, so they scroll the page), Escape blurs search, Ctrl+F (not Cmd) focuses search. There is no ←/→
   tab switching.
-- A tab's panel renders inside `ErrorBoundary` (keyed by tab): a render-time throw shows a failure
+- A tab's panel renders inside `ErrorBoundary` (its `resetKey` is the tab): a render-time throw shows a failure
   panel instead of a blank page, and the tab bar keeps working.
 - `activeIndex` (the selected list row) is derived from a `{sig, index}` state keyed by the tab and
   filters, so any filter change selects row 0. Jumps that clear filters and select a row in the same

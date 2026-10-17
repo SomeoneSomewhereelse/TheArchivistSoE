@@ -172,6 +172,10 @@ describe("resolveBuild", () => {
             .toEqual({build: {...EMPTY_BUILD}, dropped: 2, fixed: 1, ethOff: null});
     });
 
+    it("counts a repeated key as a reset setting", () => {
+        expect(resolveBuild(model, {base: "axe", quality: "rare", picks: ["p0", "p0"]})).toMatchObject({build: {picks: ["p0"]}, dropped: 0, fixed: 1});
+    });
+
     it("collapses repeated keys and keeps the earliest picks on a conflict", () => {
         expect(resolveBuild(model, {base: "axe", quality: "magic", picks: ["p0", "p0", "p7", "s1", "p9"]}))
             .toMatchObject({build: {picks: ["p0", "s1"]}, dropped: 2});

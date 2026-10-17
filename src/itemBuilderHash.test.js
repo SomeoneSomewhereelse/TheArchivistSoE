@@ -60,10 +60,10 @@ describe("decodeBuildQuery", () => {
         }
     });
 
-    it("collapses a repeated affix silently", () => {
+    it("collapses a repeated affix with the invalid-settings notice", () => {
         const {build: b, notice} = decodeBuildQuery(model, "v=3&b=axe&a=p0-p0");
         expect(b.picks).toEqual(["p0"]);
-        expect(notice).toBeNull();
+        expect(notice).toBe("Some settings in the link were invalid and were reset.");
     });
 
     it("drops unknown or conflicting affixes, URL order first, with a notice", () => {

@@ -1222,11 +1222,7 @@ button.btn {
     max-width: 260px;
 }
 
-/* Per-filter widths (these were inline styles, which no media query could override). */
-.filtersPanel .selSearchWrap.filterSelWide {
-    max-width: 260px;
-}
-
+/* Per-filter widths (these were inline styles, which no media query could override). The default is 260px. */
 .filtersPanel .selSearchWrap.filterSelNarrow {
     max-width: 180px;
 }
@@ -1248,6 +1244,14 @@ button.btn {
     text-align: left;
     cursor: pointer;
     outline: none;
+}
+
+/* One line: a long label is cut with an ellipsis instead of growing the filter bar. */
+.selTrigger > span:first-child {
+    display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .selTrigger:hover {

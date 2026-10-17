@@ -168,6 +168,8 @@ export function resolveBuild(model, raw) {
     let eth = raw.eth === true;
 
     const picks = [...new Set(raw.picks ?? [])];
+    // A key repeated in a link is one more reset setting.
+    fixed += (raw.picks?.length ?? 0) - picks.length;
     const base = raw.base ? model.baseByCode.get(raw.base) ?? null : null;
     if (raw.base && !base) fixed++;
     // An e=1 with no base to put it on is one more reset setting (an unknown base is already counted).

@@ -1,4 +1,4 @@
-// The tab bars (desktop and mobile), the tab list and its URL-hash keys.
+// The tab bars (desktop and mobile), the tab titles and the Damnation toggle. The tab list and its URL-hash keys are in tabList.js.
 import React from "react";
 import {createPortal} from "react-dom";
 import {TAB_GROUPS, TABS} from "./tabList.js";

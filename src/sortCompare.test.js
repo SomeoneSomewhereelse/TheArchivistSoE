@@ -1,5 +1,6 @@
 import {describe, expect, it} from "vitest";
 import {
+    AFFIX_COLUMNS,
     AFFIX_SORT_KEYS,
     AFFIX_SORT_LABELS,
     DEFAULT_AFFIX_SORT,
@@ -403,6 +404,10 @@ describe("parseStoredSort", () => {
 describe("AFFIX_SORT_LABELS", () => {
     it("has a non-empty label for every sortable column, and nothing else", () => {
         expect(Object.keys(AFFIX_SORT_LABELS).sort()).toEqual([...AFFIX_SORT_KEYS].sort());
+    });
+
+    it("AFFIX_COLUMNS lists every sort key, in order", () => {
+        expect(AFFIX_COLUMNS.map((c) => c.key)).toEqual(AFFIX_SORT_KEYS);
         for (const key of AFFIX_SORT_KEYS) expect(AFFIX_SORT_LABELS[key], key).toMatch(/\S/);
     });
 });

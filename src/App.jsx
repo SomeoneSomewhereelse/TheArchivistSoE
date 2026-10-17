@@ -51,7 +51,7 @@ import OrnateCharmIcon from "./icons/cm4.svg";
 import RuneIcon from "./icons/rune.svg";
 import SacredIcon from "./icons/sacred.svg";
 import FateCardIcon from "./icons/fatecard.svg";
-import {AFFIX_SORT_LABELS, clickSort, compareAffixesBy, effectiveSort, parseStoredFlag, parseStoredSort} from "./sortCompare.js";
+import {AFFIX_COLUMNS, AFFIX_SORT_LABELS, clickSort, compareAffixesBy, effectiveSort, parseStoredFlag, parseStoredSort} from "./sortCompare.js";
 import {useHashTab} from "./hashTab.js";
 
 const APP_VERSION = import.meta.env.VITE_APP_VERSION;
@@ -934,7 +934,6 @@ function FiltersBar({
                         onChange={setTypeValue}
                         options={typeOptions}
                         placeholder={typePlaceholder}
-                        className="filterSelWide"
                     />)}
 
                 {showSockets && (<SearchableSelect
@@ -977,7 +976,6 @@ function FiltersBar({
                     onChange={setStatValue}
                     options={statOptions}
                     placeholder="Any stat"
-                    className="filterSelWide"
                     ariaLabel="Stat"
                 />)}
 
@@ -2016,7 +2014,7 @@ function CorruptionsTable({items}) {
                 <div>
                     <div className="helpTitle">Corruptions</div>
                     <div>
-                        Showing {pager.start + 1}-{pager.end} of {items.length}
+                        Showing {items.length ? pager.start + 1 : 0}-{pager.end} of {items.length}
                     </div>
                 </div>
 
@@ -2050,22 +2048,6 @@ function CorruptionsTable({items}) {
         </div>
     );
 }
-
-// The Affixes columns in display order (the order of AFFIX_SORT_KEYS); `tip` names a TOOLTIPS_TEXT_MAP
-// entry. Header texts come from AFFIX_SORT_LABELS.
-const AFFIX_COLUMNS = [
-    {key: "name"},
-    {key: "attrs"},
-    {key: "level", tip: "affixLevel"},
-    {key: "group", tip: "affixGroup"},
-    {key: "rare", tip: "affixRares"},
-    {key: "freq", tip: "affixFrequency"},
-    {key: "maxLevel", tip: "affixMaxLevel"},
-    {key: "types"},
-    {key: "excluded"},
-    {key: "class"},
-    {key: "reqLevel", tip: "affixRequiredLevel"},
-];
 
 function AffixesPanel({data, loading, error, sort, onChangeSort, multi, onChangeMulti, onRetry, statValue}) {
     const wrapperRef = React.useRef(null);

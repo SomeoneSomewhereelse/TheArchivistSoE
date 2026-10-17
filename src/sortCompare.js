@@ -4,6 +4,22 @@
 // the test suite fails if one is missing.
 export const AFFIX_SORT_KEYS = ["name", "attrs", "level", "group", "rare", "freq", "maxLevel", "types", "excluded", "class", "reqLevel"];
 
+// The Affixes columns in display order (the order of AFFIX_SORT_KEYS, which a test checks); `tip` names a TOOLTIPS_TEXT_MAP
+// entry. Header texts come from AFFIX_SORT_LABELS.
+export const AFFIX_COLUMNS = [
+    {key: "name"},
+    {key: "attrs"},
+    {key: "level", tip: "affixLevel"},
+    {key: "group", tip: "affixGroup"},
+    {key: "rare", tip: "affixRares"},
+    {key: "freq", tip: "affixFrequency"},
+    {key: "maxLevel", tip: "affixMaxLevel"},
+    {key: "types"},
+    {key: "excluded"},
+    {key: "class"},
+    {key: "reqLevel", tip: "affixRequiredLevel"},
+];
+
 // "Missing" means the data has nothing to show: null, undefined, "" or an empty list.
 export function isMissing(v) {
     return v === null || v === undefined || v === "" || (Array.isArray(v) && v.length === 0);

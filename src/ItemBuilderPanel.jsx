@@ -233,7 +233,7 @@ export default function ItemBuilderPanel({status, error, retry, model, build, no
                     )}
                 </section>
                 {odds && (
-                    <div className="ibOdds">
+                    <div className="ibOdds" aria-live="polite">
                         {odds.p > 0 ? (
                             <>
                                 <p className="ibOddsLine">
